@@ -5,7 +5,8 @@ package require tooltip
 #make sure to use only forward slashes
 #set auto_path "D:/technical/codes/IfU-IPG-PTV/version_0_0 . $auto_path"
 
-set auto_path "c:/PTV/Software/xp-dev/PTV/trunk . $auto_path"
+#set auto_path "D:/technical/codes/IfU-IPG-PTV . $auto_path"
+set auto_path "D:/technical/codes/IfU-IPG-PTV . $auto_path"
 
  
 wm title . "Measurement of Particles in flows"

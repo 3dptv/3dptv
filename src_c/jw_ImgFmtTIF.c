@@ -29,7 +29,7 @@ static char sccsid[] = "@(#) g_ImgFmtTIF.c 1.7 95/06/14 22:49:55";
  * file.  If we need more than this, we do it in pieces.
  */
 
-#define MAX_MEMORY	20000		/* don't allocate > 10KB */
+#define MAX_MEMORY	10000		/* don't allocate > 10KB */
 
 /*
  * Define PGM and PPM, i.e. gray images and color images.

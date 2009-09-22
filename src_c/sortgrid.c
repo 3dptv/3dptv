@@ -38,7 +38,8 @@ coord_3d	fix[];
   int	       	i, j;
   int	       	intx, inty;
   double       	xp, yp, eps=10.0;
-  target       	old[1024];
+  // target       	old[512]; Alex, 17.09.09, working on Wesleyan data
+  target       	old[1024]; 
   
   
   
@@ -89,6 +90,7 @@ target		pix[];
   int	       	i, j;
   int	       	intx, inty;
   double       	xp, yp, eps=10.0;
+//  target       	old[512];
   target       	old[1024];
   
   

@@ -60,19 +60,26 @@ proc measure { p1 p2 p3 p4 imgnr } {
 	
 	set point [set p$i]
 	.text delete 3
-	.text insert 3 "measure point $point >> with MS Left"
+	.text insert 3 "measure point $point >> with MS Left,   one step back >> with MS Right"
 
 	tkwait variable clicki
-	set whatimage .cam$imgnr.pic
 
-	if { $k == $whatimage } {
-	    set fx  [concat $fx $xs]
-	    set fy  [concat $fy $ys]
-        } else { 
-	    .text delete 2
-	    .text insert 2 "not image $imgnr"
-	    set i [expr $i - 1 ]
-	}	
+	  if { $clicki == 0 } {
+		.text delete 2
+		.text insert 2 "one step back"
+		set i [expr $i - 2]
+
+	  } else {
+		set whatimage .cam$imgnr.pic
+		if { $k == $whatimage } {
+	    		set fx  [concat $fx $xs]
+	    		set fy  [concat $fy $ys]
+       	 } else { 
+	    		.text delete 2
+	    		.text insert 2 "not image $imgnr"
+	   		 set i [expr $i - 1 ]
+		}
+	  }
     }
 
     set px0 [lindex $fx 0] 

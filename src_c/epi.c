@@ -48,8 +48,8 @@ Glass     G1, G2;
 
 int epi_mm (x1, y1, Ex1, I1, G1, Ex2, I2, G2, mmp, xmin, ymin, xmax, ymax)
 
-double     x1, y1;	  	    /* input coord */
-Exterior   Ex1, Ex2;        /* orientation data */
+double     x1, y1;	  	/* input coord */
+Exterior   Ex1, Ex2;           	/* orientation data */
 Interior   I1, I2;	      	/* orientation data */
 Glass      G1, G2;	      	/* glass data */
 mm_np	   mmp;		        /* multimed param. (layers) */
@@ -65,7 +65,6 @@ double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
   double a, b, c, xa,ya,xb,yb;
   double X1,Y1,Z1, X, Y, Z;
   double Zmin, Zmax;
-  double Zmin_neu, Zmax_neu,ok;
 
   //ray_tracing    (x1,y1, Ex1, I1,     mmp, &X1, &Y1, &Z1, &a, &b, &c);
   ray_tracing_v2 (x1,y1, Ex1, I1, G1, mmp, &X1, &Y1, &Z1, &a, &b, &c);
@@ -78,64 +77,16 @@ double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
 
 
   Z = Zmin;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-  //changed by Beat Lüthi 17. March 2008 to keep points inside illuminated area defined in main parameters
-  ok=1.;
-  if( X<X_lay[0]){
-     Zmin_neu = (X_lay[0]-X1) * c/a + Z1;
-	 if (Zmin < Zmin_neu && Zmin_neu < Zmax){
-        Z = Zmin_neu;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-	 }
-	 else{
-        ok=0.;
-	 }
-  }
-  else{
-     if( X>X_lay[1]){
-        Zmin_neu = (X_lay[1]-X1) * c/a + Z1;
-	    if (Zmin < Zmin_neu && Zmin_neu < Zmax){
-           Z = Zmin_neu;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-	    }
-	    else{
-           ok=0.;
-	    }
-     }
-  }
   //img_xy_mm_geo_old (X,Y,Z, Ex2, I2,     mmp, &xa, &ya);
   img_xy_mm_geo     (X,Y,Z, Ex2, I2, G2, mmp, &xa, &ya);
 
   Z = Zmax;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-  //changed by Beat Lüthi 17. March 2008
-  if( X<X_lay[0]){
-     Zmax_neu = (X_lay[0]-X1) * c/a + Z1;
-	 if (Zmax > Zmax_neu && Zmax_neu > Zmin){
-        Z = Zmax_neu;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-	 }
-	 else{
-        ok=0.;
-	 }
-  }
-  else{
-     if( X>X_lay[1]){
-        Zmax_neu = (X_lay[1]-X1) * c/a + Z1;
-	    if (Zmax > Zmax_neu && Zmax_neu > Zmin){
-           Z = Zmax_neu;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-	    }
-	    else{
-           ok=0.;
-	    }
-     }
-  }
   //img_xy_mm_geo_old (X,Y,Z, Ex2, I2,     mmp, &xb, &yb);
   img_xy_mm_geo     (X,Y,Z, Ex2, I2, G2, mmp, &xb, &yb);
-   
 
   /*  ==> window given by xa,ya,xb,yb  */
-  if(ok==1){
-     *xmin = xa;  *ymin = ya;  *xmax = xb;  *ymax = yb;
-  }
-  else{
-     *xmin = 0.;  *ymin = 0.;  *xmax = 0.;  *ymax = 0.;
-  }
+
+  *xmin = xa;  *ymin = ya;  *xmax = xb;  *ymax = yb;
 
   return (0);
 }
@@ -169,7 +120,7 @@ double *xp, *yp, *zp;
     + (X1-X_lay[0]) * (Zmin_lay[1]-Zmin_lay[0]) / (X_lay[1]-X_lay[0]);
   Zmax = Zmax_lay[0]
     + (X1-X_lay[0]) * (Zmax_lay[1]-Zmax_lay[0]) / (X_lay[1]-X_lay[0]);
- 
+
 
   Z = 0.5*(Zmin+Zmax);   
   X = X1 + (Z-Z1) * a/c;   

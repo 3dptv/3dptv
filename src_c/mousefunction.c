@@ -3,7 +3,7 @@
 int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 
 {
-  int     i, j, click_x, click_y, n, zf, kind;
+  int     i, j, click_x, click_y, n, zf, kind, deletedummy;
   double  x, y, xa, ya;
   double  xa12, xb12, ya12, yb12;
   int     k, pt1, intx1, inty1, count, intx2, inty2, pt2;
@@ -250,6 +250,8 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
       }
       break;
 
+
+	  
 /*------------------------ LEFT MOUSE BUTTON ------------------------------*/
 
     case 5: /* measure coordinates and grey value */

@@ -73,7 +73,7 @@ proc bindings1 { } {
     global mp clicki
     for { set i 1} { $i <= $mp(ncam)} { incr i } {
 	set n $i
-	
+
 	bind .cam$n.pic <ButtonPress-1> { set fn %W ; set nr [expr [ string index $fn 4 ] -1];\
 					      set bnr [expr $nr +1];\
 					      set x [expr int(%x + [%W canvasx 0 ])];\
@@ -165,4 +165,42 @@ proc bindings4 { } {
     .text insert 2 " "
     .text delete 3
     .text insert 3 " " 
+}
+
+proc bindings5 { } {
+# Bindings for manual detection: left > measure case 5, middle > zoom normal case1, right > delete measeured point case 7
+
+    global mp
+    for { set i 1} { $i <= $mp(ncam)} { incr i } {
+	set n $i
+	set clicki 1
+	bind .cam$n.pic <ButtonPress-1> { set fn %W ; set nr [expr [ string index $fn 4 ] -1];\
+					      set bnr [expr $nr +1];\
+					      set x [expr int(%x + [%W canvasx 0 ])];\
+					      set y [expr int( %y + [%W canvasy 0 ])];\
+					      set gv [ image$bnr get  $x $y];\
+					      markier %W %x %y image$bnr; incr clicki 1;\
+					      mouse_cmd $x $y $nr 5 [ lindex $gv 1] }
+	
+	bind .cam$n.pic <ButtonPress-2> { set fn %W ; set nr [expr [ string index $fn 4 ] -1] ;\
+					      set x [expr int(%x + [%W canvasx 0 ])];\
+					      set y [expr int( %y + [%W canvasy 0 ])];\
+					      mouse_cmd $x $y $nr 1 }
+	
+	bind .cam$n.pic <ButtonPress-3> { set fn %W ; set nr [expr [ string index $fn 4 ] -1] ;\
+					      set x [expr int(%x + [%W canvasx 0 ])];\
+					      set y [expr int( %y + [%W canvasy 0 ])];\
+						set clicki 0
+					      mouse_cmd $x $y $nr 7}
+	
+	bind . <Enter> {focus %W} 
+    }
+    .text delete 0
+    .text insert 0 "Mouse Buttons: left > measure, middle > zoom, right > one step back"
+    .text delete 1
+    .text insert 1 " "
+    .text delete 2
+    .text insert 2 " "
+    .text delete 3
+    .text insert 3 " "
 }

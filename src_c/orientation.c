@@ -800,11 +800,10 @@ int	       	nr;  		/* image number for residual display */
       rotation_matrix (Ex0, Ex0.dm);
       *Ex = Ex0;	*I = I0;	*ap = ap0; *G = G0;
     }
-  else{	
+  else	
 	  //rotation_matrix (Ex0, Ex0.dm);//////carefullll!!!!
       *Ex = Ex0;	*I = I0;	*ap = ap0; *G = G0;//////carefullll!!!!
 	  puts ("orientation does not converge");
-  }
 }
 
 
@@ -1075,6 +1074,375 @@ coord_2d  crd[];
       *Ex = Ex0;
 	  *G  = G0;
       rotation_matrix (*Ex, Ex->dm);
+    }
+  else {
+	  puts ("raw orientation impossible");
+    }
+}
+
+void raw_orient_v4 (Ex0, I, G0, ap, mm, nfix, fix, crd, Ex,only_show) //Beat Nov 2008 to have calibration without knowing coord of target points
+//Beat Lüthi, Nov 2008
+
+
+Exterior	Ex0[4];
+Interior	I[4];
+Glass   	G0[4];
+ap_52		ap[4];
+mm_np		mm;
+
+Exterior  Ex[4];
+
+int	  nfix;
+coord_3d  fix[];
+coord_2d  crd[4][12];
+
+{
+  double		X[30][6], y[30],
+    XPX[6][6], XPy[6], beta[6];
+  double 		Xp, Yp, Zp, xp, yp, xpd, ypd;
+  int     	i,j,n, itnum, stopflag, n_obs=0,cam,count;
+  double		dm = 0.0001,  drad = 0.000001;
+  
+  
+  /* init X, y (set to zero) */
+  for (i=0; i<30; i++)
+    {
+      for (j=0; j<6; j++)  X[i][j] = 0;
+      y[i] = 0;
+    }
+  for (i=0; i<n_img; i++){
+     ap[i].k1 = 0;	ap[i].k2 = 0;	ap[i].k3 = 0;	ap[i].p1 = 0;	ap[i].p2 = 0;
+     ap[i].scx = 1; ap[i].she = 0;
+  }
+
+
+  /* main loop, program runs through it, until none of the beta values
+     comes over a threshold and no more points are thrown out
+     because of their residuals */
+
+  itnum = 0;  stopflag = 0;
+
+///////////make a menu so one see the raw guess!!!!!
+  if(only_show==1) stopflag=1;
+/////// Beat Lüthi 9. Mai 2007
+
+  
+
+  while ((stopflag == 0) && (itnum < 6000000))
+    {
+      ++itnum;
+	  if(itnum==1){
+	     for (i=0, n=0; i<nfix; i++){
+		     /* hack due to problems with approx in det_lsq: */
+             Xp = 0.0; Yp = 0.0; Zp = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+             for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
+             Xp /= n_img; Yp /= n_img;
+		     /* end of hack due to problems with approx in det_lsq: */
+             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+	         fix[i].x=Xp;
+		     fix[i].y=Yp;
+		     fix[i].z=Zp;
+			 count=0;
+		 }
+	  }
+	  for (cam=0; cam<n_img; cam++){
+
+		  /* init X, y (set to zero) */
+          for (i=0; i<30; i++){
+			  for (j=0; j<6; j++){
+				  X[i][j] = 0;
+                  y[i] = 0;
+			  }
+		  }
+          ap[cam].k1 = 0;	ap[cam].k2 = 0;	ap[cam].k3 = 0;	ap[cam].p1 = 0;	ap[cam].p2 = 0;
+          ap[cam].scx = 1; ap[cam].she = 0;
+
+      for (i=0, n=0; i<nfix; i++)  if (crd[cam][i].x != -999)
+	{
+
+	  Xp = fix[i].x;  Yp = fix[i].y;  Zp = fix[i].z;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xp,&yp);
+
+	  /* numeric derivatives */
+
+	  Ex0[cam].x0 += dm;
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][0]      = (xpd - xp) / dm;
+	  X[n+1][0] = (ypd - yp) / dm;
+	  Ex0[cam].x0 -= dm;
+
+	  Ex0[cam].y0 += dm;
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][1]	  = (xpd - xp) / dm;
+	  X[n+1][1] = (ypd - yp) / dm;
+	  Ex0[cam].y0 -= dm;
+
+	  Ex0[cam].z0 += dm;
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][2]	  = (xpd - xp) / dm;
+	  X[n+1][2] = (ypd - yp) / dm;
+	  Ex0[cam].z0 -= dm;
+
+	  Ex0[cam].omega += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][3]	  = (xpd - xp) / drad;
+	  X[n+1][3] = (ypd - yp) / drad;
+	  Ex0[cam].omega -= drad;
+
+	  Ex0[cam].phi += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][4]	  = (xpd - xp) / drad;
+	  X[n+1][4] = (ypd - yp) / drad;
+	  Ex0[cam].phi -= drad;
+
+	  Ex0[cam].kappa += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  img_coord (Xp,Yp,Zp, Ex0[cam],I[cam], G0[cam], ap[cam], mm, &xpd,&ypd);
+	  X[n][5]	  = (xpd - xp) / drad;
+	  X[n+1][5] = (ypd - yp) / drad;
+	  Ex0[cam].kappa -= drad;
+
+	  y[n]   = crd[cam][i].x - xp;
+	  y[n+1] = crd[cam][i].y - yp;
+
+	  n += 2;
+	}//end loop nfix
+      n_obs = n;
+
+      /* Gauss Markoff Model */
+
+      ata_v2 (X, XPX, n_obs, 6, 6);
+      matinv (XPX, 6);
+      atl (XPy, X, y, n_obs, 6);
+      matmul (beta, XPX, XPy, 6,6,1);
+
+      stopflag = 1;
+	  
+	  for (i=0; i<6; i++){
+		  if (fabs (beta[i]) > 0.1 )  stopflag = 0;
+	  }
+	  if (itnum < 5900000) stopflag=0;
+	  
+
+      Ex0[cam].x0 += beta[0];  Ex0[cam].y0 += beta[1];  Ex0[cam].z0 += beta[2];
+      Ex0[cam].omega += beta[3];  Ex0[cam].phi += beta[4];
+      Ex0[cam].kappa += beta[5];
+	  //G0.vec_x += beta[6];G0.vec_y += beta[7];//G0.vec_z += beta[8];
+	  stopflag =stopflag ;
+	}//end of cam loop
+
+    count++;
+    if ((itnum < 5900000) && (count>10)){ //(stopflag == 1) &&  
+		  for (i=0, n=0; i<nfix; i++){
+		     /* hack due to problems with approx in det_lsq: */
+             //Xp = 0.0; Yp = 0.0; Zp = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+             //for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
+             //Xp /= n_img; Yp /= n_img;
+		     /* end of hack due to problems with approx in det_lsq: */
+             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+	         fix[i].x=Xp;
+		     fix[i].y=Yp;
+		     fix[i].z=Zp;
+		 }
+		 stopflag = 0;
+		 count=0;
+	}
+	  
+    }//end of while loop
+
+  if (stopflag)
+    {	
+		for (cam=0; cam<n_img; cam++){
+			Ex[cam].x0 = Ex0[cam].x0;  
+			Ex[cam].y0 = Ex0[cam].y0;  
+			Ex[cam].z0 = Ex0[cam].z0;
+            Ex[cam].omega = Ex0[cam].omega;  
+			Ex[cam].phi = Ex0[cam].phi; 
+			Ex[cam].kappa = Ex0[cam].kappa;
+		
+            rotation_matrix (Ex[cam], Ex[cam].dm);
+		}
+    }
+  else {
+	  puts ("raw orientation impossible");
+    }
+}
+
+void raw_orient_v5 (Ex0, I, G0, ap, mm, nfix, fix, crd, Ex,only_show) //Beat Nov 2008 to have calibration without knowing coord of target points
+//Beat Lüthi, Nov 2008
+
+
+Exterior	Ex0[4];
+Interior	I[4];
+Glass   	G0[4];
+ap_52		ap[4];
+mm_np		mm;
+
+Exterior  Ex[4];
+
+int	  nfix;
+coord_3d  fix[];
+coord_2d  crd[4][12];
+
+{
+  double		X[30][6], y[30],
+    XPX[6][6], XPy[6], beta[6];
+  double 		Xp, Yp, Zp, dist;
+  int     	i,j,n, itnum, stopflag, n_obs=0,cam,count;
+  double		dm = 0.0001,  drad = 0.000001;
+  
+  
+  for (i=0; i<n_img; i++){
+     ap[i].k1 = 0;	ap[i].k2 = 0;	ap[i].k3 = 0;	ap[i].p1 = 0;	ap[i].p2 = 0;
+     ap[i].scx = 1; ap[i].she = 0;
+  }
+
+
+  /* main loop, program runs through it, until none of the beta values
+     comes over a threshold and no more points are thrown out
+     because of their residuals */
+
+  itnum = 0;  stopflag = 0;
+
+///////////make a menu so one see the raw guess!!!!!
+  if(only_show==1) stopflag=1;
+/////// Beat Lüthi 9. Mai 2007
+
+  
+
+  while ((stopflag == 0) && (itnum < 6000000))
+    {
+      ++itnum;
+	  if(itnum==1){
+	     for (i=0, n=0; i<nfix; i++){
+			 /* hack due to problems with approx in det_lsq: */
+             Xp = 0.0; Yp = 0.0; Zp = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+             for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
+             Xp /= n_img; Yp /= n_img;
+		     /* end of hack due to problems with approx in det_lsq: */
+             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+	         fix[i].x=Xp;
+		     fix[i].y=Yp;
+		     fix[i].z=Zp;
+         pos_from_ray(Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp, &dist);
+			 fix[i].x=Xp;
+		     fix[i].y=Yp;
+		     fix[i].z=Zp;
+			 count=0;
+		 }
+	  }
+	  for (cam=0; cam<n_img; cam++){
+
+		  /* init X, y (set to zero) */
+          for (i=0; i<30; i++){
+			  for (j=0; j<6; j++){
+				  X[i][j] = 0;
+                  y[i] = 0;
+			  }
+		  }
+
+      for (i=0, n=0; i<nfix; i++)  if (crd[cam][i].x != -999)
+	{
+
+	  Xp = fix[i].x;  Yp = fix[i].y;  Zp = fix[i].z;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  y[n]   = dist;
+
+	  /* numeric derivatives */
+
+	  Ex0[cam].x0 += dm;
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][0]      = dist / dm;
+	  Ex0[cam].x0 -= dm;
+
+	  Ex0[cam].y0 += dm;
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][1]	  = dist / dm;
+	  Ex0[cam].y0 -= dm;
+
+	  Ex0[cam].z0 += dm;
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][2]	  = dist / dm;
+	  Ex0[cam].z0 -= dm;
+
+	  Ex0[cam].omega += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][3]	  = dist / drad;
+	  Ex0[cam].omega -= drad;
+
+	  Ex0[cam].phi += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][4]	  = dist / drad;
+	  Ex0[cam].phi -= drad;
+
+	  Ex0[cam].kappa += drad;
+	  rotation_matrix (Ex0[cam], Ex0[cam].dm);
+	  dist_to_ray(crd[cam][i].x, crd[cam][i].y, Ex0[cam], I[cam], G0[cam], ap[cam], mm, Xp,Yp,Zp, &dist);
+	  X[n][5]	  = dist / drad;
+	  Ex0[cam].kappa -= drad;
+	  
+	  n += 1;
+	}//end loop nfix
+      n_obs = n;
+
+      /* Gauss Markoff Model */
+
+      ata_v2 (X, XPX, n_obs, 6, 6);
+      matinv (XPX, 6);
+      atl (XPy, X, y, n_obs, 6);
+      matmul (beta, XPX, XPy, 6,6,1);
+
+      stopflag = 1;
+	  
+	  for (i=0; i<6; i++){
+		  if (fabs (beta[i]) > 0.1 )  stopflag = 0;
+	  }
+	  if (itnum < 5900000) stopflag=0;
+	  
+
+      Ex0[cam].x0 += beta[0];  Ex0[cam].y0 += beta[1];  Ex0[cam].z0 += beta[2];
+      Ex0[cam].omega += beta[3];  Ex0[cam].phi += beta[4];
+      Ex0[cam].kappa += beta[5];
+	}//end of cam loop
+
+    count++;
+    if ((itnum < 5900000) && (count>10)){ //(stopflag == 1) &&  
+		  for (i=0, n=0; i<nfix; i++){
+		     /* hack due to problems with approx in det_lsq: */
+             //Xp = 0.0; Yp = 0.0; Zp = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+             //for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
+             //Xp /= n_img; Yp /= n_img;
+		     /* end of hack due to problems with approx in det_lsq: */
+             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+	         fix[i].x=Xp;
+		     fix[i].y=Yp;
+		     fix[i].z=Zp;
+		 }
+		 stopflag = 0;
+		 count=0;
+	}
+	  
+    }//end of while loop
+
+  if (stopflag)
+    {	
+		for (cam=0; cam<n_img; cam++){
+			Ex[cam].x0 = Ex0[cam].x0;  
+			Ex[cam].y0 = Ex0[cam].y0;  
+			Ex[cam].z0 = Ex0[cam].z0;
+            Ex[cam].omega = Ex0[cam].omega;  
+			Ex[cam].phi = Ex0[cam].phi; 
+			Ex[cam].kappa = Ex0[cam].kappa;
+		
+            rotation_matrix (Ex[cam], Ex[cam].dm);
+		}
     }
   else {
 	  puts ("raw orientation impossible");

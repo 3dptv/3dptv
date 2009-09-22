@@ -1,6 +1,6 @@
 /*  global declarations for ptv  */
 
-#define nmax 20000
+#define nmax 20240
 
 extern	int    	n_img;			       /* no of images */
 extern  int		hp_flag;           	       /* flag for highpass */
@@ -61,7 +61,7 @@ extern	Glass       	G[];	        /* glass orientation */
 extern	ap_52	       	ap[];	       	/* add. parameters */
 extern	mm_np	       	mmp;	       	/* 3-media parameters */
 extern	target	       	pix[4][nmax];  	/* target pixel data */
-extern	target	       	pix0[4][4];    	/* pixel data for man_ori points */
+extern	target	       	pix0[4][12];    	/* pixel data for man_ori points */
 extern	coord_2d       	crd[4][nmax];  	/* (distorted) metric coordinates */
 extern	coord_2d       	geo[4][nmax];  	/* corrected metric coordinates */
 extern	coord_3d       	fix[];	        /* testfield points coordinates */
@@ -106,6 +106,7 @@ void read_image();
 int  read_tiff ();
 int  write_tiff ();
 void copy_images();
+void subtract_mask();
 
 int  peak_fit_new();
 void highpass();
@@ -148,14 +149,23 @@ void init_mmLUT ();
 
 void correspondences_4();
 void det_lsq();
+void pos_from_ray();
+void dist_to_ray();
 void ray_tracing();
+void point_line_line();
+void norm_cross();
+void dot();
+void modu();
 void ray_tracing_v2();
 void intersect_rt_3m();
 void intersect_rt();
 int  nearest_neighbour_pix();
 void img_coord();
+void img_coord_old();
 void raw_orient();
 void raw_orient_v3();
+void raw_orient_v4();
+void raw_orient_v5();
 int mod();
 void getabcFromRot();
 void sortgrid_man();

@@ -157,7 +157,6 @@ label $w.m.psumgv.l
 label $w.m.partdisc.l
 label $w.m.partcross.l
 
-
 $w.part.l config -text "Parameters for particle recognition" -font {Helvetica 13 bold}
 
 $w.partgv.l config -text "Greyvalue threshold,"
@@ -210,6 +209,22 @@ entry $w.m.partcross.e -width 5 -relief sunken -bd 2 -textvariable mp(pcrossize)
 pack  $w.m.psumgv.l $w.m.psumgv.e $w.m.partdisc.l $w.m.partdisc.e $w.m.partcross.l $w.m.partcross.e -side left
 pack  $w.m.psumgv $w.m.partdisc $w.m.partcross  -side left -in $w.m
 pack $w.m -pady 4
+
+
+#---------------------------Subtract Mask-----------------------------------#
+
+frame $w.mask
+label	$w.mask.label
+
+checkbutton $w.mask.button -text "Subtract mask     " -variable mp(mask)
+
+$w.mask.label config -text "Basename for the first mask:"
+entry $w.mask.entry -width 25 -relief sunken -bd 2 -textvariable mp(maskname)
+
+
+pack $w.mask.button $w.mask.label $w.mask.entry -side left
+pack $w.mask -pady 4
+
 
 
 # Parameters for sequence processing #########################

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
-	Name="3DPTV"
+	Version="8.00"
+	Name="ScanPTV"
 	ProjectGUID="{E00A7987-43D3-401E-B02B-3E80F54CD7F7}"
-	RootNamespace="3DPTV"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -18,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\bin"
-			IntermediateDirectory="..\Debug"
+			OutputDirectory=".\bin"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="0"
@@ -42,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Tcl\include&quot;"
+				AdditionalIncludeDirectories="C:\Program Files\Tcl\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -66,19 +64,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="tcl84.lib tk84.lib"
-				OutputFile="../bin/3DPTV.exe"
-				Version=""
+				OutputFile="$(OutDir)/ScanPTV.exe"
 				LinkIncremental="0"
-				AdditionalLibraryDirectories="&quot;C:\Tcl\lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Tcl\lib&quot;"
 				IgnoreDefaultLibraryNames="libc;libcmt"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/ScanPTV.pdb"
 				GenerateMapFile="true"
 				MapFileName="ScanPTV.map"
 				SubSystem="0"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -100,6 +94,9 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -107,22 +104,80 @@
 			Name="Release|Win32"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
-			ConfigurationType="0"
+			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			>
 			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine=""
-				ReBuildCommandLine=""
-				CleanCommandLine=""
-				Output=""
-				PreprocessorDefinitions=""
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="C:\Program Files\Tcl\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)/ScanPTV.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Tcl\lib&quot;"
+				IgnoreDefaultLibraryNames="libc"
+				GenerateDebugInformation="false"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 	</Configurations>
@@ -261,6 +316,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\resource2.h"
+				>
+			</File>
+			<File
 				RelativePath=".\tiff.h"
 				>
 			</File>
@@ -282,7 +341,15 @@
 			>
 		</File>
 		<File
-			RelativePath="..\ptv.tcl"
+			RelativePath=".\ScanPTV2.rc"
+			>
+		</File>
+		<File
+			RelativePath=".\tcl84.lib"
+			>
+		</File>
+		<File
+			RelativePath="C:\Program Files\Tcl\lib\tk84.lib"
 			>
 		</File>
 	</Files>

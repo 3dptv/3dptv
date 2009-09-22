@@ -18,7 +18,7 @@ Routines contained:    	many ...
 ****************************************************************************/
 #include "ptv.h"
 
-#define nmax 20240
+#define nmax 20000
 
 /*  global declarations for ptv  */
 /*-------------------------------------------------------------------------*/
@@ -26,7 +26,6 @@ Routines contained:    	many ...
 int	n_img;	       		      	/* no of images */
 int	hp_flag=0;           	      	/* flag for highpass */
 int	tiff_flag=0;           	      	/* flag for tiff header */
-int pair_flag=0;					/*flag for accept pair */
 int	chfield;       		       	/* flag for field mode */
 int	nfix;	       	       	       	/* no. of control points */
 int	num[4];	       		       	/* no. of targets per image */
@@ -46,11 +45,10 @@ int	demo_nr;		      	/* for demo purposes */
 int	examine = 0;		       	/* for more detailed output */
 int	dump_for_rdb;		       	/* # of dumpfiles for rdb */
 int cr_sz;                          /* size of crosses */
-int display;                        /* display flag */
+int display,shaking;                        /* display flag */
 int corp, corc, corn;
 int m[4];
 int trackallocflag = 0;      /* checkflag if mega, c4, t4 already allocated */
-int mask;						/*checkmark for subtract mask*/
 
 double	pix_x, pix_y;			      	/* pixel size */
 double	ro;			      	        /* 200/pi */
@@ -65,25 +63,19 @@ char   	img_lp_name[4][256]; 	/* lowpass image names */
 char   	img_hp_name[4][256];   	/* highpass image names */
 char   	img_cal[4][128];       	/* calibrayion image names */
 char   	img_ori[4][128];       	/* image orientation data */
-char   	img_ori0[4][128];      	/* orientation approx. values */
-char   	img_addpar[4][128];    	/* image additional parameters */
 char   	safety[4][128];
 char   	safety_addpar[4][128];
+char   	img_ori0[4][128];      	/* orientation approx. values */
+char   	img_addpar[4][128];    	/* image additional parameters */
 char   	img_addpar0[4][128];   	/* ap approx. values */
 char   	seq_name[4][128];      	/* sequence names */
-char	img_mask_name[4][256];	/* mask image names*/
-char	img_mask_path[256];
 char   	track_dir[128];	       	/* directory with dap track data */
 char    fixp_name[128];
 char   	res_name[128];	      	/* result destination */
 char   	filename[128];	      	/* for general use */
 char   	buf[256], val[256];	       	/* buffer */
-char    name[128];  //Beat Dez 08
-double  xp, yp; //Beat Dez 08
 
 unsigned char	*img[4];      	/* image data */
-unsigned char	*img_mask[4];	/* mask data */
-unsigned char	*img_new[4];	/* image data for reducing mask */
 unsigned char	*img0[4];      	/* image data for filtering etc */
 unsigned char	*zoomimg;     	/* zoom image data */
 
@@ -93,14 +85,14 @@ Glass       	G[4],sG[4];	       	/* glass orientation */
 ap_52	       	ap[4],sap[4];	       	/* add. parameters k1,k2,k3,p1,p2,scx,she */
 mm_np	       	mmp;	       	/* n-media parameters */
 target	       	pix[4][nmax]; 	/* target pixel data */
-target	       	pix0[4][12];    	/* pixel data for man_ori points */
+target	       	pix0[4][4];    	/* pixel data for man_ori points */
 
 target          *t4[4][4];
 int             nt4[4][4];
 
 coord_2d       	crd[4][nmax];  	/* (distorted) metric coordinates */
 coord_2d       	geo[4][nmax];  	/* corrected metric coordinates */
-coord_3d       	fix[20096];     	/* testfield points coordinates */ //Beat changed it on 090325
+coord_3d       	fix[4096];     	/* testfield points coordinates */
 n_tupel	       	con[nmax];     	/* list of correspondences */
 
 corres	       	*c4[4];
@@ -117,7 +109,7 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
   int  i;
   const char *valp;
 
-  puts ("\nMultimedia Particle Positioning and Tracking (Scanning Mode)\n");
+  puts ("\nMultimedia Particle Positioning and Tracking\n");
 
   valp = Tcl_GetVar(interp, "examine",  TCL_GLOBAL_ONLY);
   examine = atoi (valp);
@@ -195,30 +187,10 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 
   for (i=0; i<n_img; i++)
     {
-      img_mask[i] = (unsigned char *) calloc (imgsize, 1);
-      if ( ! img_mask[i])
-	{
-	  printf ("calloc for img_mask%d --> error\n", i);
-	  exit (1);
-	}
-    }
-
-  for (i=0; i<n_img; i++)
-    {
       img0[i] = (unsigned char *) calloc (imgsize, 1);
       if ( ! img0[i])
 	{
 	  printf ("calloc for img0%d --> error\n", i);
-	  exit (1);
-	}
-    }
-
-    for (i=0; i<n_img; i++)
-    {
-      img_new[i] = (unsigned char *) calloc (imgsize, 1);
-      if ( ! img_new[i])
-	{
-	  printf ("calloc for img_new%d --> error\n", i);
 	  exit (1);
 	}
     }
@@ -302,8 +274,6 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
       strcpy (img_addpar[i], img_cal[i]); strcat (img_addpar[i],".addpar");
     }
 
-
-
   /*  read orientation and additional parameters  */
   for (i=0; i<n_img; i++)
     {
@@ -316,16 +286,13 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	      &ap[i].scx, &ap[i].she);
       fclose (fp1);
     }
-
   /* read and display original images */
-	for (i=0; i<n_img; i++)
+  for (i=0; i<n_img; i++)
     {
       /* reading */
-	  sprintf(val, "camcanvas %d", i+1);
+      sprintf(val, "camcanvas %d", i+1);
       Tcl_Eval(interp, val);
 
-
-	  
       read_image (interp, img_name[i], img[i]);
       sprintf(val, "newimage %d", i+1);
 
@@ -345,13 +312,15 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
       trackallocflag=1;
     }
 
+ sprintf (res_name, "res/rt_is.first");
+
   return TCL_OK;
 
 }
 
 int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int i_img, sup, i;
+  int i_img, sup;
 
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -366,49 +335,9 @@ int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const
   if ( fpp == 0) { sup = 12;}
   else	{ fscanf (fpp, "%d\n", &sup); fclose (fpp); }
 
-//_____________________Matthias subtract mask__________________________
-
-
- /* Matthias JULI 08 read checkmark for masks and create mask names*/
-
-fpp = fopen_r ("parameters/targ_rec.par");
-for (i=0; i<14; i++){
-  fscanf (fpp, "%d", &mask);      /*checkmark for subtract mask */
-  }
-  fscanf (fpp, "%s\n", img_mask_path);
-  fclose (fpp);
-/*read mask names*/
-  strcpy (img_mask_name[0], img_mask_path); strcat (img_mask_name[0], ".0");
-  strcpy (img_mask_name[1], img_mask_path); strcat (img_mask_name[1], ".1");
-  strcpy (img_mask_name[2], img_mask_path); strcat (img_mask_name[2], ".2");
-  strcpy (img_mask_name[3], img_mask_path); strcat (img_mask_name[3], ".3");
-
-/*if the checkmark is set, read mask-image and subtract it from the filtered-original image.*/
-  if (mask==1)
-  {//read mask image
-  for (i_img=0; i_img<n_img; i_img++)
-  {
-	read_image (interp, img_mask_name[i_img], img_mask[i_img]);//read mask
-	highpass (img_name[i_img], img[i_img], img[i_img], sup, 0, chfield, i_img);//highpass original image
-	subtract_mask (img[i_img], img_mask[i_img], img_new[i_img]); //subtract mask from original image
-	copy_images (img_new[i_img], img[i_img]);//copy subtracted imgage on the original image
-
-	if (display) {
-      img_handle = Tk_FindPhoto( interp, "temp");
-      Tk_PhotoGetImage (img_handle, &img_block);
-      tclimg2cimg (interp, img[i_img], &img_block);
-
-      sprintf(val, "newimage %d", i_img+1);
-      Tcl_GlobalEval(interp, val);
-      }
-  }
-  }//end if
-
-if (mask==2)//Beat April 090402 was ==0
-		{
   for (i_img=0; i_img<n_img; i_img++)
     {
-	highpass (img_name[i_img], img[i_img], img[i_img], sup, 0, chfield, i_img);//highpass original image
+      highpass (img_name[i_img], img[i_img], img[i_img], sup, 0, chfield, i_img);
 
       if (display) {
       img_handle = Tk_FindPhoto( interp, "temp");
@@ -419,10 +348,6 @@ if (mask==2)//Beat April 090402 was ==0
       Tcl_GlobalEval(interp, val);
       }
     }
-}//end if
-
-/*------------------------------------------------------------*/
-
 
   sprintf(val, "...done");
   Tcl_SetVar(interp, "tbuf", val, TCL_GLOBAL_ONLY);
@@ -797,6 +722,18 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
 
 
   display = atoi(argv[1]);
+  shaking=0;
+  if (display==2){
+     display=0;
+	 shaking=1;
+  }
+
+  if(shaking){
+     fpp = fopen_r ("parameters/shaking.par");     
+     fscanf (fpp,"%d\n", &seq_first);
+     fscanf (fpp,"%d\n", &seq_last);
+     fclose (fpp);
+  }
 
   /* scanning ptv ************** */
 printf("\nObject volume is scanned in %d slices!\n", nslices);
@@ -873,7 +810,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
       for (k=0; k<n_img; k++)
 	{
 	  /* reading */
-	   read_image (interp, img_name[k], img[k]);
+	  read_image (interp, img_name[k], img[k]);
 
 	  if (display) {
 	    img_handle = Tk_FindPhoto( interp, "temp");
@@ -884,8 +821,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 	  }
 	}
 
-
-      if (hp_flag) {
+      if (hp_flag) {//1>2
 	pre_processing_c (clientData, interp, argc, argv);
 	puts("\nHighpass switched on\n");
       } else { puts("\nHighpass switched off\n"); }
@@ -895,7 +831,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
       correspondences_proc_c (clientData, interp, argc, argv);
       if (display) {Tcl_Eval(interp, "update idletasks");}
 	  if(n_img>1){
-		determination_proc_c (clientData, interp, argc, argv);}
+		  determination_proc_c (clientData, interp, argc, argv);}
 
 
       /* delete unneeded files */
@@ -911,6 +847,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 
   return TCL_OK;
 }
+
 
 int restore_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
@@ -984,6 +921,7 @@ int restore_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const c
 	return TCL_OK;
 }
 
+
 int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
   int i, j, sel, i_img, k, n, sup,dummy,multi,planes;
@@ -993,7 +931,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   coord_2d    	apfig1[11][11];	/* regular grid for ap figures */
   coord_2d     	apfig2[11][11];	/* ap figures */
   coord_3d     	fix4[4];       	/* object points for preorientation */
-  coord_2d     	crd0[4][12];    	/* image points for preorientation */
+  coord_2d     	crd0[4][4];    	/* image points for preorientation */
   char	       	multi_filename[10][256],filename[256], val[256];
   const char *valp;
 
@@ -1031,27 +969,6 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   else{
       examine=0;
   }
-
-  /*Oswald Juni 2008 accept pairs-------------------------------*/
-
-  fp1 = fopen_r ("parameters/cal_ori.par");
-      fscanf (fp1,"%s\n", fixp_name);
-      for (i=0; i<4; i++)
-	{
-	  fscanf (fp1, "%s\n", img_name[i]);
-	  fscanf (fp1, "%s\n", img_ori0[i]);
-	}
-      fscanf (fpp, "%d\n", &tiff_flag);
-	  fscanf (fpp, "%d\n", &pair_flag);
-  fclose (fp1);
-  if (pair_flag==1){
-      int OSWALDDUMMY=1;
-  }
-  else{
-      int OSWALDDUMMY=0;
-  }
-
-
   ///////////////////////////////////////////////////////////////////////////////
 
   switch (sel)
@@ -1065,7 +982,6 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	  fscanf (fp1, "%s\n", img_ori0[i]);
 	}
       fscanf (fpp, "%d\n", &tiff_flag);
-	  fscanf (fpp, "%d\n", &pair_flag);
       fscanf (fp1, "%d\n", &chfield);
       fclose (fp1);
 
@@ -1294,7 +1210,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	    }
 
 	  /* raw orientation with 4 points */
-	  raw_orient_v3 (Ex[i], I[i], G[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],&G[i],0); //Beat Nov 2008
+	  raw_orient_v3 (Ex[i], I[i], G[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],&G[i],0);
 	  sprintf (filename, "raw%d.ori", i);
 	  write_ori (Ex[i], I[i], G[i], filename);
 	 
@@ -1379,6 +1295,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	  strcat (safety_addpar[2], ".addpar");
 	  strcpy (safety_addpar[3], "safety_3");
 	  strcat (safety_addpar[3], ".addpar");
+	  
 
       for (i_img=0; i_img<n_img; i_img++)
 	{
@@ -1542,8 +1459,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 
 
 	  /* save orientation and additional parameters */
-	  write_ori (Ex[i_img], I[i_img], G[i_img], img_ori[i_img]);
-	  fp1 = fopen( img_ori[i_img], "r" );
+      fp1 = fopen( img_ori[i_img], "r" );
       if(fp1 != NULL) {
          fclose(fp1);
          read_ori (&sEx[i_img], &sI[i_img], &sG[i_img], img_ori[i_img]);
@@ -1758,9 +1674,6 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	  just_plot (interp, Ex[i], I[i], G[i], ap[i], mmp,
 			imx,imy, pix_x,pix_y,
 			nfix, fix,  chfield, i);
-
-	  /*write artifical images*/
-	  
 
 	}
     
@@ -2007,7 +1920,6 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
       break;
 
     }
-	
   return TCL_OK;
 }
 

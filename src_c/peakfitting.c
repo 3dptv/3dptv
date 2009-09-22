@@ -29,9 +29,8 @@ int	       	nr;		       	/* image number for display */
 /*  labeling with discontinuity,
 	reunification with distance and profile criteria  */
 {
-
   int	       	n_peaks=0;	      /* # of peaks detected */
-  int     	n_wait;	      	      /* size of waitlist for connectivity */
+  int     		n_wait;	      	      /* size of waitlist for connectivity */
   int	       	x8[8], y8[8];  	      /* neighbours for connectivity */
   int	       	p2;	       	      /* considered point number */
   int	      	sumg_min, gvthres[4], thres, disco, nxmin,nxmax, nymin,nymax, nnmin, nnmax;
@@ -52,6 +51,7 @@ int	       	nr;		       	/* image number for display */
   peak	       	*peaks, *ptr_peak;    /* detected peaks */
   targpix       waitlist[2048];     /* pix to be tested for connectivity */
   FILE   	*fpp;	       	/* parameter file pointer */
+  
 
   /* read image name, threshold and shape limits from parameter file */
 
@@ -67,7 +67,7 @@ int	       	nr;		       	/* image number for display */
   fscanf (fpp, "%d  %d", &nxmin, &nxmax);	/* pixels per target,  	*/
   fscanf (fpp, "%d  %d", &nymin, &nymax);	/* abs, in x, in y    	*/
   fscanf (fpp, "%d", &sumg_min);		       	/* min. sumg */
-  fscanf (fpp, "%d", &cr_sz);		       	/* size of crosses */
+  fscanf (fpp, "%d", &cr_sz);				/* size of crosses */
   fclose (fpp);
 
   /* give thres value refering to image number */
@@ -83,7 +83,6 @@ int	       	nr;		       	/* image number for display */
   peaks = (peak *) malloc (4*nmax * sizeof(peak));
   ptr_peak = peaks;
 
-/*------------------------------------------------------------------------*/
 
   /*------------------------------------------------------------------------*/
 
@@ -93,7 +92,7 @@ int	       	nr;		       	/* image number for display */
 
   puts("Searching local maxima, connectivity analysis, peak factor 2 set");
 
-  for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)
+  for (i=ymin; i<ymax-1; i++)  for (j=xmin; j<xmax; j++)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
     {
       n = i*imx + j;
 
@@ -161,7 +160,7 @@ int	       	nr;		       	/* image number for display */
 		  /* conditions for threshold, discontinuity, image borders */
 		  /* and peak fitting */
 		  if (   (gv > thres)
-			 && (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax)
+			 && (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax-1)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
 			 && (gv <= gvref+disco)
 			 && (gvref + disco >= *(img + imx*(yn-1) + xn))
 			 && (gvref + disco >= *(img + imx*(yn+1) + xn))

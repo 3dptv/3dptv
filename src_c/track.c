@@ -31,7 +31,6 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
   int intx0, intx1, inty0, inty1;
   int intx2, inty2,intx3, inty3;
   int quali=0;
-  int shaking;
   double x1[4], y1[4], x2[4], y2[4], angle, acc, angle0, acc0, lmax, dl;
   double xr[4], xl[4], yd[4], yu[4], angle1, acc1;
   double X1, Y1, Z1, X0, Y0, Z0, X2, Y2, Z2;
@@ -43,26 +42,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
   foundpix *w, *wn, p16[16];
 
   display = atoi(argv[1]);
-  shaking=0;
-  if (display==2){
-     display=0;
-	 shaking=1;
-  }
-
-  
 
   Tcl_Eval(interp, ".text delete 2");
   Tcl_Eval(interp, ".text insert 2 \"Track established correspondences\"");
 
   /* read data */
   readseqtrackcrit ();
-
-  if(shaking){
-     fpp = fopen_r ("parameters/shaking.par");     
-     fscanf (fpp,"%d\n", &seq_first);
-     fscanf (fpp,"%d\n", &seq_last);
-     fclose (fpp);
-  }
 
   /*Alloc space, if checkflag for mega, c4, t4 is zero */
   if (!trackallocflag)
@@ -174,19 +159,20 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
 	      zaehler1 = candsearch_in_pix (t4[2][j], nt4[2][j], x1[j], y1[j],
 					    xl[j], xr[j], yu[j], yd[j], &philf[j]);
 
-	      for(k=0; k<4; k++)//Beat 17. März 2008 for(k=0; k<4; k++)
+	      for(k=0; k<4; k++)
 		{
-          //Beat 17. März 2008 for(k=0; k<4; k++)
-		  /*p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr; 
-		  if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-		  if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;*/
-			if(philf[j][k] == -999){
-                p16[j*4+k].ftnr=-1;
-			}
-			if(philf[j][k] != -999){
-                p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr; 
+		  //p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
+		  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+		  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
+			if(philf[j][k] == -999) {
+				p16[j*4+k].ftnr=-1;
+			}else{
                 p16[j*4+k].whichcam[j]=1;
+				p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
 			}
+		  
+		  
+		  
 		}
 	    }
 
@@ -251,19 +237,21 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
 
 		  for(k=0; k<4; k++)
 		    {
-		      if(1<2)//Beat 17. März 2008 if( t4[3][j][philf[j][k]].tnr != -1)
-			{
-			  /*p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; //Beat 17. März 2008
-			  if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-			  if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;*/
-				if(philf[j][k] == -999){
-                   p16[j*4+k].ftnr=-1;
-			    }
-			    if(philf[j][k] != -999){
-                   p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; 
-                   p16[j*4+k].whichcam[j]=1;
-			    }
-			}
+		      //if( t4[3][j][philf[j][k]].tnr != -1)  //Beat 090325
+			//{
+				if (philf[j][k] == -999){
+                     p16[j*4+k].ftnr=-1;
+				}else{
+					if( t4[3][j][philf[j][k]].tnr != -1){
+                        p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr;
+                        p16[j*4+k].whichcam[j]=1;
+					}
+				}
+			  //p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; //Beat 090325
+			  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+			  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
+			
+			//}
 		    }
 		}
 
@@ -832,16 +820,15 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 		for(k=0; k<4; k++)
 		  {
 		    if( zaehler1>0) {
-		      /*p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr; //Beat 17. März 2008
-		      if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-		      if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;*/
-			  if(philf[j][k] == -999){
-                p16[j*4+k].ftnr=-1;
-			  }
-			  if(philf[j][k] != -999){
-                p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr; 
-                p16[j*4+k].whichcam[j]=1;
-			  }
+		      if (philf[j][k] == -999){
+                     p16[j*4+k].ftnr=-1;
+				}else{
+                     p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr;
+                     p16[j*4+k].whichcam[j]=1;
+				}
+			  //p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; //Beat 090325
+			  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+			  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
 		    }
 		  }
 	      }

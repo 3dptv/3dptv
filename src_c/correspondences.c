@@ -75,9 +75,11 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
   /* -------------if only one cam and 2D--------- */ //by Beat Lüthi June 2007
   if(n_img==1){
-	  
-	  fp1 = fopen (res_name, "w");
-	  fprintf (fp1, "%4d\n", num[0]);
+	  if(res_name[0]==0){
+          sprintf (res_name, "rt_is");
+	  }
+	 fp1 = fopen (res_name, "w");
+		fprintf (fp1, "%4d\n", num[0]);
 	  for (i=0; i<num[0]; i++){
           o = epi_mm_2D (geo[0][i].x,geo[0][i].y,
 		      Ex[0], I[0],  G[0], mmp,
@@ -366,7 +368,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
      puts (buf);
   }
   else{
-     sprintf (buf, "%d consistent quadruplets, %d triplets and %d unambigous pairs",
+     sprintf (buf, "%d consistent quadruplets(red), %d triplets(green) and %d unambigous pairs",
 	      match4, match3, match2);
      puts (buf);
   }
