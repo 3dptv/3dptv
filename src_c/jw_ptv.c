@@ -1874,6 +1874,13 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 				fscanf(FILEIN_ptv, "%d %d %lf %lf %lf\n",
 	            &prev, &next, &dummy_float, &dummy_float, &dummy_float);
 		  }
+		  if (n_img==2){ // Alex's patch. 24.09.09. Working on Wesleyan data of 2 cameras only
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1]);
+				fscanf(FILEIN_ptv, "%d %d %lf %lf %lf\n",
+	            &prev, &next, &dummy_float, &dummy_float, &dummy_float);
+		  }
           ////////////auch pix lesen according a0,a1,a2,a3!!! 
 		  //fix[i].x>-25 && 
 		  //fix[i].x>-25 && 
