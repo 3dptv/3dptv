@@ -2,6 +2,7 @@
 package require tooltip
 
 lappend auto_path [file dirname [info script]]
+lappend auto_path "."
 # for debugging:
 # puts $auto_path
 
