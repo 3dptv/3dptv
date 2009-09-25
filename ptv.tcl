@@ -1,14 +1,10 @@
 
 package require tooltip
 
+lappend auto_path [file dirname [info script]]
+# for debugging:
+# puts $auto_path
 
-#make sure to use only forward slashes
-#set auto_path "D:/technical/codes/IfU-IPG-PTV/version_0_0 . $auto_path"
-
-#set auto_path "D:/technical/codes/IfU-IPG-PTV . $auto_path"
-# set auto_path "D:/liberzon/PTV/ptv-svn/trunk . $auto_path"
-set setdir [pwd]
-set auto_path [linsert $auto_path 0 $setdir]
 
  
 wm title . "Measurement of Particles in flows"
