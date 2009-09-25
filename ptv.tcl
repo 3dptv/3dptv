@@ -8,7 +8,7 @@ package require tooltip
 #set auto_path "D:/technical/codes/IfU-IPG-PTV . $auto_path"
 # set auto_path "D:/liberzon/PTV/ptv-svn/trunk . $auto_path"
 set setdir [pwd]
-set auto_path $setdir "." $auto_path
+set auto_path [linsert $auto_path 0 $setdir]
 
  
 wm title . "Measurement of Particles in flows"
