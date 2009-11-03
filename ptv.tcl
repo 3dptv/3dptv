@@ -6,7 +6,6 @@ lappend auto_path "."
 # for debugging:
 # puts $auto_path
 
-
  
 wm title . "Measurement of Particles in flows"
 wm iconname . "PTV"

@@ -25,6 +25,7 @@ Routines contained:    	many ...
 
 int	n_img;	       		      	/* no of images */
 int	hp_flag=0;           	      	/* flag for highpass */
+int	allCam_flag=0;           	      	/* flag for using all cams for points */
 int	tiff_flag=0;           	      	/* flag for tiff header */
 int pair_flag=0;					/*flag for accept pair */
 int	chfield;       		       	/* flag for field mode */
@@ -117,7 +118,7 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
   int  i;
   const char *valp;
 
-  puts ("\nMultimedia Particle Positioning and Tracking (Scanning Mode)\n");
+  puts ("\n Multimedia Particle Positioning and Tracking Software \n");
 
   valp = Tcl_GetVar(interp, "examine",  TCL_GLOBAL_ONLY);
   examine = atoi (valp);
@@ -135,6 +136,7 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
       fscanf (fpp, "%s\n", img_cal[i]);
     }
   fscanf (fpp, "%d\n", &hp_flag);
+  fscanf (fpp, "%d\n", &allCam_flag);
   fscanf (fpp, "%d\n", &tiff_flag);
   fscanf (fpp, "%d\n", &imx);
   fscanf (fpp, "%d\n", &imy);
@@ -254,6 +256,7 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
       fscanf (fpp, "%s\n", img_cal[i]);
     }
   fscanf (fpp, "%d\n", &hp_flag);
+  fscanf (fpp, "%d\n", &allCam_flag);  
   fscanf (fpp, "%d\n", &tiff_flag);
   fscanf (fpp, "%d\n", &imx);
   fscanf (fpp, "%d\n", &imy);

@@ -16,6 +16,7 @@ pack $w.title -pady 3
 # Imagenames ###############################################
 
 frame $w.ncam
+frame $w.allCam
 frame $w.fname
 frame $w.fname.img
 frame $w.fname.cal
@@ -25,12 +26,20 @@ frame $w.fname.cal.1
 label $w.fname.img.1.l
 label $w.fname.cal.1.l
 label $w.ncam.label
+label $w.allCam.label
 
 
 $w.ncam.label config -text "Number of cameras:   "
 entry $w.ncam.entry -width 2 -relief sunken -bd 2 -textvariable mp(ncam)
 pack $w.ncam.label $w.ncam.entry -side left
 pack $w.ncam -pady 2
+
+
+frame $w.pi
+checkbutton $w.pi.highpass -text "accept only points seen from all cameras?   " -variable mp(allCam)
+pack $w.pi.highpass  -side left
+pack $w.pi -pady 3
+
 $w.fname.img.1.l config -text "Name of 1. image:"
 entry $w.fname.img.1.e -width 25 -relief sunken -bd 2 -textvariable mp(fimg1)
 $w.fname.cal.1.l config -text " Calibration data for 1. camera: "

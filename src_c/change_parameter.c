@@ -48,6 +48,8 @@ int parameter_panel_init(Tcl_Interp* interp)
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "highpass", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
+	Tcl_SetVar2(interp, "mp", "allCam", val, TCL_GLOBAL_ONLY);
+	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "tiff", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "imx", val, TCL_GLOBAL_ONLY);
@@ -424,6 +426,8 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	valp = Tcl_GetVar2(interp, "mp", "camcal4",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "highpass",  TCL_GLOBAL_ONLY);
+	fprintf (fp1, "%s\n", valp);
+	valp = Tcl_GetVar2(interp, "mp", "allCam",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "tiff",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
