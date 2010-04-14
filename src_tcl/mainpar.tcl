@@ -327,18 +327,18 @@ $w.illu.xmax.lzmax config -text "   Zmax: "
 entry $w.illu.xmax.ezmax -width 6 -relief sunken -bd 2 \
     -textvariable mp(xmaxzmax)
 $w.illu.crit.lt config -text "Criteria for correspondences" -font {Helvetica 13 bold}
-$w.illu.crit.lnx config -text "             min corr for ratio nx: "
+$w.illu.crit.lnx config -text       "                           min ratio nx: "
 entry $w.illu.crit.enx -width 6 -relief sunken -bd 2 -textvariable mp(nx)
-$w.illu.crit.lny config -text "                           min corr for ratio ny: "
+$w.illu.crit.lny config -text       "                                      min ratio ny: "
 entry $w.illu.crit.eny -width 6 -relief sunken -bd 2 -textvariable mp(ny)
-$w.illu.crit.lnpix config -text "          min corr for ratio npix: "
+$w.illu.crit.lnpix config -text   "                         min ratio npix: "
 entry $w.illu.crit.enpix -width 6 -relief sunken -bd 2 -textvariable mp(npix)
-$w.illu.crit.lsumgv config -text "                                         sum of gv: "
+$w.illu.crit.lsumgv config -text "                         min ratio grayvalues: "
 entry $w.illu.crit.esumgv -width 6 -relief sunken -bd 2 -textvariable mp(sgv)
-$w.illu.crit.lminwcorr config -text "min for weighted correlation: "
+$w.illu.crit.lminwcorr config -text "min for we. corr (depreciated): "
 entry $w.illu.crit.eminwcorr -width 6 -relief sunken -bd 2 \
     -textvariable mp(mincorr)
-$w.illu.crit.ltolepi config -text "      Tolerance to epipolar band (mm): "
+$w.illu.crit.ltolepi config -text "Tol. to epipolar (frac. of particle size): "
 entry $w.illu.crit.etolepi -width 6 -relief sunken -bd 2 \
     -textvariable mp(tolepi)
 

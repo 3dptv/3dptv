@@ -275,7 +275,7 @@ int	       	nr;	       	/* image number for ap etc. */
   int dummy;
   int	       	j0, dj, p2;
   double      	m, b, d, temp, qn, qnx, qny, qsumg, corr;
-  double       	xmin, xmax, ymin, ymax;
+  double       	xmin, xmax, ymin, ymax,particle_size;
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
@@ -324,9 +324,10 @@ int	       	nr;	       	/* image number for ap etc. */
 	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-
-		  if ( d < eps )
-		    {
+          
+		  /* Beat: modified in April 2010 to allow for better treatment of 
+		  //different sized traced particles, in particular colloids and tracers
+		  if ( d < eps ){
 		      p2 = crd[j].pnr;
 		      if (n  < pix[p2].n)      	qn  = (double) n/pix[p2].n;
 		      else		       	qn  = (double) pix[p2].n/n;
@@ -335,29 +336,64 @@ int	       	nr;	       	/* image number for ap etc. */
 		      if (ny < pix[p2].ny)	qny = (double) ny/pix[p2].ny;
 		      else		       	qny = (double) pix[p2].ny/ny;
 		      if (sumg < pix[p2].sumg)
-			qsumg = (double) sumg/pix[p2].sumg;
+			        qsumg = (double) sumg/pix[p2].sumg;
 		      else	qsumg = (double) pix[p2].sumg/sumg;
 
-		      /* empirical correlation coefficient
-			 from shape and brightness parameters */
+		      // empirical correlation coefficient
+			  // from shape and brightness parameters 
 		      corr = (4*qsumg + 2*qn + qnx + qny);
-		      /* create a tendency to prefer those matches
-			 with brighter targets */
+		      // create a tendency to prefer those matches
+			  // with brighter targets 
 		      corr *= ((double) (sumg + pix[p2].sumg));
 
-		      if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg)
-			{
-				if ( *count < maxcand) {
-			  cand[*count].pnr = j;
-			  cand[*count].tol = d;
-			  cand[*count].corr = corr;
-			  (*count)++;
-		  } else {
-			  dummy=(int)maxcand;
-			  printf("in find_candidate_plus: count > maxcand\n");}
-			}
-		    }
-		}
+		      if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg){
+				 if ( *count < maxcand) {
+			        cand[*count].pnr = j;
+			        cand[*count].tol = d;
+			        cand[*count].corr = corr;
+			        (*count)++;
+		         } else {
+			        dummy=(int)maxcand;
+			        printf("in find_candidate_plus: count > maxcand\n");}
+			     }
+		      }
+		   }
+           */
+           /////here is new Beat version of April 2010
+		   if (nx>ny) particle_size=nx;
+		   else       particle_size=ny;
+		   if ( d < eps*0.5*(pix_x+pix_y)*particle_size ){
+		      p2 = crd[j].pnr;
+		      if (n  < pix[p2].n)      	qn  = (double) n/pix[p2].n;
+		      else		       	qn  = (double) pix[p2].n/n;
+		      if (nx < pix[p2].nx)	qnx = (double) nx/pix[p2].nx;
+		      else		       	qnx = (double) pix[p2].nx/nx;
+		      if (ny < pix[p2].ny)	qny = (double) ny/pix[p2].ny;
+		      else		       	qny = (double) pix[p2].ny/ny;
+		      if (sumg < pix[p2].sumg)
+			        qsumg = (double) sumg/pix[p2].sumg;
+		      else	qsumg = (double) pix[p2].sumg/sumg;
+
+		      // empirical correlation coefficient
+			  // from shape and brightness parameters 
+		      corr = (4*qsumg + 2*qn + qnx + qny);
+		      // create a tendency to prefer those matches
+			  // with brighter targets 
+		      corr *= ((double) (sumg + pix[p2].sumg));
+
+		      if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg){
+				 if ( *count < maxcand) {
+			        cand[*count].pnr = j;
+			        cand[*count].tol = d;
+			        cand[*count].corr = corr;
+			        (*count)++;
+		         } else {
+			        dummy=(int)maxcand;
+			        printf("in find_candidate_plus: count > maxcand\n");}
+			     }
+		      }
+		   }
+		   ///////end of new Beat version
 	    }
 	}
     }
