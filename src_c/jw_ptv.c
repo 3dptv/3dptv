@@ -1,17 +1,17 @@
 /****************************************************************************
 *****************************************************************************
 
-Author/Copyright:      	Hans-Gerd Maas / Jochen Willneff
+Author/Copyright:   Hans-Gerd Maas / Jochen Willneff
 
 Address:	      	Institute of Geodesy and Photogrammetry
-		       	ETH - Hoenggerberg
-		       	CH - 8093 Zurich
+		       	    ETH - Hoenggerberg
+		       	    CH - 8093 Zurich
 
-Creation Date:	       	took a longer time ...
+Creation Date:	    took a longer time ...
 
-Description:	       	target detection, correspondences and
-		       	positioning with tclTk display
-		       	-> 4 camera version
+Description:	    target detection, correspondences and
+		       	    positioning with tclTk display
+		       	    -> 4 camera version
 
 Routines contained:    	many ...
 
