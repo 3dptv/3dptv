@@ -437,11 +437,13 @@ if (mask==2)//Beat April 090402 was ==0
 }
 
 
-int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
+int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv) 
 {
-  int	       	i, i_img;
+  int	       	i, i_img, j;
   int	       	xmin, pft_version=3;
   char val[256];
+  char filename[256];
+  FILE	*FILEIN;
 
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -514,8 +516,32 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 		    "parameters/targ_rec.par",
 		    xmin, imx, 1, imy, pix[i_img], i_img, &num[i_img]);
 	  break;
-	}
+	
+	  case 4: /* new option for external image processing routines */
+		  /* added by Alex, 19.04.10 */
+		  /* this works here only for the pre-processing stage, see img_name[i_img] is not from a sequence */
 
+		  sprintf (filename, "%s%s", img_name[i_img],"_targets");
+			/* read targets of each camera */
+		  nt4[3][i_img]=0;
+
+			FILEIN= fopen (filename, "r");
+			if (! FILEIN) printf("Can't open ascii file: %s\n", filename);
+
+      fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
+      for (j=0; j<nt4[3][i_img]; j++)
+	{
+	  fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
+		  &pix[i_img][j].pnr, &pix[i_img][j].x,
+		  &pix[i_img][j].y, &pix[i_img][j].n ,
+		  &pix[i_img][j].nx ,&pix[i_img][j].ny,
+		  &pix[i_img][j].sumg, &pix[i_img][j].tnr);
+	}
+      fclose (FILEIN);
+
+	  num[i_img] = nt4[3][i_img];
+		  break;
+}
       sprintf (buf,"%d: %d,  ", i_img+1, num[i_img]);
       strcat(val, buf);
 
@@ -782,7 +808,7 @@ X /= n_img; Y /= n_img;
 
 int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int     i, j, ok, k, nslices=19, slicepos=0;
+  int     i, j, ok, k, nslices=19, slicepos=0, pft_version = 3;
   char    seq_ch[128], seq_name[4][128];
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -871,6 +897,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
       puts (buf);
 
       /* calling function for each sequence-n-tupel */
+
       /* read and display original images */
 
       for (k=0; k<n_img; k++)
@@ -887,14 +914,53 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 	  }
 	}
 
-
-      if (hp_flag) {
+   /*  read pft version  */
+	  /* added by Alex for external detection procedure, 19.4.10 */
+  fpp = fopen ("parameters/pft_version", "r");
+  if (fpp)
+    {
+      fscanf (fpp, "%d\n", &pft_version);
+      fclose (fpp);
+    }
+  
+  if (hp_flag) {
 	pre_processing_c (clientData, interp, argc, argv);
 	puts("\nHighpass switched on\n");
       } else { puts("\nHighpass switched off\n"); }
       if (display) {Tcl_Eval(interp, "update idletasks");}
-      detection_proc_c (clientData, interp, argc, argv);
-      if (display) {Tcl_Eval(interp, "update idletasks");}
+	  /**************************************************************************************/
+	  /* pft_version = 4 means external detection, Alex, 19.4.10 */
+
+	  if ( pft_version == 4) { 
+		for (k=0; k<n_img; k++) {
+			read_targets(k,i,&num[k]);
+      // sprintf (buf,"%d: %d,  ", k+1, num[k]);
+      // strcat(val, buf);
+      /* proper sort of targets in y-direction for later binary search */
+      /* and for dimitris' tracking */
+       quicksort_target_y (pix[k], num[k]);
+      /* reorganize target numbers */
+       for (j=0; j<num[k]; j++)  pix[k][j].pnr = j;
+	  }
+		/*
+    sprintf (buf, "Number of detected particles per image");
+	Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
+	Tcl_Eval(interp, ".text delete 2");
+	Tcl_Eval(interp, ".text insert 2 $tbuf");
+
+	Tcl_SetVar(interp, "tbuf", val, TCL_GLOBAL_ONLY);
+	Tcl_Eval(interp, ".text delete 3");
+	Tcl_Eval(interp, ".text insert 3 $tbuf");
+
+	printf("%s\n", val);
+	return TCL_OK;
+	*/
+	  } 
+	  /***************************************************************************************/
+	  else {
+		detection_proc_c (clientData, interp, argc, argv); // added i to the detection_proc_c to get 'filenumber' for external API, Alex, 19.04.10
+	  }
+	  if (display) {Tcl_Eval(interp, "update idletasks");}
       correspondences_proc_c (clientData, interp, argc, argv);
       if (display) {Tcl_Eval(interp, "update idletasks");}
 	  if(n_img>1){

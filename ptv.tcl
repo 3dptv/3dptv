@@ -44,8 +44,8 @@ tooltip::tooltip .mbar.start "Initiates all variables. Needs to be clicked first
 menubutton .mbar.pre -text "Pretracking" -relief raised \
     -underline 0 -menu .mbar.pre.menu
 
-tooltip::tooltip .mbar.pre "To get a first idea how and howmany 2d particles are detected and to see  
-howmany triplets and quadruplets are found for the given calibration and settings."
+tooltip::tooltip .mbar.pre "To get a first idea how and how many 2d particles are detected and to see  
+how many triplets and quadruplets are found for the given calibration and settings."
 
 button .mbar.3d -text "3D-Coordinates" -command "determination_cmd"
 

@@ -21,8 +21,7 @@ Routines contained:    	trackcorr_c
 void write_added();
 void write_addedback();
 
-int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
-		 int argc, const char** argv)
+int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
   char  val[256], buf[256];
   int i, j, h, k, mm, kk, step, okay=0, invol=0;

@@ -47,34 +47,6 @@ void correspondences_4 (Tcl_Interp* interp)
 
   /* ----------------------------------------------------------------------- */
 
-//Alex 30.11.09 trying to fix the bug
-  /*  read from main parameter file 
-  fpp = fopen_r ("parameters/ptv.par");
-
-  fscanf (fpp, "%d\n", &n_img);
-
-  for (i=0; i<n_img; i++) 
-    {
-      fscanf (fpp, "%s\n", img_name[i]);
-      fscanf (fpp, "%s\n", img_cal[i]);
-    }
-  fscanf (fpp, "%d\n", &hp_flag);
-  fscanf (fpp, "%d\n", &allCam_flag);
-  fscanf (fpp, "%d\n", &tiff_flag);
-  fscanf (fpp, "%d\n", &imx);
-  fscanf (fpp, "%d\n", &imy);
-  fscanf (fpp, "%lf\n", &pix_x);
-  fscanf (fpp, "%lf\n", &pix_y);
-  fscanf (fpp, "%d\n", &chfield);
-  fscanf (fpp, "%lf\n", &mmp.n1);
-  fscanf (fpp, "%lf\n", &mmp.n2[0]);
-  fscanf (fpp, "%lf\n", &mmp.n3);
-  fscanf (fpp, "%lf\n", &mmp.d[0]);
-  fclose (fpp);
-
-*/
-//////////////////////////////////////////////
-
 
 printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
