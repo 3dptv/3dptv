@@ -139,6 +139,38 @@ void read_ascii_data(int filenumber)
 }
 
 /**********************************************************************/
+/* Added by Alex, 19.04.10 to read _targets only, for the external API */
+void read_targets(int i_img, int filenumber,  int *num)
+{
+  FILE	*FILEIN;
+  /* char	filein[256]; */
+  int	i, j;
+  int   dumy;
+  char filein[256];
+ 
+
+	compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein);
+  /* read targets of each camera */
+      nt4[3][i_img]=0;
+
+      FILEIN= fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
+      fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
+      for (j=0; j<nt4[3][i_img]; j++)
+	{
+	  fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
+		  &pix[i_img][j].pnr,  &pix[i_img][j].x,
+		  &pix[i_img][j].y,    &pix[i_img][j].n ,
+		  &pix[i_img][j].nx,   &pix[i_img][j].ny,
+		  &pix[i_img][j].sumg, &pix[i_img][j].tnr);
+	}
+      fclose (FILEIN);
+
+	  *num = nt4[3][i_img];
+}
+
+/**********************************************************************/
 void write_ascii_data(int filenumber)
 {
   FILE	*FILEOUT;

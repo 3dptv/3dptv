@@ -207,7 +207,7 @@ int  candsearch_in_pix ();
 int  candsearch_in_pixrest ();
 int  corrtest();
 void predict();
-void readseqtrackcrit();
+void readseqtrackcrit ();
 void searchquader();
 void angle_acc();
 void sortwhatfound();
@@ -240,5 +240,6 @@ int  seq_track_proc_c();
 
 void read_ascii_datanew();
 void write_ascii_datanew();
+void read_targets();
 
 
