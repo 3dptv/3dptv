@@ -540,6 +540,12 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
       fclose (FILEIN);
 
 	  num[i_img] = nt4[3][i_img];
+
+      if (display)
+		  for (j=0; j<num[i_img]; j++){
+	           drawcross (interp, (int) pix[i_img][j].x, (int) pix[i_img][j].y,cr_sz, i_img, "blue");
+		  }
+
 		  break;
 }
       sprintf (buf,"%d: %d,  ", i_img+1, num[i_img]);
