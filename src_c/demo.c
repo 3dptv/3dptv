@@ -41,6 +41,11 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
       fscanf (fpp, "%d\n", &pft_version);
       fclose (fpp);
   }
+  else{
+	  fpp = fopen ("parameters/pft_version", "w");
+      fprintf(fpp,"%d\n", 3);
+	  fclose(fpp);
+  }
 
   /* load and display images */
   for (i_seq=seq_first; i_seq<=seq_last; i_seq++){

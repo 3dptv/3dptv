@@ -125,6 +125,15 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 
   ro = 200/M_PI;
 
+  fpp = fopen ("parameters/pft_version", "r");
+  if (fpp){
+  }
+  else{
+	  fpp = fopen ("parameters/pft_version", "w");
+      fprintf(fpp,"%d\n", 3);
+	  fclose(fpp);
+  }
+
   /*  read from main parameter file  */
   fpp = fopen_r ("parameters/ptv.par");
 
@@ -473,11 +482,15 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 
   /*  read pft version  */
   fpp = fopen ("parameters/pft_version", "r");
-  if (fpp)
-    {
+  if (fpp){
       fscanf (fpp, "%d\n", &pft_version);
       fclose (fpp);
-    }
+  }
+  else{
+	  fpp = fopen ("parameters/pft_version", "w");
+      fprintf(fpp,"%d\n", 3);
+	  fclose(fpp);
+  }
 
 
   /* reset zoom values */
