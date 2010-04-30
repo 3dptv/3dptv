@@ -39,7 +39,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
   fpp = fopen ("parameters/pft_version", "r");
   if (fpp){
       fscanf (fpp, "%d\n", &pft_version);
-	  pft_version=pft_version+1;
+	  pft_version=pft_version+3;
       fclose (fpp);
   }
   else{
