@@ -134,6 +134,8 @@ pack $w.refrac -pady 2
 # Parameters for particle recognition ##################
 
 
+
+
 frame $w.particle
 frame $w.partmax
 frame $w.partmin
@@ -168,6 +170,14 @@ label $w.m.partcross.l
 
 $w.part.l config -text "Parameters for particle recognition" -font {Helvetica 13 bold}
 
+#---------------------------read from target files-----------------------------------#
+
+frame $w.target
+checkbutton $w.target.button -text "use existing _target files?" -variable mp(target)
+
+
+#---------------------------end read from target files-------------------------------#
+
 $w.partgv.l config -text "Greyvalue threshold,"
 $w.partgv.l1 config -text " 1. Img:"
 entry $w.partgv.e1 -width 5 -relief sunken -bd 2 -textvariable mp(partgv1)
@@ -195,6 +205,8 @@ entry $w.pmaxnpy.e -width 5 -relief sunken -bd 2 -textvariable mp(pmaxnpixy)
 
 pack $w.part.l -pady 5
 pack $w.part -in $w.particle
+
+
 pack $w.partgv.l $w.partgv.l1 $w.partgv.e1 $w.partgv.l2 $w.partgv.e2 $w.partgv.l3 \
     $w.partgv.e3  $w.partgv.l4 $w.partgv.e4  -side left
 pack $w.partgv  -pady 3 -side top -in $w.particle
@@ -218,6 +230,11 @@ entry $w.m.partcross.e -width 5 -relief sunken -bd 2 -textvariable mp(pcrossize)
 pack  $w.m.psumgv.l $w.m.psumgv.e $w.m.partdisc.l $w.m.partdisc.e $w.m.partcross.l $w.m.partcross.e -side left
 pack  $w.m.psumgv $w.m.partdisc $w.m.partcross  -side left -in $w.m
 pack $w.m -pady 4
+
+
+pack $w.target.button  -side left
+pack $w.target -pady 3
+
 
 
 #---------------------------Subtract Mask-----------------------------------#

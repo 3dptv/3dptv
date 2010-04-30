@@ -130,7 +130,7 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
   }
   else{
 	  fpp = fopen ("parameters/pft_version", "w");
-      fprintf(fpp,"%d\n", 3);
+      fprintf(fpp,"%d\n", 0);
 	  fclose(fpp);
   }
 
@@ -484,11 +484,12 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
   fpp = fopen ("parameters/pft_version", "r");
   if (fpp){
       fscanf (fpp, "%d\n", &pft_version);
+	  pft_version=pft_version+3;
       fclose (fpp);
   }
   else{
 	  fpp = fopen ("parameters/pft_version", "w");
-      fprintf(fpp,"%d\n", 3);
+      fprintf(fpp,"%d\n", 0);
 	  fclose(fpp);
   }
 
@@ -939,6 +940,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
   if (fpp)
     {
       fscanf (fpp, "%d\n", &pft_version);
+	  pft_version=pft_version+3;
       fclose (fpp);
     }
   
