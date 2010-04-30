@@ -525,23 +525,23 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 			/* read targets of each camera */
 		  nt4[3][i_img]=0;
 
-			FILEIN= fopen (filename, "r");
-			if (! FILEIN) printf("Can't open ascii file: %s\n", filename);
+		  FILEIN= fopen (filename, "r");
+		  if (! FILEIN) printf("Can't open ascii file: %s\n", filename);
 
-      fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
-      for (j=0; j<nt4[3][i_img]; j++)
-	{
-	  fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
-		  &pix[i_img][j].pnr, &pix[i_img][j].x,
-		  &pix[i_img][j].y, &pix[i_img][j].n ,
-		  &pix[i_img][j].nx ,&pix[i_img][j].ny,
-		  &pix[i_img][j].sumg, &pix[i_img][j].tnr);
-	}
-      fclose (FILEIN);
+          fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
+          for (j=0; j<nt4[3][i_img]; j++){
+	          fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
+		      &pix[i_img][j].pnr, &pix[i_img][j].x,
+		      &pix[i_img][j].y, &pix[i_img][j].n ,
+		      &pix[i_img][j].nx ,&pix[i_img][j].ny,
+		      &pix[i_img][j].sumg, &pix[i_img][j].tnr);
+	      }
+          fclose (FILEIN);
+		  num[i_img] = nt4[3][i_img];
 
-	  num[i_img] = nt4[3][i_img];
-
-      if (display)
+	      
+	      
+          if (display)
 		  for (j=0; j<num[i_img]; j++){
 	           drawcross (interp, (int) pix[i_img][j].x, (int) pix[i_img][j].y,cr_sz, i_img, "blue");
 		  }
