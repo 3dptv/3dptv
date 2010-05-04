@@ -89,7 +89,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	         for (j=0; j<num[nr]; j++){
 	             drawcross (interp, (int) pix[nr][j].x, (int) pix[nr][j].y,cr_sz, nr, "blue");
 	         }
-			 printf ("drawing %d 2d particels ", num[nr]);
+			 printf ("drawing %d 2d ", num[nr]);
 		 }
 
          sprintf (filename, "res/rt_is.%d", i_seq);
@@ -123,7 +123,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				 //}
 				 drawcross (interp, (int) pix[nr][j].x, (int) pix[nr][j].y,cr_sz, nr, "red");
 		     }
-			 printf ("and %d corresponding 3d positions\n", num_points);
+			 printf ("and %d corresponding 3d positions for frame %d\n", num_points,i_seq);
 		 }
   }	
 	  }
