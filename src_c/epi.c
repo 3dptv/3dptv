@@ -286,6 +286,9 @@ const char** argv;
       dumbbell=1;
   }
   if (dumbbell==0){
+	  /////here is new Beat version of April 2010
+	  if (nx>ny) particle_size=nx;
+	  else       particle_size=ny;
 	  tol_band_width=eps*0.5*(pix_x+pix_y)*particle_size;
   }
   else{
