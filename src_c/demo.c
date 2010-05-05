@@ -36,14 +36,14 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
   /* allocate memory */
   imgf = (unsigned char *) calloc (imgsize, 1);
 
-  fpp = fopen ("parameters/pft_version", "r");
+  fpp = fopen ("parameters/pft_version.par", "r");
   if (fpp){
       fscanf (fpp, "%d\n", &pft_version);
 	  pft_version=pft_version+3;
       fclose (fpp);
   }
   else{
-	  fpp = fopen ("parameters/pft_version", "w");
+	  fpp = fopen ("parameters/pft_version.par", "w");
       fprintf(fpp,"%d\n", 0);
 	  fclose(fpp);
   }

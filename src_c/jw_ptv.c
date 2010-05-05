@@ -126,11 +126,11 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 
   ro = 200/M_PI;
 
-  fpp = fopen ("parameters/pft_version", "r");
+  fpp = fopen ("parameters/pft_version.par", "r");
   if (fpp){
   }
   else{
-	  fpp = fopen ("parameters/pft_version", "w");
+	  fpp = fopen ("parameters/pft_version.par", "w");
       fprintf(fpp,"%d\n", 0);
 	  fclose(fpp);
   }
@@ -482,14 +482,14 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
   xmin=0;
 
   /*  read pft version  */
-  fpp = fopen ("parameters/pft_version", "r");
+  fpp = fopen ("parameters/pft_version.par", "r");
   if (fpp){
       fscanf (fpp, "%d\n", &pft_version);
 	  pft_version=pft_version+3;
       fclose (fpp);
   }
   else{
-	  fpp = fopen ("parameters/pft_version", "w");
+	  fpp = fopen ("parameters/pft_version.par", "w");
       fprintf(fpp,"%d\n", 0);
 	  fclose(fpp);
   }
@@ -1026,7 +1026,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 
    /*  read pft version  */
 	  /* added by Alex for external detection procedure, 19.4.10 */
-  fpp = fopen ("parameters/pft_version", "r");
+  fpp = fopen ("parameters/pft_version.par", "r");
   if (fpp)
     {
       fscanf (fpp, "%d\n", &pft_version);
@@ -2382,7 +2382,7 @@ else{
       Tcl_Eval(interp, ".text delete 1");
       Tcl_Eval(interp, ".text insert 1 \"Orientation from dummbbells \"");
       Tcl_Eval(interp, ".text delete 2");
-      Tcl_Eval(interp, ".text insert 2 \"...done, sigma0 for each image -> \"");
+      Tcl_Eval(interp, ".text insert 2 \"...failed \"");
       Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
       Tcl_Eval(interp, ".text insert 3 $tbuf");
 }

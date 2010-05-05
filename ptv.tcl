@@ -108,7 +108,7 @@ tooltip::tooltip .mbar.quit "It is good practice to quit from time to time to be
 menu .mbar.pre.menu
 .mbar.pre.menu add command -label "High Pass" -command pre_processing_cmd
 .mbar.pre.menu add command -label "Image Coord" -command "bindings0;detection_proc_cmd"
-.mbar.pre.menu add command -label "Correspondences" -command " bindings2;correspondences_cmd"
+.mbar.pre.menu add command -label "Correspondences" -command " bindings2;correspondences_cmd 0"
 
 menu .mbar.seq.menu
 .mbar.seq.menu add command -label "Sequence with display" -command "sequence_cmd 1"

@@ -108,7 +108,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	fclose (fp1);
 
 
-    fp1 = fopen_r ("parameters/pft_version");
+    fp1 = fopen_r ("parameters/pft_version.par");
     fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "target", val, TCL_GLOBAL_ONLY);
 	fclose (fp1);
@@ -496,7 +496,7 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 
 	fclose (fp1);
 
-	fp1 = fopen ("parameters/pft_version", "w");
+	fp1 = fopen ("parameters/pft_version.par", "w");
     valp = Tcl_GetVar2(interp, "mp", "target",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	fclose (fp1);
