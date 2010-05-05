@@ -58,6 +58,7 @@ double	ro;			      	        /* 200/pi */
 double	cn, cnx, cny, csumg, eps0, corrmin;	/* correspondences par */
 double 	rmsX, rmsY, rmsZ, mean_sigma0;		/* a priori rms */
 double  X_lay[2], Zmin_lay[2], Zmax_lay[2];	/* illu. layer data */
+double  db_scale;               /*dumbbell length, Beat Mai 2010*/  
 
 FILE	*fp1, *fp2, *fp3, *fp4, *fpp;
 
@@ -593,6 +594,7 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
   int	i, i_img;
   double x,y;
 
+
   puts ("\nTransformation to metric coordinates\n");
 
   /* rearrange point numbers after manual deletion of points */
@@ -634,7 +636,7 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
       mmp.lut = 1;
     }
 
-  correspondences_4 ( interp);
+  correspondences_4 ( interp,argv);
 
   /* --------------- */
   /* save pixel coords for tracking */
@@ -664,6 +666,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
   int  	p[4];
   double  x[4], y[4], X,Y,Z;
   double  Zlo = 1e20, Zhi = -1e20;
+  int dumbbell=0;
 
   puts ("Determinate");
 
@@ -807,6 +810,20 @@ X /= n_img; Y /= n_img;
 
   fclose (fp1);
 
+  //Beat Mai 2010: now we should open the file db_is.* again, check
+  //               if it has exactly two points, rescale them, write them again and close the file.
+  if (atoi(argv[1])==3){
+      dumbbell=1;
+  }
+  if (dumbbell==1){
+     fpp = fopen ("parameters/dumbbell.par", "r");
+     if (fpp){
+         fscanf (fpp, "%lf", &eps0);
+		 fscanf (fpp, "%lf", &db_scale);
+         fclose (fpp);
+     }
+  }
+
   rmsX = sqrt(rmsX/match); rmsY = sqrt(rmsY/match); rmsZ = sqrt(rmsZ/match);
   mean_sigma0 = sqrt (mean_sigma0/match);
 
@@ -835,6 +852,7 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
   double slice_step;
   double slicethickness;
   double zdim, z_cen_slice[19];
+  int dumbbell=0;
 
 
   fpp = fopen_r ("parameters/sequence.par");
@@ -845,7 +863,11 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
   fclose (fpp);
 
 
-  display = atoi(argv[1]);
+  display = atoi(argv[1]); 
+  //Beat Mai 2010 for dumbbell
+  if (atoi(argv[1])==3){
+      dumbbell=1;
+  }
 
   /* scanning ptv ************** */
 printf("\nObject volume is scanned in %d slices!\n", nslices);
@@ -865,6 +887,23 @@ printf("\nObject volume is scanned in %d slices!\n", nslices);
   fscanf (fpp, "%lf", &corrmin);
   fscanf (fpp, "%lf", &eps0);
   fclose (fpp);
+
+    /* read illuminated layer data */
+  if (dumbbell==1){
+     fpp = fopen ("parameters/dumbbell.par", "r");
+     if (fpp){
+         fscanf (fpp, "%lf", &eps0);
+         fclose (fpp);
+     }
+     else{
+         fpp = fopen ("parameters/dumbbell.par", "w");
+         fprintf(fpp,"%lf\n", 10.0);
+		 fprintf(fpp,"%lf\n", 50.0);
+	     fclose(fpp);
+		 eps0=10;
+     }
+  }
+
 
   mmp.nlay = 1;
 
@@ -909,9 +948,15 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 	  sprintf (img_hp_name[j], "%s%s_hp", seq_name[j], seq_ch);
 	}
 
-      if (chfield == 0)       sprintf (res_name, "res/rt_is.%s", seq_ch);
-      else            sprintf (res_name, "res/rt_is.%s_%1d", seq_ch, chfield);
-
+	  //Beat Mai 2010 for dumbbell
+	  if (dumbbell==0){
+         if (chfield == 0)       sprintf (res_name, "res/rt_is.%s", seq_ch);
+         else            sprintf (res_name, "res/rt_is.%s_%1d", seq_ch, chfield);
+	  }
+	  else{
+         if (chfield == 0)       sprintf (res_name, "res/db_is.%s", seq_ch);
+         else            sprintf (res_name, "res/db_is.%s_%1d", seq_ch, chfield);
+	  }
       sprintf (buf, "\nImages:");
       for (j=0; j<n_img; j++) sprintf (buf, "%s  %s", buf, img_name[j]);
       puts (buf);
@@ -981,6 +1026,7 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 	  else {
 		detection_proc_c (clientData, interp, argc, argv); // added i to the detection_proc_c to get 'filenumber' for external API, Alex, 19.04.10
 	  }
+
 	  if (display) {Tcl_Eval(interp, "update idletasks");}
       correspondences_proc_c (clientData, interp, argc, argv);
       if (display) {Tcl_Eval(interp, "update idletasks");}

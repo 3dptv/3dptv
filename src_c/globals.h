@@ -35,6 +35,7 @@ extern	double 	pi, ro;				/* pi, ro */
 extern	double 	cn, cnx, cny, csumg, eps0, corrmin;	 /* correspond. par */
 extern	double 	rmsX, rmsY, rmsZ, mean_sigma0;		 /* a priori rms */
 extern	double  X_lay[],   Zmin_lay[],   Zmax_lay[];         /* illu. layer current slice */
+extern  double  db_scale;           /*dumbbell length, Beat Mai 2010*/ 
 
 extern	FILE   	*fp1, *fp2, *fp3, *fp4, *fpp;	/* file pointers */
 

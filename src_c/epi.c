@@ -258,7 +258,7 @@ candidate	cand[];
 
 
 void find_candidate_plus (crd, pix, num, xa,ya,xb,yb, eps, n, nx, ny, sumg,
-						  cand, count, nr)
+						  cand, count, nr,argv)
 
 /*  binarized search in a x-sorted coord-set, exploits shape information  */
 
@@ -269,6 +269,8 @@ double		xa, ya, xb, yb, eps;
 int    		n, nx, ny, sumg;
 candidate	cand[];
 int	       	nr;	       	/* image number for ap etc. */
+const char** argv;
+
 
 {
   register int	j;
@@ -276,6 +278,19 @@ int	       	nr;	       	/* image number for ap etc. */
   int	       	j0, dj, p2;
   double      	m, b, d, temp, qn, qnx, qny, qsumg, corr;
   double       	xmin, xmax, ymin, ymax,particle_size;
+  int dumbbell=0;
+  double tol_band_width;
+  
+  //Beat Mai 2010 for dumbbell
+  if (atoi(argv[1])==3){
+      dumbbell=1;
+  }
+  if (dumbbell==0){
+	  tol_band_width=eps*0.5*(pix_x+pix_y)*particle_size;
+  }
+  else{
+      tol_band_width=eps;
+  }
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
@@ -332,7 +347,7 @@ int	       	nr;	       	/* image number for ap etc. */
           /////here is new Beat version of April 2010
 		   if (nx>ny) particle_size=nx;
 		   else       particle_size=ny;
-		   if ( d < eps*0.5*(pix_x+pix_y)*particle_size ){
+		   if ( d < tol_band_width ){
 		   ///////end of new Beat version
 
 		      p2 = crd[j].pnr;

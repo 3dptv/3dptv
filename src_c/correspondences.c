@@ -22,7 +22,7 @@ Description:	       	establishment of correspondences for 2/3/4 cameras
 /*--------------- 4 camera model: consistent quadruplets -------------------*/
 /****************************************************************************/
 
-void correspondences_4 (Tcl_Interp* interp)
+void correspondences_4 (Tcl_Interp* interp, const char** argv)
 {
   int 	i,j,k,l,m,n,o,  i1,i2,i3;
   int   count, match0=0, match4=0, match3=0, match2=0, match1=0;
@@ -127,7 +127,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 	  find_candidate_plus (geo[i2], pix[i2], num[i2],
 			       xa12, ya12, xb12, yb12, eps0,
 			       pix[i1][pt1].n,pix[i1][pt1].nx,pix[i1][pt1].ny,
-			       pix[i1][pt1].sumg, cand, &count, i2);
+			       pix[i1][pt1].sumg, cand, &count, i2,argv);
 
 
 	  /* write all corresponding candidates to the preliminary list */
