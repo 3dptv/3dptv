@@ -667,6 +667,9 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
   double  x[4], y[4], X,Y,Z;
   double  Zlo = 1e20, Zhi = -1e20;
   int dumbbell=0;
+  double x1,y1,z1,x2,y2,z2,dist,mx,my,mz,nx,ny,nz;
+  int a1[4],a2[4];
+
 
   puts ("Determinate");
 
@@ -822,7 +825,47 @@ X /= n_img; Y /= n_img;
 		 fscanf (fpp, "%lf", &db_scale);
          fclose (fpp);
      }
+     fpp = fopen (res_name, "r");
+     fscanf (fpp, "%d\n", &match);
+	 if(match==2){
+         fscanf(fpp, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dummy, &x1, &y1, &z1,
+	            &a1[0], &a1[1], &a1[2], &a1[3]);
+		 fscanf(fpp, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dummy, &x2, &y2, &z2,
+	            &a2[0], &a2[1], &a2[2], &a2[3]);
+		 //now adapt x,y,z
+        dist=pow(pow(x2-x1,2.)+pow(y2-y1,2.)+pow(z2-z1,2.),0.5);
+		mx=0.5*(x1+x2);
+		my=0.5*(y1+y2);
+		mz=0.5*(z1+z2);
+		nx=(x2-x1)/dist;
+		ny=(y2-y1)/dist;
+		nz=(z2-z1)/dist;
+		x1=mx-0.5*db_scale*nx;
+		x2=mx+0.5*db_scale*nx;
+		y1=my-0.5*db_scale*ny;
+		y2=my+0.5*db_scale*ny;
+		z1=mz-0.5*db_scale*nz;
+		z2=mz+0.5*db_scale*nz;
+	 }
+	 else{
+        match=0;
+	 }
+     fclose (fpp);
+	 fpp = fopen (res_name, "w");
+	 if(match==2){
+		 fprintf (fpp, "%4d\n", match);
+         fprintf (fpp, " %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", x1,y1,z1,a1[0],a1[1],a1[2],a1[3]);
+         fprintf (fpp, " %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", x2,y2,z2,a2[0],a2[1],a2[2],a2[3]);
+	 }
+	 else{
+         fprintf (fpp, "%4d\n", 0);
+	 }
+	 fclose (fpp);
+
   }
+  //end of dumbbell treatment
 
   rmsX = sqrt(rmsX/match); rmsY = sqrt(rmsY/match); rmsZ = sqrt(rmsZ/match);
   mean_sigma0 = sqrt (mean_sigma0/match);
