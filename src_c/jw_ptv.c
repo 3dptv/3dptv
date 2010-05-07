@@ -666,7 +666,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
   int  	p[4];
   double  x[4], y[4], X,Y,Z;
   double  Zlo = 1e20, Zhi = -1e20;
-  int dumbbell=0;
+  int dumbbell=0,i1,i2;
   double x1,y1,z1,x2,y2,z2,dist,mx,my,mz,nx,ny,nz;
   int a1[4],a2[4];
 
@@ -830,10 +830,10 @@ X /= n_img; Y /= n_img;
      fscanf (fpp, "%d\n", &match);
 	 if(match==2){
          fscanf(fpp, "%d %lf %lf %lf %d %d %d %d\n",
-	            &dummy, &x1, &y1, &z1,
+	            &i1, &x1, &y1, &z1,
 	            &a1[0], &a1[1], &a1[2], &a1[3]);
 		 fscanf(fpp, "%d %lf %lf %lf %d %d %d %d\n",
-	            &dummy, &x2, &y2, &z2,
+	            &i2, &x2, &y2, &z2,
 	            &a2[0], &a2[1], &a2[2], &a2[3]);
 		 //now adapt x,y,z
         dist=pow(pow(x2-x1,2.)+pow(y2-y1,2.)+pow(z2-z1,2.),0.5);
@@ -857,8 +857,8 @@ X /= n_img; Y /= n_img;
 	 fpp = fopen (res_name, "w");
 	 if(match==2){
 		 fprintf (fpp, "%4d\n", match);
-         fprintf (fpp, " %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", x1,y1,z1,a1[0],a1[1],a1[2],a1[3]);
-         fprintf (fpp, " %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", x2,y2,z2,a2[0],a2[1],a2[2],a2[3]);
+         fprintf (fpp, " %4d %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", i1,x1,y1,z1,a1[0],a1[1],a1[2],a1[3]);
+         fprintf (fpp, " %4d %9.3f %9.3f %9.3f %4d %4d %4d %4d\n", i2,x2,y2,z2,a2[0],a2[1],a2[2],a2[3]);
 	 }
 	 else{
          fprintf (fpp, "%4d\n", 0);
