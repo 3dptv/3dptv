@@ -2221,7 +2221,10 @@ for (i_img=0; i_img<n_img; i_img++){
 	 
 
   fpp = fopen ("parameters/sequence.par","r");
-  fscanf (fpp, "%s\n", seq_name[i_img]);     /* name of sequence */
+  fscanf (fpp, "%s\n", seq_name[0]);     /* name of sequence */
+  fscanf (fpp, "%s\n", seq_name[1]);     /* name of sequence */
+  fscanf (fpp, "%s\n", seq_name[2]);     /* name of sequence */
+  fscanf (fpp, "%s\n", seq_name[3]);     /* name of sequence */
   fscanf (fpp,"%d\n", &seq_first);
   fscanf (fpp,"%d\n", &seq_last);
   fclose (fpp);
