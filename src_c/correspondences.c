@@ -119,6 +119,10 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 		      Ex[i1], I[i1], G[i1], Ex[i2], I[i2], G[i2], mmp,
 		      &xa12, &ya12, &xb12, &yb12);
 	  
+    /////ich glaube, da muss ich einsteigen, wenn alles erledigt ist.
+	  ///////mit bild_1 x,y Epipole machen und dann selber was schreiben um die Distanz zu messen.
+	  ///////zu Punkt in bild_2.
+
 
 	  /* origin point in the list */
 	  p1 = i;  list[i1][i2][p1].p1 = p1;	pt1 = geo[i1][p1].pnr;

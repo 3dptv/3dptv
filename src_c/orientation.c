@@ -368,7 +368,403 @@ int	       	nr;  		/* image number for residual display */
 	  puts ("orientation does not converge");}
 }
 
+void prepare_eval (n_img,n_fix)
 
+int *n_fix;
+int n_img;
+
+{
+    int     i_img,i,j,filenumber,step_shake,count=0,a,b,dumy,num_points;
+	int adress[4];
+	double  xa,ya,xb,yb,temp,m,bb,d=0.,dummy;
+	FILE	*FILEIN;
+    char	filein[256];
+    FILE	*FILEIN_T;
+    char	filein_T[256];
+
+	fpp = fopen ("parameters/sequence.par","r");
+    fscanf (fpp, "%s\n", seq_name[0]);     /* name of sequence */
+    fscanf (fpp, "%s\n", seq_name[1]);     /* name of sequence */
+    fscanf (fpp, "%s\n", seq_name[2]);     /* name of sequence */
+    fscanf (fpp, "%s\n", seq_name[3]);     /* name of sequence */
+    fscanf (fpp,"%d\n", &seq_first);
+    fscanf (fpp,"%d\n", &seq_last);
+    fclose (fpp);
+
+	step_shake=1;
+    for (filenumber=seq_first; filenumber<seq_last+1; filenumber=filenumber+step_shake){//chnaged by Beat Feb 08
+
+	    /* read targets of each camera */
+		for(i_img=0;i_img<n_img;i_img++){
+		   compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein_T);
+           FILEIN_T= fopen (filein_T, "r");
+           if (! FILEIN_T) printf("Can't open ascii file: %s\n", filein_T);
+
+           fscanf (FILEIN_T, "%d\n", &nt4[3][i_img]);
+           for (j=0; j<nt4[3][i_img]; j++){
+	          fscanf (FILEIN_T, "%4d %lf %lf %d %d %d %d %d\n",
+		              &t4[3][i_img][j].pnr, &t4[3][i_img][j].x,
+		              &t4[3][i_img][j].y, &t4[3][i_img][j].n ,
+		              &t4[3][i_img][j].nx ,&t4[3][i_img][j].ny,
+		              &t4[3][i_img][j].sumg, &t4[3][i_img][j].tnr);
+	       }
+           fclose (FILEIN_T);
+		}
+
+		/* read rt_is or db_is  */
+		sprintf (filein, "res/db_is.%d", filenumber);
+        FILEIN = fopen (filein, "r");
+        if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+        fscanf(FILEIN, "%d\n", &num_points);
+		for (i=0;i<num_points;i++){
+            //read points from rt_is
+            adress[0]=-1;adress[1]=-1;adress[2]=-1;adress[3]=-1;
+		    if (n_img==4){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2], &adress[3]);
+		    }
+		    if (n_img==3){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2]);
+		    }
+		    if (n_img==2){ 
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[1]);
+		    }
+			//then fill in crd stuff
+			for(i_img=0;i_img<n_img;i_img++){
+				if(adress[i_img]>-1){
+			       pix[i_img][count].x=t4[3][i_img][adress[i_img]].x;
+		           pix[i_img][count].y=t4[3][i_img][adress[i_img]].y;
+				}
+				else{
+                   pix[i_img][count].x=-999;
+		           pix[i_img][count].y=-999;
+				}
+				if(pix[i_img][count].x>-999 && pix[i_img][count].y>-999){
+				   pixel_to_metric (pix[i_img][count].x, pix[i_img][count].y,
+			                        imx,imy, pix_x, pix_y,
+			                        &crd[i_img][count].x, &crd[i_img][count].y,
+			                        chfield);
+				}
+				else{
+                   crd[i_img][count].x=-1e10;
+				   crd[i_img][count].y=-1e10;
+				}
+				crd[i_img][count].pnr=count;
+			}
+			count ++;
+		}
+
+	}
+	nfix=count;
+}
+
+void eval_ori (db_scale,weight_scale,n_img, nfix, residual)
+
+double db_scale;
+double weight_scale;
+int n_img,nfix;
+double *residual;
+
+{
+	int     i_img,i,count_inner=0,count_outer=0,a,b,pair_count=0,count_dist=0;
+	double  xa,ya,xb,yb,temp,m,bb,d_inner=0.,d_outer=0.,av_dist=0.;
+	double X1,X2,Y1,Y2,Z1,Z2,dist,dist_error;
+
+	
+
+    
+	for(i=0;i<nfix;i++){
+		count_inner=0;
+		for (a=0;a<n_img;a++){
+			for(b=a+1;b<n_img;b++){
+				if(crd[a][i].x>-999 && crd[b][i].x>-999){
+                    epi_mm (crd[a][i].x,crd[a][i].y,
+			                Ex[a], I[a], G[a], Ex[b], I[b], G[b], mmp,
+		                    &xa, &ya, &xb, &yb);
+		            if (xa == xb)	xa += 1e-10;
+		            m = (yb-ya)/(xb-xa);  bb = ya - m*xa;
+		      
+		            if (xa > xb){
+		                temp = xa;  xa = xb;  xb = temp;
+		            }
+		            if (ya > yb){
+		                temp = ya;  ya = yb;  yb = temp;
+                    }
+					count_inner++;
+                    d_inner += fabs ((crd[b][i].y - m*crd[b][i].x - bb) / sqrt(m*m+1));
+				}
+			}
+		}
+        d_inner/=(double)count_inner;
+		d_outer+=d_inner;
+		count_outer++;
+		///here I could introduce penalty for scale
+		pair_count++;
+		if(pair_count==2){
+			pair_count=0;
+			/* hack due to problems with approx in det_lsq: */
+            X1 = 0.0; Y1 = 0.0; Z1 = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+            for (i_img=0; i_img<n_img; i_img++) { X1 += Ex[i_img].x0; Y1 += Ex[i_img].y0; }
+            X1 /= n_img; Y1 /= n_img;
+			X2=X1;Y2=Y1;Z2=Z1;
+			/*----end of hack------------*/
+            det_lsq (Ex, I, G, ap, mmp,
+	           crd[0][i-1].x, crd[0][i-1].y, crd[1][i-1].x, crd[1][i-1].y, crd[2][i-1].x, crd[2][i-1].y, crd[3][i-1].x, crd[3][i-1].y, &X1, &Y1, &Z1);
+			det_lsq (Ex, I, G, ap, mmp,
+	           crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &X2, &Y2, &Z2);
+		    dist=sqrt(pow(X2-X1,2.)+pow(Y2-Y1,2.)+pow(Z2-Z1,2.));
+			if(dist<db_scale){
+			    dist_error=1-dist/db_scale;
+			}
+			else{
+                dist_error=1-db_scale/dist;
+			}
+			av_dist+=dist_error;
+			count_dist++;
+		}
+		///end of eval
+	}
+	d_outer /=(double)count_outer;
+	av_dist /=(double)count_dist;
+	*residual=d_outer+weight_scale*av_dist;
+}
+
+void eval_ori_single_point (n_img, ind, residual)
+
+double *residual;
+int ind;
+
+{
+	int     i_img,i,count=0,a,b;
+	double  xa,ya,xb,yb,temp,m,bb,d=0.;
+
+
+	count=0;
+	i=ind;
+		
+		for (a=0;a<n_img;a++){
+			for(b=a+1;b<n_img;b++){
+				if(crd[a][i].x>-999 && crd[b][i].x>-1){
+                    epi_mm (crd[a][i].x,crd[a][i].y,
+			                Ex[a], I[a], G[a], Ex[b], I[b], G[b], mmp,
+		                    &xa, &ya, &xb, &yb);
+		            if (xa == xb)	xa += 1e-10;
+		            m = (yb-ya)/(xb-xa);  bb = ya - m*xa;
+		      
+		            if (xa > xb){
+		                temp = xa;  xa = xb;  xb = temp;
+		            }
+		            if (ya > yb){
+		                temp = ya;  ya = yb;  yb = temp;
+                    }					
+                    d += fabs ((crd[a][i].y - m*crd[a][i].x - bb) / sqrt(m*m+1));
+					count++;
+				}
+			}
+		}
+	
+	d /=(double)count;
+	*residual=d;
+}
+
+void orient_v4 (n_img, nfix, Ex, I, G, ap)
+
+Exterior	*Ex;	/* exterior orientation, approx and result */
+Interior	*I;		/* interior orientation, approx and result */
+Glass   	*G;		/* glass orientation, approx and result */
+ap_52		*ap;	/* add. parameters, approx and result */
+int	       	n_img,nfix;		/* # of object points */
+
+
+{
+    int  	i,j,itnum,i_img;
+    double       	residual, o_residual, dm = 0.00001,  drad = 0.0000001,sens,factor,weight_scale;   
+    double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
+	double db_scale,eps0;
+
+	fpp = fopen ("parameters/dumbbell.par", "r");
+          if (fpp){
+             fscanf (fpp, "%lf", &eps0);
+		     fscanf (fpp, "%lf", &db_scale);
+			 fscanf (fpp, "%lf", &factor);
+			 fscanf (fpp, "%lf", &weight_scale);
+             fclose (fpp);
+          }
+ 
+
+  puts ("\n\nbegin of iterations");
+  itnum = 0;  
+  while (itnum < 500){
+    //printf ("\n\n%2d. iteration\n", ++itnum);
+    itnum++;
+
+    eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	o_residual=residual;
+
+    for (i_img=0;i_img<n_img;i_img++) {
+	     
+
+	     Ex[i_img].x0 += dm;
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / dm;//if positive then good
+	     Ex[i_img].x0 -= dm;
+		 Ex[i_img].x0 += dm*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+		 if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{ //if no imporvment, then forget about it!
+             Ex[i_img].x0 -= dm*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }		 
+
+	     Ex[i_img].y0 += dm;
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / dm;
+	     Ex[i_img].y0 -= dm;
+		 Ex[i_img].y0 += dm*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             Ex[i_img].y0 -= dm*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+   
+	     Ex[i_img].z0 += dm;
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / dm;
+	     Ex[i_img].z0 -= dm;
+		 Ex[i_img].z0 += dm*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             Ex[i_img].z0 -= dm*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+
+	     Ex[i_img].omega += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / drad;
+	     Ex[i_img].omega -= drad;
+		 Ex[i_img].omega += drad*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             Ex[i_img].omega -= drad*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+
+	     Ex[i_img].phi += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / drad;
+	     Ex[i_img].phi -= drad;
+		 Ex[i_img].phi += drad*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             Ex[i_img].phi -= drad*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+
+	     Ex[i_img].kappa += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / drad;
+	     Ex[i_img].kappa -= drad;
+		 Ex[i_img].kappa += drad*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             Ex[i_img].kappa -= drad*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+
+	     I[i_img].cc += dm;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / dm;
+	     I[i_img].cc -= dm;
+		 I[i_img].cc += dm*factor*o_residual/sens;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             I[i_img].cc -= dm*factor*o_residual/sens;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+
+	     /*I[i_img].xh += dm;
+		 for(i=0;i<36;i++) crd[i_img][i].x -=I[i_img].xh;
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     sens  = (o_residual-residual) / dm;
+	     I[i_img].xh -= dm;
+		 for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
+		 I[i_img].xh += dm*factor*o_residual/sens;
+		 for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             I[i_img].xh -= dm*factor*o_residual/sens;
+		     for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }
+		 
+
+	     I[i_img].yh += dm;
+		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
+	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+		 sens  = (o_residual-residual) / dm;
+	     I[i_img].yh -= dm;
+		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
+		 I[i_img].yh += dm*factor*o_residual/sens;
+		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
+		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+	     if(o_residual>residual){
+	         o_residual=residual;
+		 }
+		 else{
+             I[i_img].yh -= dm*factor*o_residual/sens;
+		     for(i=0;i<36;i++) crd[i_img][i].y +=I[i_img].yh;
+		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
+			 o_residual=residual;
+		 }*/
+
+	}
+
+	printf ("residual: %8.7f at iteration: %d\n",o_residual,itnum);
+
+      
+ }
+
+
+
+  
+}
 
 void orient_v3 (interp, Ex0, I0, G0, ap0, mm, nfix, fix, crd, Ex, I, G, ap, nr)
 Tcl_Interp*     interp;
@@ -785,8 +1181,8 @@ int	       	nr;  		/* image number for residual display */
       n = pixnr[i/2];
       intx1 = (int) pix[nr][n].x;
       inty1 = (int) pix[nr][n].y;
-      intx2 = intx1 + resi[i]*5000;
-      inty2 = inty1 + resi[i+1]*5000;
+      intx2 = intx1 + resi[i]*100;
+      inty2 = inty1 + resi[i+1]*100;
 
       drawcross (interp, intx1, inty1, 3, nr , "orange");
       drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");

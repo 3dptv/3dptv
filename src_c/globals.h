@@ -178,6 +178,10 @@ void det_lsq_3 ();
 void det_lsq_4 ();
 void orient();
 void orient_v3();
+void orient_v4();
+void prepare_eval();
+void eval_ori();
+void eval_ori_single_point();
 void volumedimension();
 
 double epi_line ();

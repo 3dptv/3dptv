@@ -836,7 +836,7 @@ X /= n_img; Y /= n_img;
 	            &i2, &x2, &y2, &z2,
 	            &a2[0], &a2[1], &a2[2], &a2[3]);
 		 //now adapt x,y,z
-        dist=pow(pow(x2-x1,2.)+pow(y2-y1,2.)+pow(z2-z1,2.),0.5);
+        /*dist=pow(pow(x2-x1,2.)+pow(y2-y1,2.)+pow(z2-z1,2.),0.5);
 		mx=0.5*(x1+x2);
 		my=0.5*(y1+y2);
 		mz=0.5*(z1+z2);
@@ -848,7 +848,7 @@ X /= n_img; Y /= n_img;
 		y1=my-0.5*db_scale*ny;
 		y2=my+0.5*db_scale*ny;
 		z1=mz-0.5*db_scale*nz;
-		z2=mz+0.5*db_scale*nz;
+		z2=mz+0.5*db_scale*nz;*/
 	 }
 	 else{
         match=0;
@@ -944,6 +944,8 @@ printf("\nObject volume is scanned in %d slices!\n", nslices);
          fpp = fopen ("parameters/dumbbell.par", "w");
          fprintf(fpp,"%lf\n", 10.0);
 		 fprintf(fpp,"%lf\n", 50.0);
+		 fprintf(fpp,"%lf\n", 10.0);
+		 fprintf(fpp,"%lf\n", 20.0);
 	     fclose(fpp);
 		 eps0=10;
      }
@@ -1187,6 +1189,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   int filenumber;
   int dumy,frameCount,currentFrame;
   int a[4],a1[4],a2[4],success=1;
+  double residual;
 
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -2283,7 +2286,7 @@ for (i_img=0; i_img<n_img; i_img++){
           ////////////auch pix lesen according a0,a1,a2,a3!!! 
 		  pix[i_img][i].x=t4[3][i_img][a1[i_img]].x;
 		  pix[i_img][i].y=t4[3][i_img][a1[i_img]].y;
-		  pix[i_img][i].pnr=0; 
+		  pix[i_img][i].pnr=i; 
           fix[i].pnr=i;
 		  pix[i_img][i+1].x=t4[3][i_img][a2[i_img]].x;
 		  pix[i_img][i+1].y=t4[3][i_img][a2[i_img]].y;
@@ -2299,19 +2302,17 @@ for (i_img=0; i_img<n_img; i_img++){
   }//end of loop through seq, but loop i_img still open
   printf("Using %d points for camera %d\n", nfix,i_img+1);
     if(nfix>2){
-		for (i=0; i<nfix ; i++)
-	    {
+	  for (i=0; i<nfix ; i++){
 	      pixel_to_metric (pix[i_img][i].x, pix[i_img][i].y,
 			       imx,imy, pix_x, pix_y,
 			       &crd[i_img][i].x, &crd[i_img][i].y,
 			       chfield);
 	      crd[i_img][i].pnr = pix[i_img][i].pnr;
-	    }
+	  }
 
-	  
 	  /* ================= */
 
-	    orient_v3 (interp, Ex[i_img], I[i_img], G[i_img], ap[i_img], mmp,
+	  orient_v3 (interp, Ex[i_img], I[i_img], G[i_img], ap[i_img], mmp,
 		    nfix, fix, crd[i_img],
 		    &Ex[i_img], &I[i_img], &G[i_img], &ap[i_img], i_img);
 
@@ -2371,6 +2372,8 @@ for (i_img=0; i_img<n_img; i_img++){
         success=0;
    }
 }//loop through images
+
+
 if(success==1){
       Tcl_Eval(interp, ".text delete 3");
       Tcl_Eval(interp, ".text delete 1");
@@ -2389,6 +2392,24 @@ else{
       Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
       Tcl_Eval(interp, ".text insert 3 $tbuf");
 }
+
+      break;
+
+
+	  case 12: puts ("Orientation from dumbbells"); strcpy(buf, "");
+        
+          prepare_eval(n_img,&nfix); //goes and looks up what sequence is defined and takes all cord. from rt_is
+          orient_v4 (n_img, nfix,&Ex, &I, &G, &ap);
+          
+		  for(i_img=0;i_img<n_img;i_img++){
+              write_ori (Ex[i_img], I[i_img], G[i_img], img_ori[i_img]);
+	          fp1 = fopen (img_addpar[i_img], "w");
+	          fprintf (fp1, "%f %f %f %f %f %f %f",
+		               ap[i_img].k1, ap[i_img].k2, ap[i_img].k3,
+		               ap[i_img].p1, ap[i_img].p2,
+		               ap[i_img].scx, ap[i_img].she);
+	          fclose (fp1);
+          }
 
       break;
 
