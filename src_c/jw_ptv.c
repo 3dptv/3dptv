@@ -946,6 +946,7 @@ printf("\nObject volume is scanned in %d slices!\n", nslices);
 		 fprintf(fpp,"%lf\n", 50.0);
 		 fprintf(fpp,"%lf\n", 10.0);
 		 fprintf(fpp,"%lf\n", 20.0);
+		 fprintf(fpp,"%d\n", 1);
 	     fclose(fpp);
 		 eps0=10;
      }

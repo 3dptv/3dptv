@@ -391,7 +391,16 @@ int n_img;
     fscanf (fpp,"%d\n", &seq_last);
     fclose (fpp);
 
-	step_shake=1;
+	fpp = fopen ("parameters/dumbbell.par", "r");
+    if (fpp){
+        fscanf (fpp, "%lf", &dummy);
+		fscanf (fpp, "%lf", &dummy);
+	    fscanf (fpp, "%lf", &dummy);
+	    fscanf (fpp, "%lf", &dummy);
+		fscanf (fpp, "%d", &step_shake);
+        fclose (fpp);
+    }
+
     for (filenumber=seq_first; filenumber<seq_last+1; filenumber=filenumber+step_shake){//chnaged by Beat Feb 08
 
 	    /* read targets of each camera */
@@ -471,10 +480,7 @@ double *residual;
 	int     i_img,i,count_inner=0,count_outer=0,a,b,pair_count=0,count_dist=0;
 	double  xa,ya,xb,yb,temp,m,bb,d_inner=0.,d_outer=0.,av_dist=0.;
 	double X1,X2,Y1,Y2,Z1,Z2,dist,dist_error;
-
-	
-
-    
+   
 	for(i=0;i<nfix;i++){
 		count_inner=0;
 		for (a=0;a<n_img;a++){
@@ -531,43 +537,7 @@ double *residual;
 	*residual=d_outer+weight_scale*av_dist;
 }
 
-void eval_ori_single_point (n_img, ind, residual)
 
-double *residual;
-int ind;
-
-{
-	int     i_img,i,count=0,a,b;
-	double  xa,ya,xb,yb,temp,m,bb,d=0.;
-
-
-	count=0;
-	i=ind;
-		
-		for (a=0;a<n_img;a++){
-			for(b=a+1;b<n_img;b++){
-				if(crd[a][i].x>-999 && crd[b][i].x>-1){
-                    epi_mm (crd[a][i].x,crd[a][i].y,
-			                Ex[a], I[a], G[a], Ex[b], I[b], G[b], mmp,
-		                    &xa, &ya, &xb, &yb);
-		            if (xa == xb)	xa += 1e-10;
-		            m = (yb-ya)/(xb-xa);  bb = ya - m*xa;
-		      
-		            if (xa > xb){
-		                temp = xa;  xa = xb;  xb = temp;
-		            }
-		            if (ya > yb){
-		                temp = ya;  ya = yb;  yb = temp;
-                    }					
-                    d += fabs ((crd[a][i].y - m*crd[a][i].x - bb) / sqrt(m*m+1));
-					count++;
-				}
-			}
-		}
-	
-	d /=(double)count;
-	*residual=d;
-}
 
 void orient_v4 (n_img, nfix, Ex, I, G, ap)
 
@@ -585,13 +555,13 @@ int	       	n_img,nfix;		/* # of object points */
 	double db_scale,eps0;
 
 	fpp = fopen ("parameters/dumbbell.par", "r");
-          if (fpp){
-             fscanf (fpp, "%lf", &eps0);
-		     fscanf (fpp, "%lf", &db_scale);
-			 fscanf (fpp, "%lf", &factor);
-			 fscanf (fpp, "%lf", &weight_scale);
-             fclose (fpp);
-          }
+    if (fpp){
+        fscanf (fpp, "%lf", &eps0);
+		fscanf (fpp, "%lf", &db_scale);
+	    fscanf (fpp, "%lf", &factor);
+	    fscanf (fpp, "%lf", &weight_scale);
+        fclose (fpp);
+    }
  
 
   puts ("\n\nbegin of iterations");
