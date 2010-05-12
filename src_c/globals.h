@@ -159,6 +159,9 @@ void norm_cross();
 void dot();
 void modu();
 void ray_tracing_v2();
+void mid_point();
+void cross();
+void dotP();
 void intersect_rt_3m();
 void intersect_rt();
 int  nearest_neighbour_pix();
@@ -181,6 +184,7 @@ void orient_v3();
 void orient_v4();
 void prepare_eval();
 void eval_ori();
+void eval_ori_v2();
 void volumedimension();
 
 double epi_line ();
