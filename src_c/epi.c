@@ -348,8 +348,8 @@ const char** argv;
 		  if ( d < eps ){
           */
           /////here is new Beat version of April 2010
-		   if (nx>ny) particle_size=nx;
-		   else       particle_size=ny;
+		   //if (nx>ny) particle_size=nx;
+		   //else       particle_size=ny;
 		   if ( d < tol_band_width ){
 		   ///////end of new Beat version
 
@@ -416,6 +416,7 @@ candidate	cand[];
   int	       	j0, dj, p2;
   double        m, b, d, temp, qn, qnx, qny, qsumg, corr;
   double       	xmin, xmax, ymin, ymax;
+  double tol_band_width,particle_size;
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
@@ -424,6 +425,10 @@ candidate	cand[];
   xmax -= I[i12].xh;	ymax -= I[i12].yh;
   correct_brown_affin (xmin,ymin, ap[i12], &xmin,&ymin);
   correct_brown_affin (xmax,ymax, ap[i12], &xmax,&ymax);
+
+  if (nx>ny) particle_size=nx;
+  else       particle_size=ny;
+  tol_band_width=eps*0.5*(pix_x+pix_y)*particle_size;
 
   for (j=0; j<4; j++)
     {
@@ -459,8 +464,7 @@ candidate	cand[];
 	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-		  if (d < eps)
-		    {
+          if ( d < tol_band_width ){
 		      p2 = crd[j].pnr;
 		      if (n  < pix[p2].n)      	qn  = (double) n/pix[p2].n;
 		      else		       	qn  = (double) pix[p2].n/n;
