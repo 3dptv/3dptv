@@ -566,7 +566,7 @@ int	       	n_img,nfix;		/* # of object points */
 
   puts ("\n\nbegin of iterations");
   itnum = 0;  
-  while (itnum < 5000){
+  while (itnum < 1000){
     //printf ("\n\n%2d. iteration\n", ++itnum);
     itnum++;
 
