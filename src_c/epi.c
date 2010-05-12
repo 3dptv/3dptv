@@ -328,18 +328,18 @@ const char** argv;
       /* binarized search for start point of candidate search */
       for (j0=num/2, dj=num/4; dj>1; dj/=2)
 	{
-	  if (crd[j0].x < (xa - eps))  j0 += dj;
+	  if (crd[j0].x < (xa - tol_band_width))  j0 += dj;
 	  else  j0 -= dj;
 	}
       j0 -= 12;  if (j0 < 0)  j0 = 0;		       	/* due to trunc */
 
       for (j=j0, *count=0; j<num; j++)			/* candidate search */
 	{
-	  if (crd[j].x > xb+eps)  return;		/* finish search */
+	  if (crd[j].x > xb+tol_band_width)  return;		/* finish search */
 
-	  if ((crd[j].y > ya-eps) && (crd[j].y < yb+eps))
+	  if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width))
 	    {
-	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
+	      if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
           
@@ -450,18 +450,18 @@ candidate	cand[];
       /* binarized search for start point of candidate search */
       for (j0=num/2, dj=num/4; dj>1; dj/=2)
 	{
-	  if (crd[j0].x < (xa - eps))  j0 += dj;
+	  if (crd[j0].x < (xa - tol_band_width))  j0 += dj;
 	  else  j0 -= dj;
 	}
       j0 -= 12;  if (j0 < 0)  j0 = 0;  	/* due to trunc */
 
       for (j=j0, *count=0; j<num; j++) 	/* candidate search */
 	{
-	  if (crd[j].x > xb+eps)  return;      	/* finish search */
+	  if (crd[j].x > xb+tol_band_width)  return;      	/* finish search */
 
-	  if ((crd[j].y > ya-eps) && (crd[j].y < yb+eps))
+	  if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width))
 	    {
-	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
+	      if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
           if ( d < tol_band_width ){
