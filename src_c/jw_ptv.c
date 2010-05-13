@@ -942,11 +942,21 @@ printf("\nObject volume is scanned in %d slices!\n", nslices);
      }
      else{
          fpp = fopen ("parameters/dumbbell.par", "w");
-         fprintf(fpp,"%lf\n", 10.0);
-		 fprintf(fpp,"%lf\n", 50.0);
-		 fprintf(fpp,"%lf\n", 10.0);
-		 fprintf(fpp,"%lf\n", 20.0);
-		 fprintf(fpp,"%d\n", 1);
+         fprintf(fpp,"%lf\n", 5.0);
+		 fprintf(fpp,"%lf\n", 46.5);
+		 fprintf(fpp,"%lf\n", 0.5);
+		 fprintf(fpp,"%lf\n", 2.);
+		 fprintf(fpp,"%d\n", 2);
+		 fprintf(fpp,"%d\n",500);
+		 fprintf(fpp,"\n\n");
+		 fprintf(fpp,"explanation for parameters:\n");
+		 fprintf(fpp,"\n");
+		 fprintf(fpp,"1: eps (mm)\n");
+		 fprintf(fpp,"2: dunbbell scale\n");
+		 fprintf(fpp,"3: gradient descent factor\n");
+		 fprintf(fpp,"4: weight for dumbbell penalty\n");
+		 fprintf(fpp,"5: step size through sequence\n");
+		 fprintf(fpp,"6: num iterations per click\n");
 	     fclose(fpp);
 		 eps0=10;
      }
