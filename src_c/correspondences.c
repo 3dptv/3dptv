@@ -16,7 +16,7 @@ Description:	       	establishment of correspondences for 2/3/4 cameras
 
 #include "ptv.h"
 
-#define maxcand 100
+/* #define maxcand 100 */
 
 /****************************************************************************/
 /*--------------- 4 camera model: consistent quadruplets -------------------*/
