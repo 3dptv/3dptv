@@ -765,7 +765,8 @@ X /= n_img; Y /= n_img;
       //det_lsq_old (Ex, I, ap, mmp,
 	  //     x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
 
-      det_lsq (Ex, I, G, ap, mmp,
+
+	  det_lsq_3d (Ex, I, G, ap, mmp,
 	       x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
 
 

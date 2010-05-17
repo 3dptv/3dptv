@@ -355,7 +355,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 		X4 = X5; Y4 =Y5; Z4 = Z5;
 		invol=0; okay=0;
 
-		det_lsq (Ex, I, G, ap, mmp,
+		det_lsq_3d (Ex, I, G, ap, mmp,
 			 x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X4, &Y4, &Z4);
 
 		/* volume check */
@@ -501,7 +501,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 		  X3 = X2; Y3 =Y2; Z3 = Z2;
 		  invol=0; okay=0;
 
-		  det_lsq (Ex, I, G, ap, mmp,
+		  det_lsq_3d (Ex, I, G, ap, mmp,
 			   x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
 
 		  /* in volume check */
@@ -912,7 +912,7 @@ printf("h: %d, old and ok: X3: %6.3f %6.3f %6.3f, ftnr: %d, prev: %d, next: %d, 
 		    X3 = X2; Y3 =Y2; Z3 = Z2;
 		    invol=0; okay=0;
 
-		    det_lsq (Ex, I, G, ap, mmp,
+		    det_lsq_3d (Ex, I, G, ap, mmp,
 			     x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
 
 		    /* volume check */

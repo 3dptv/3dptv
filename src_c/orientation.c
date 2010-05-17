@@ -516,9 +516,9 @@ double *residual;
             X1 /= n_img; Y1 /= n_img;
 			X2=X1;Y2=Y1;Z2=Z1;
 			/*----end of hack------------*/
-            det_lsq (Ex, I, G, ap, mmp,
+            det_lsq_3d (Ex, I, G, ap, mmp,
 	           crd[0][i-1].x, crd[0][i-1].y, crd[1][i-1].x, crd[1][i-1].y, crd[2][i-1].x, crd[2][i-1].y, crd[3][i-1].x, crd[3][i-1].y, &X1, &Y1, &Z1);
-			det_lsq (Ex, I, G, ap, mmp,
+			det_lsq_3d (Ex, I, G, ap, mmp,
 	           crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &X2, &Y2, &Z2);
 		    dist=sqrt(pow(X2-X1,2.)+pow(Y2-Y1,2.)+pow(Z2-Z1,2.));
 			if(dist<db_scale){
@@ -608,7 +608,7 @@ double *residual;
 
 {
 	int     i_img,i,count_inner=0,count_outer=0,pair_count=0,count_dist=0,n,m;
-	double  xa,ya,xb,yb,temp,d_inner=0.,av_dist=0.;
+	double  xa,ya,xb,yb,temp,d_inner=0.,av_dist=0.,x,y;
 	double X[4],Y[4],Z[4],a[4],b[4],c[4],dist,dist_error,X_pos,Y_pos,Z_pos,XX,YY,ZZ,X1,Y1,Z1,X2,Y2,Z2;
 	double tmp_d=0.,tmp_dist=0.;
 	*d_outer=0.;
@@ -618,16 +618,28 @@ double *residual;
 	for(i=0;i<nfix;i++){
 		//new det_lsq function, bloody fast!
 		if(crd[0][i].x>-999){
-		    ray_tracing_v2 (crd[0][i].x,crd[0][i].y, Ex[0], I[0], G[0], mmp, &X[0], &Y[0], &Z[0], &a[0], &b[0], &c[0]);
+			x = crd[0][i].x - I[0].xh;
+	        y = crd[0][i].y - I[0].yh;
+	        //correct_brown_affin (x, y, ap[0], &x, &y);
+		    ray_tracing_v2 (x,y, Ex[0], I[0], G[0], mmp, &X[0], &Y[0], &Z[0], &a[0], &b[0], &c[0]);
 		}		
 		if(crd[1][i].x>-999){
-		    ray_tracing_v2 (crd[1][i].x,crd[1][i].y, Ex[1], I[1], G[1], mmp, &X[1], &Y[1], &Z[1], &a[1], &b[1], &c[1]);
+			x = crd[1][i].x - I[1].xh;
+	        y = crd[1][i].y - I[1].yh;
+	        //correct_brown_affin (x, y, ap[1], &x, &y);
+		    ray_tracing_v2 (x,y, Ex[1], I[1], G[1], mmp, &X[1], &Y[1], &Z[1], &a[1], &b[1], &c[1]);
 		}		
 		if(crd[2][i].x>-999){
-		    ray_tracing_v2 (crd[2][i].x,crd[2][i].y, Ex[2], I[2], G[2], mmp, &X[2], &Y[2], &Z[2], &a[2], &b[2], &c[2]);
+			x = crd[2][i].x - I[2].xh;
+	        y = crd[2][i].y - I[2].yh;
+	        //correct_brown_affin (x, y, ap[2], &x, &y);
+		    ray_tracing_v2 (x,y, Ex[2], I[2], G[2], mmp, &X[2], &Y[2], &Z[2], &a[2], &b[2], &c[2]);
 		}		
 		if(crd[3][i].x>-999){
-		    ray_tracing_v2 (crd[3][i].x,crd[3][i].y, Ex[3], I[3], G[3], mmp, &X[3], &Y[3], &Z[3], &a[3], &b[3], &c[3]);
+			x = crd[3][i].x - I[3].xh;
+	        y = crd[3][i].y - I[3].yh;
+	        //correct_brown_affin (x, y, ap[3], &x, &y);
+		    ray_tracing_v2 (x,y, Ex[3], I[3], G[3], mmp, &X[3], &Y[3], &Z[3], &a[3], &b[3], &c[3]);
 		}
 
 		count_inner=0;
@@ -694,6 +706,8 @@ int	       	n_img,nfix;		/* # of object points */
     double       	residual, best_residual, old_val,dm = 0.0001,  drad = 0.0001,sens,factor,weight_scale;   
     double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
 	double db_scale,eps0,epi_miss, dist;
+	int  	useflag, ccflag, scxflag, sheflag, interfflag, xhflag, yhflag,
+    k1flag, k2flag, k3flag, p1flag, p2flag;
 
 	fpp = fopen ("parameters/dumbbell.par", "r");
     if (fpp){
@@ -705,6 +719,21 @@ int	       	n_img,nfix;		/* # of object points */
 		fscanf (fpp, "%d", &max_itnum);
         fclose (fpp);
     }
+
+	fp1 = fopen_r ("parameters/orient.par");
+    fscanf (fp1,"%d", &useflag);
+    fscanf (fp1,"%d", &ccflag);
+    fscanf (fp1,"%d", &xhflag);
+    fscanf (fp1,"%d", &yhflag);
+    fscanf (fp1,"%d", &k1flag);
+    fscanf (fp1,"%d", &k2flag);
+    fscanf (fp1,"%d", &k3flag);
+    fscanf (fp1,"%d", &p1flag);
+    fscanf (fp1,"%d", &p2flag);
+    fscanf (fp1,"%d", &scxflag);
+    fscanf (fp1,"%d", &sheflag);
+    fscanf (fp1,"%d", &interfflag);
+    fclose (fp1);
 	
 
   puts ("\n\nbegin of iterations");
@@ -811,59 +840,54 @@ int	       	n_img,nfix;		/* # of object points */
             best_residual=residual;
 		 }
 		 
-		 old_val=I[i_img].cc;
-	     I[i_img].cc += dm;
-		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
-	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-	     sens  = (best_residual-residual) / dm;
-	     I[i_img].cc -= dm;
-		 I[i_img].cc += dm*factor*best_residual/sens;
-		 eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-	     if(best_residual<residual){
-	        I[i_img].cc=old_val;
-		 }
-		 else{
-            best_residual=residual;
+		 if(ccflag==1){
+		    old_val=I[i_img].cc;
+	        I[i_img].cc += dm;
+		    rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	        eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[i_img].cc -= dm;
+		    I[i_img].cc += dm*factor*best_residual/sens;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[i_img].cc=old_val;
+		    }
+		    else{
+               best_residual=residual;
+		    }
 		 }
 
-	     /*I[i_img].xh += dm;
-		 for(i=0;i<36;i++) crd[i_img][i].x -=I[i_img].xh;
-	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-	     sens  = (o_residual-residual) / dm;
-	     I[i_img].xh -= dm;
-		 for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
-		 I[i_img].xh += dm*factor*o_residual/sens;
-		 for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
-		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-	     if(o_residual>residual){
-	         o_residual=residual;
-		 }
-		 else{
-             I[i_img].xh -= dm*factor*o_residual/sens;
-		     for(i=0;i<36;i++) crd[i_img][i].x +=I[i_img].xh;
-		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-			 o_residual=residual;
+		 if(xhflag==1){
+		    old_val=I[i_img].xh;
+	        I[i_img].xh += dm;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[i_img].xh -= dm;
+		    I[i_img].xh += dm*factor*best_residual/sens;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[i_img].xh=old_val;
+		    }
+		    else{
+               best_residual=residual;
+		    }
 		 }
 		 
-
-	     I[i_img].yh += dm;
-		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
-	     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-		 sens  = (o_residual-residual) / dm;
-	     I[i_img].yh -= dm;
-		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
-		 I[i_img].yh += dm*factor*o_residual/sens;
-		 for(i=0;i<36;i++) crd[i_img][i].y -=I[i_img].yh;
-		 eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-	     if(o_residual>residual){
-	         o_residual=residual;
+		 if(yhflag==1){
+            old_val=I[i_img].yh;
+	        I[i_img].yh += dm;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[i_img].yh -= dm;
+		    I[i_img].yh += dm*factor*best_residual/sens;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[i_img].yh=old_val;
+		    }
+		    else{
+               best_residual=residual;
+		    }
 		 }
-		 else{
-             I[i_img].yh -= dm*factor*o_residual/sens;
-		     for(i=0;i<36;i++) crd[i_img][i].y +=I[i_img].yh;
-		     eval_ori(db_scale,weight_scale,n_img, nfix, &residual);
-			 o_residual=residual;
-		 }*/
 	}
 	
 	printf ("eps_tot: %8.7f, eps_epi: %7.5f, eps_dist: %7.5f, step: %d\n",best_residual, epi_miss,dist,itnum);
@@ -1644,7 +1668,7 @@ coord_2d  crd[4][12];
              for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
              Xp /= n_img; Yp /= n_img;
 		     /* end of hack due to problems with approx in det_lsq: */
-             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+			 det_lsq_3d (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
 	         fix[i].x=Xp;
 		     fix[i].y=Yp;
 		     fix[i].z=Zp;
@@ -1749,7 +1773,7 @@ coord_2d  crd[4][12];
              //for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
              //Xp /= n_img; Yp /= n_img;
 		     /* end of hack due to problems with approx in det_lsq: */
-             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+             det_lsq_3d (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
 	         fix[i].x=Xp;
 		     fix[i].y=Yp;
 		     fix[i].z=Zp;
@@ -1830,7 +1854,7 @@ coord_2d  crd[4][12];
              for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
              Xp /= n_img; Yp /= n_img;
 		     /* end of hack due to problems with approx in det_lsq: */
-             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+             det_lsq_3d (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
 	         fix[i].x=Xp;
 		     fix[i].y=Yp;
 		     fix[i].z=Zp;
@@ -1926,7 +1950,7 @@ coord_2d  crd[4][12];
              //for (j=0; j<n_img; j++) { Xp += Ex[j].x0; Yp += Ex[j].y0; }
              //Xp /= n_img; Yp /= n_img;
 		     /* end of hack due to problems with approx in det_lsq: */
-             det_lsq (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
+             det_lsq_3d (Ex0, I, G0, ap, mm, crd[0][i].x, crd[0][i].y, crd[1][i].x, crd[1][i].y, crd[2][i].x, crd[2][i].y, crd[3][i].x, crd[3][i].y, &Xp, &Yp, &Zp);
 	         fix[i].x=Xp;
 		     fix[i].y=Yp;
 		     fix[i].z=Zp;

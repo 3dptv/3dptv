@@ -175,7 +175,7 @@ int mod();
 void getabcFromRot();
 void sortgrid_man();
 void just_plot();
-void det_lsq ();
+void det_lsq_3d ();
 void det_lsq_2 ();
 void det_lsq_3 ();
 void det_lsq_4 ();
