@@ -1315,8 +1315,8 @@ int	       	nr;  		/* image number for residual display */
       n = pixnr[i/2];
       intx1 = (int) pix[nr][n].x;
       inty1 = (int) pix[nr][n].y;
-      intx2 = intx1 + resi[i]*100;
-      inty2 = inty1 + resi[i+1]*100;
+      intx2 = intx1 + resi[i]*5000;
+      inty2 = inty1 + resi[i+1]*5000;
 
       drawcross (interp, intx1, inty1, 3, nr , "orange");
       drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");

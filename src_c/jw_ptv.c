@@ -673,7 +673,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
 
   puts ("Determinate");
 
-  sprintf (buf, "Point positioning (l.sq.)");
+  sprintf (buf, "Point positioning (mid_point in 3d)");
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 2");
   Tcl_Eval(interp, ".text insert 2 $tbuf");
@@ -872,7 +872,7 @@ X /= n_img; Y /= n_img;
   rmsX = sqrt(rmsX/match); rmsY = sqrt(rmsY/match); rmsZ = sqrt(rmsZ/match);
   mean_sigma0 = sqrt (mean_sigma0/match);
 
-  sprintf (buf, "Match: %d, => sigma0 = %4.2f micron, RMS = %5.3f/%5.3f/%5.3f mm", match, mean_sigma0*1000, rmsX, rmsY, rmsZ);
+  sprintf (buf, "Match: %d, => rms = %4.2f micron, rms_x,y,z = %5.3f/%5.3f/%5.3f mm", match, mean_sigma0*1000, rmsX, rmsY, rmsZ);
   puts (buf);
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 3");
