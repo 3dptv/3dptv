@@ -136,6 +136,7 @@ menu .mbar.calib.menu
 .mbar.calib.menu add command -label "Orientation with file" -command " set sel 4;calib_cmd"
 .mbar.calib.menu add command -label "Show initial guess" -command " set sel 9;calib_cmd"
 .mbar.calib.menu add command -label "Sortgrid" -command " set sel 5;calib_cmd"
+.mbar.calib.menu add command -label "Sortgrid = initial guess" -command " set sel 14;calib_cmd"
 .mbar.calib.menu add command -label "Orientation" -command " set sel 6;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Sequence/Tracking/Shaking)" -command "sequence_cmd 2;trackcorr_cmd 2;  set sel 10;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Shaking)" -command " set sel 10;calib_cmd"

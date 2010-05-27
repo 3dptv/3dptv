@@ -65,6 +65,7 @@ coord_3d	fix[];
 	  printf ("coord of point %d: %d, %d\n", i,intx,inty);
       
       drawcross (interp, intx, inty, cr_sz+1, n_img, "yellow");
+     draw_pnr (interp, intx, inty, fix[i].pnr, n_img, "yellow");
       
       
     }
