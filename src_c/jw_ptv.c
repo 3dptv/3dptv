@@ -668,7 +668,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
   double  Zlo = 1e20, Zhi = -1e20;
   int dumbbell=0,i1,i2;
   double x1,y1,z1,x2,y2,z2,dist,mx,my,mz,nx,ny,nz;
-  int a1[4],a2[4];
+  int a1[4],a2[4],checksum_1,checksum_2;
 
 
   puts ("Determinate");
@@ -851,6 +851,28 @@ X /= n_img; Y /= n_img;
 		y2=my+0.5*db_scale*ny;
 		z1=mz-0.5*db_scale*nz;
 		z2=mz+0.5*db_scale*nz;*/
+
+        //check if reasonable
+		 /*dist=pow(pow(x2-x1,2.)+pow(y2-y1,2.)+pow(z2-z1,2.),0.5);
+		 if (fabs(dist-38)>1){
+			 match=0;
+		 }*/
+		 
+		 //check if all quadruplets or triplets
+		 checksum_1=0;
+		 checksum_2=0;
+		 for(j=0;j<4;j++){
+		    if(a1[1]<0){
+              checksum_1++;
+			}
+			if(a2[1]<0){
+              checksum_2++;
+			}
+		 }
+		 if(checksum_1>1 || checksum_2>1){
+			 match=0;
+		 }
+		 //end of check if all quadruplets or triplets
 	 }
 	 else{
         match=0;

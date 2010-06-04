@@ -315,7 +315,8 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
   /* search consistent pairs :  12, 13, 14, 23, 24, 34 */
   /* only if an object model is available or if only 2 images are used */
-  if(n_img>1){puts ("Search pairs");}
+  if(1>2 && n_img>1 && allCam_flag==0){
+	  puts ("Search pairs");
 
 
   match0 = 0;
@@ -366,6 +367,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
       con[match++] = con0[i];
     }
+  } //end pairs?
 
   match2 = match-match4-match3;
   if(n_img==1){
