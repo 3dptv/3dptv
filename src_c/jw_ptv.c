@@ -920,7 +920,8 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
   double slice_step;
   double slicethickness;
   double zdim, z_cen_slice[19];
-  int dumbbell=0;
+  int dumbbell=0,step_shake=1;
+  double dummy;
 
 
   fpp = fopen_r ("parameters/sequence.par");
@@ -961,8 +962,12 @@ printf("\nObject volume is scanned in %d slices!\n", nslices);
   if (dumbbell==1){
      fpp = fopen ("parameters/dumbbell.par", "r");
      if (fpp){
-         fscanf (fpp, "%lf", &eps0);
-         fclose (fpp);
+        fscanf (fpp, "%lf", &eps0);
+		fscanf (fpp, "%lf", &dummy);
+	    fscanf (fpp, "%lf", &dummy);
+	    fscanf (fpp, "%lf", &dummy);
+		fscanf (fpp, "%d", &step_shake);
+        fclose (fpp);
      }
      else{
          fpp = fopen ("parameters/dumbbell.par", "w");
@@ -1005,7 +1010,7 @@ printf("\nzdim: %f, max: %f, min: %f, st: %f\n", zdim,Zmax_lay[0], Zmin_lay[0], 
   /* ************** */
 
 
-  for (i=seq_first; i<seq_last+1; i++)
+  for (i=seq_first; i<seq_last+1; i=i+step_shake) //changed by Beat July 2010 to allow for faster proc. when stepping through data
     {
 
 printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
