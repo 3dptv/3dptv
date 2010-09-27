@@ -841,6 +841,7 @@ int	       	n_img,nfix;		/* # of object points */
 		 }
 		 
 		 if(ccflag==1){
+			 if (1>2){
 		    old_val=I[i_img].cc;
 	        I[i_img].cc += dm;
 		    rotation_matrix (Ex[i_img], Ex[i_img].dm);
@@ -855,6 +856,36 @@ int	       	n_img,nfix;		/* # of object points */
 		    else{
                best_residual=residual;
 		    }
+			 }
+			 else{
+	        old_val=I[0].cc;
+	        I[0].cc += dm;
+			I[1].cc  =I[0].cc;
+			I[2].cc  =I[0].cc;
+			I[3].cc  =I[0].cc;
+		    rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	        eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[0].cc -= dm;
+			I[1].cc  =I[0].cc;
+			I[2].cc  =I[0].cc;
+			I[3].cc  =I[0].cc;
+		    I[0].cc += dm*factor*best_residual/sens;
+			I[1].cc  =I[0].cc;
+			I[2].cc  =I[0].cc;
+			I[3].cc  =I[0].cc;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[0].cc=old_val;
+			   I[1].cc  =I[0].cc;
+			   I[2].cc  =I[0].cc;
+			   I[3].cc  =I[0].cc;
+		    }
+		    else{
+               best_residual=residual;
+		    }
+
+			 }
 		 }
 
 		 if(xhflag==1){
