@@ -2510,7 +2510,7 @@ else{
 	  case 12: puts ("Orientation from dumbbells"); strcpy(buf, "");
         
           prepare_eval(n_img,&nfix); //goes and looks up what sequence is defined and takes all cord. from rt_is
-          orient_v4 (n_img, nfix,&Ex, &I, &G, &ap);
+          orient_v5 (n_img, nfix,&Ex, &I, &G, &ap);
           
 		  for(i_img=0;i_img<n_img;i_img++){
               write_ori (Ex[i_img], I[i_img], G[i_img], img_ori[i_img]);

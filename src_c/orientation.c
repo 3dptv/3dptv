@@ -658,7 +658,11 @@ double *residual;
 		X_pos/=(double)count_inner;Y_pos/=(double)count_inner;Z_pos/=(double)count_inner;
 		//end of new det_lsq
 
+		if(Z_pos>G[0].vec_z){
+            d_inner=Z_pos-G[0].vec_z+d_inner;
+		}
 		*d_outer +=d_inner;
+		
 		count_outer++;
 		if(pair_count==0) {
             X1=X_pos;Y1=Y_pos;Z1=Z_pos;
@@ -690,7 +694,272 @@ double *residual;
 	*residual=*d_outer+weight_scale*(*av_dist_error);
 }
 
+void orient_v5 (n_img, nfix, Ex, I, G, ap)
 
+Exterior	*Ex;	/* exterior orientation, approx and result */
+Interior	*I;		/* interior orientation, approx and result */
+Glass   	*G;		/* glass orientation, approx and result */
+ap_52		*ap;	/* add. parameters, approx and result */
+int	       	n_img,nfix;		/* # of object points */
+
+
+{
+    int  	i,j,itnum,max_itnum,i_img,dummy;
+    double       	residual, best_residual, old_val,dm = 0.0001,  drad = 0.00001,sens,factor,weight_scale;   
+    double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
+	double db_scale,eps0,epi_miss, dist;
+	int  	useflag, ccflag, scxflag, sheflag, interfflag, xhflag, yhflag,
+    k1flag, k2flag, k3flag, p1flag, p2flag;
+
+	fpp = fopen ("parameters/dumbbell.par", "r");
+    if (fpp){
+        fscanf (fpp, "%lf", &eps0);
+		fscanf (fpp, "%lf", &db_scale);
+	    fscanf (fpp, "%lf", &factor);
+	    fscanf (fpp, "%lf", &weight_scale);
+		fscanf (fpp, "%d", &dummy);
+		fscanf (fpp, "%d", &max_itnum);
+        fclose (fpp);
+    }
+
+	fp1 = fopen_r ("parameters/orient.par");
+    fscanf (fp1,"%d", &useflag);
+    fscanf (fp1,"%d", &ccflag);
+    fscanf (fp1,"%d", &xhflag);
+    fscanf (fp1,"%d", &yhflag);
+    fscanf (fp1,"%d", &k1flag);
+    fscanf (fp1,"%d", &k2flag);
+    fscanf (fp1,"%d", &k3flag);
+    fscanf (fp1,"%d", &p1flag);
+    fscanf (fp1,"%d", &p2flag);
+    fscanf (fp1,"%d", &scxflag);
+    fscanf (fp1,"%d", &sheflag);
+    fscanf (fp1,"%d", &interfflag);
+    fclose (fp1);
+	
+
+/*I[0].cc  = 45.0;
+I[1].cc  =I[0].cc;
+I[2].cc  =I[0].cc;
+I[3].cc  =I[0].cc; 
+
+I[0].xh = 0.0;
+I[1].xh = 0.0;
+I[2].xh = 0.0;
+I[3].xh = 0.0;
+
+I[0].yh = 0.0;
+I[1].yh = 0.0;
+I[2].yh = 0.0;
+I[3].yh = 0.0;*/
+
+
+  puts ("\n\nbegin of iterations");
+  itnum = 0;  
+  while (itnum < max_itnum){
+    //printf ("\n\n%2d. iteration\n", ++itnum);
+    itnum++;
+
+    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	best_residual=residual;
+    
+    for (i_img=0;i_img<n_img;i_img++) {
+	     
+		 Ex[i_img].x0 += dm;
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].x0 -= 2*dm;
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].x0 += dm;
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+	     
+
+		 Ex[i_img].y0 += dm;
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].y0 -= 2*dm;
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].y0 += dm;
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+
+		 Ex[i_img].z0 += dm;
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].z0 -= 2*dm;
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].z0 += dm;
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+
+		 Ex[i_img].omega += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].omega -= 2*drad;
+			 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].omega += drad;
+				  rotation_matrix (Ex[i_img], Ex[i_img].dm);
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+
+		 Ex[i_img].phi += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].phi -= 2*drad;
+			 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].phi += drad;
+				  rotation_matrix (Ex[i_img], Ex[i_img].dm);
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+		 
+		 Ex[i_img].kappa += drad;
+		 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	     eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		 if(best_residual-residual < 0){ //then try other direction
+			 Ex[i_img].kappa -= 2*drad;
+			 rotation_matrix (Ex[i_img], Ex[i_img].dm);
+	         eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			 if(best_residual-residual < 0){// then leave it unchanged
+                  Ex[i_img].kappa+= drad;
+				  rotation_matrix (Ex[i_img], Ex[i_img].dm);
+			 }
+			 else{ // it was a success!
+                  best_residual=residual;
+			 }
+		 }
+		 else{ // it was a success!
+			 best_residual=residual;
+		 }
+		 
+		 if(ccflag==1){
+			 if (1<2){
+		    I[i_img].cc += dm;
+	        eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		    if(best_residual-residual < 0){ //then try other direction
+			    I[i_img].cc -= 2*dm;
+	            eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			    if(best_residual-residual < 0){// then leave it unchanged
+                    I[i_img].cc += dm;
+			    }
+			    else{ // it was a success!
+                    best_residual=residual;
+			    }
+		    }
+		    else{ // it was a success!
+			    best_residual=residual;
+		    }
+			 }
+			 else{
+	        I[0].cc += dm;
+			I[1].cc  =I[0].cc;
+			I[2].cc  =I[0].cc;
+			I[3].cc  =I[0].cc;
+	        eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+		    if(best_residual-residual < 0){ //then try other direction
+			    I[0].cc -= 2*dm;
+				I[1].cc  =I[0].cc;
+			    I[2].cc  =I[0].cc;
+			    I[3].cc  =I[0].cc;
+	            eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+			    if(best_residual-residual < 0){// then leave it unchanged
+                    I[0].cc += dm;
+					I[1].cc  =I[0].cc;
+			        I[2].cc  =I[0].cc;
+			        I[3].cc  =I[0].cc;
+			    }
+			    else{ // it was a success!
+                    best_residual=residual;
+			    }
+		    }
+		    else{ // it was a success!
+			    best_residual=residual;
+		    }
+
+			 }
+		 }
+
+		 /*if(xhflag==1){
+		    old_val=I[i_img].xh;
+	        I[i_img].xh += dm;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[i_img].xh -= dm;
+		    I[i_img].xh += dm*factor*best_residual/sens;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[i_img].xh=old_val;
+		    }
+		    else{
+               best_residual=residual;
+		    }
+		 }
+		 
+		 if(yhflag==1){
+            old_val=I[i_img].yh;
+	        I[i_img].yh += dm;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        sens  = (best_residual-residual) / dm;
+	        I[i_img].yh -= dm;
+		    I[i_img].yh += dm*factor*best_residual/sens;
+		    eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
+	        if(best_residual<residual){
+	           I[i_img].yh=old_val;
+		    }
+		    else{
+               best_residual=residual;
+		    }
+		 }*/
+	}
+	
+	printf ("eps_tot: %8.7f, eps_epi: %7.5f, eps_dist: %7.5f, step: %d\n",best_residual, epi_miss,dist,itnum);
+
+      
+ }
+
+
+
+  
+}
 
 void orient_v4 (n_img, nfix, Ex, I, G, ap)
 
@@ -754,7 +1023,7 @@ int	       	n_img,nfix;		/* # of object points */
 	     Ex[i_img].x0 -= dm;
          Ex[i_img].x0 += dm*factor*best_residual/sens;
 		 eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-		 if(best_residual<residual){
+		 if(best_residual<residual){ // and rand < 1 or here we can tune the temperature
 	        Ex[i_img].x0=old_val;
 		 }
 		 else{
@@ -841,7 +1110,7 @@ int	       	n_img,nfix;		/* # of object points */
 		 }
 		 
 		 if(ccflag==1){
-			 if (1>2){
+			 if (1<2){
 		    old_val=I[i_img].cc;
 	        I[i_img].cc += dm;
 		    rotation_matrix (Ex[i_img], Ex[i_img].dm);

@@ -182,6 +182,7 @@ void det_lsq_4 ();
 void orient();
 void orient_v3();
 void orient_v4();
+void orient_v5();
 void prepare_eval();
 void eval_ori();
 void eval_ori_v2();

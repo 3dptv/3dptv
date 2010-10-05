@@ -294,6 +294,9 @@ const char** argv;
   else{
       tol_band_width=eps;
   }
+  if(tol_band_width<0.05){
+       tol_band_width=0.05;
+  }
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
