@@ -816,10 +816,11 @@ X /= n_img; Y /= n_img;
 
   //Beat Mai 2010: now we should open the file db_is.* again, check
   //               if it has exactly two points, rescale them, write them again and close the file.
-  
-  if (atoi(argv[1])==3){
-      dumbbell=1;
-	  display=0;
+  if ((argv[1])>0){
+     if (atoi(argv[1])==3){
+         dumbbell=1;
+	     display=0;
+     }
   }
   if (dumbbell==1){
      fpp = fopen ("parameters/dumbbell.par", "r");
