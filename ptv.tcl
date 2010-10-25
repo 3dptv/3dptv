@@ -124,7 +124,7 @@ menu .mbar.track.menu
 .mbar.track.menu add command -label "VRML Tracks" -command "VRMLtracks"
 .mbar.track.menu add command -label "VRML Detection" -command "VRMLdetections"
 .mbar.track.menu add command -label "VRML Detection + Tracks" -command "VRMLdettracks"
-#.mbar.track.menu add command -label "PTV" -command "ptv_cmd"
+.mbar.track.menu add command -label "Tracking (just) in 3d" -command "ptv_cmd"
 
 menu .mbar.calib.menu
 
