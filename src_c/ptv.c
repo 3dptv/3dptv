@@ -122,7 +122,10 @@ void read_ascii_data(int filenumber)
 				filenumber, filein);
 
       FILEIN= fopen (filein, "r");
-      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+	  if (! FILEIN){
+		  printf("Can't open ascii file: %s\n", filein);
+	  }
+	  else{
 
       fscanf (FILEIN, "%d\n", &nt4[3][i]);
       for (j=0; j<nt4[3][i]; j++)
@@ -134,6 +137,7 @@ void read_ascii_data(int filenumber)
 		  &t4[3][i][j].sumg, &t4[3][i][j].tnr);
 	}
       fclose (FILEIN);
+	      }
     }
 
 }
@@ -226,8 +230,10 @@ void write_ascii_data(int filenumber)
 				filenumber, fileout);
 
       FILEOUT= fopen (fileout, "w");
-      if (! FILEOUT) printf("Can't open ascii file: %s\n", fileout);
-
+	  if (! FILEOUT){
+		  printf("Can't open ascii file: %s\n", fileout);
+	  }
+	  else{
       fprintf (FILEOUT, "%d\n", nt4[set][i]);
       for (j=0; j<nt4[set][i]; j++)
 	{
@@ -238,6 +244,7 @@ void write_ascii_data(int filenumber)
 		  t4[set][i][j].sumg, t4[set][i][j].tnr);
 	}
       fclose (FILEOUT);
+	      }
     }
 }
 
