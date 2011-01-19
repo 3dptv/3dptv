@@ -1232,6 +1232,9 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   int a[4],a1[4],a2[4],success=1;
   double residual;
 
+  
+  
+
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
 
@@ -1525,6 +1528,117 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	 
 	  /* sorting of detected points by back-projection */
 	  sortgrid_man (interp, Ex[i], I[i], G[i], ap[i], mmp,
+			imx,imy, pix_x,pix_y,
+			nfix, fix, num[i], pix[i], chfield, i);
+
+	  /* adapt # of detected points */
+	  num[i] = nfix;
+
+	  for (j=0; j<nfix; j++)
+	    {
+	      if (pix[i][j].pnr < 0)	continue;
+	      intx1 = (int) pix[i][j].x ;
+	      inty1 = (int) pix[i][j].y ;
+
+	      drawcross (interp, intx1, inty1, cr_sz, i, "white");
+	      draw_pnr (interp, intx1, inty1, fix[j].pnr, i, "white");
+	    }
+	}
+
+      /* dump dataset for rdb */
+      if (examine == 4)
+	{
+	  /* create filename for dumped dataset */
+	  sprintf (filename, "dump_for_rdb");
+	  fp1 = fopen (filename, "w");
+
+	  /* write # of points to file */
+	  fprintf (fp1, "%d\n", nfix);
+
+	  /* write point and image coord to file */
+	  for (i=0; i<nfix; i++)
+	    {
+	      fprintf (fp1, "%4d %10.3f %10.3f %10.3f   %d    ",
+		       fix[i].pnr, fix[i].x, fix[i].y, fix[i].z, 0);
+	      for (i_img=0; i_img<n_img; i_img++)
+		{
+		  if (pix[i_img][i].pnr >= 0)
+		    {
+		      /* transform pixel coord to metric */
+		      pixel_to_metric (pix[i_img][i].x,
+				       pix[i_img][i].y, imx,imy, pix_x, pix_y,
+				       &crd[i_img][i].x, &crd[i_img][i].y,
+				       chfield);
+		      fprintf (fp1, "%4d %8.5f %8.5f    ",
+			       pix[i_img][i].pnr,
+			       crd[i_img][i].x, crd[i_img][i].y);
+		    }
+		  else
+		    {
+		      fprintf (fp1, "%4d %8.5f %8.5f    ",
+			       pix[i_img][i].pnr, 0.0, 0.0);
+		    }
+		}
+	      fprintf (fp1, "\n");
+	    }
+	  fclose (fp1);
+	  printf ("dataset dumped into %s\n", filename);
+	}
+      break;
+
+
+case 16: puts ("Sort grid points using files"); //Beat Jan 2011
+      for (i=0; i<n_img; i++)
+	{
+	  /* read control point coordinates for man_ori points */
+	  fp1 = fopen_r (fixp_name);
+	  k = 0;
+	  while ( fscanf (fp1, "%d %lf %lf %lf", &fix[k].pnr,
+			  &fix[k].x, &fix[k].y, &fix[k].z) != EOF) k++;
+	  fclose (fp1);
+	  nfix = k;
+
+	  /* take clicked points from control point data set */
+	  for (j=0; j<4; j++)	for (k=0; k<nfix; k++)
+	    {
+	      if (fix[k].pnr == nr[i][j])	fix4[j] = fix[k];
+	    }
+
+	  /* get approx for orientation and ap */
+	  read_ori (&Ex[i], &I[i], &G[i], img_ori0[i]);
+	  fp1 = fopen (img_addpar0[i], "r");
+	  if (! fp1)  fp1 = fopen ("addpar.raw", "r");
+
+	  if (fp1) {
+	    fscanf (fp1, "%lf %lf %lf %lf %lf %lf %lf",
+		    &ap[i].k1,&ap[i].k2,&ap[i].k3,
+		    &ap[i].p1,&ap[i].p2,
+		    &ap[i].scx,&ap[i].she);
+	    fclose (fp1);} else {
+	      printf("no addpar.raw\n");
+	      ap[i].k1=ap[i].k2=ap[i].k3=ap[i].p1=ap[i].p2=ap[i].she=0.0;
+	      ap[i].scx=1.0;
+	    }
+
+
+	  /* transform clicked points */
+	  for (j=0; j<4; j++)
+	    {
+	      pixel_to_metric (pix0[i][j].x, pix0[i][j].y,
+			       imx,imy, pix_x, pix_y,
+			       &crd0[i][j].x, &crd0[i][j].y,
+			       chfield);
+	      correct_brown_affin (crd0[i][j].x, crd0[i][j].y, ap[i],
+				   &crd0[i][j].x, &crd0[i][j].y);
+	    }
+
+	  /* raw orientation with 4 points */
+	  raw_orient_v3 (Ex[i], I[i], G[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],&G[i],0); //Beat Nov 2008
+	  sprintf (filename, "raw%d.ori", i);
+	  write_ori (Ex[i], I[i], G[i], filename);
+	 
+	  /* sorting of detected points by back-projection */
+	  sortgrid_file (interp, Ex[i], I[i], G[i], ap[i], mmp,
 			imx,imy, pix_x,pix_y,
 			nfix, fix, num[i], pix[i], chfield, i);
 
@@ -2061,6 +2175,16 @@ case 14: puts ("Sortgrid = initial guess");
 		}
 
 		break;
+
+
+case 15: puts ("Show numbe on detected points");
+      for (i=0; i<n_img; i++){
+	      for (j=0; j<num[i]; j++){ 
+             draw_pnr (interp, (int)pix[i][j].x, (int)pix[i][j].y, j, i, "blue");
+          }
+	  }
+
+      break; //Beat and Debashish Jan 2011 
 
     
     case 10: puts ("Orientation from particles"); strcpy(buf, "");

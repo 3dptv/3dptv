@@ -174,6 +174,7 @@ void raw_orient_v5();
 int mod();
 void getabcFromRot();
 void sortgrid_man();
+void sortgrid_file();
 void just_plot();
 void det_lsq_3d ();
 void det_lsq_2 ();

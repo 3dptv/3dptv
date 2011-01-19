@@ -146,3 +146,59 @@ target		pix[];
 	}
     }
 }
+
+void sortgrid_file (interp, Ex, I, G, ap, mm, imx,imy, pix_x,pix_y,
+				   nfix,fix, num,pix, field, n_img)
+
+Tcl_Interp* interp;
+Exterior	Ex;
+Interior	I;
+Glass   	G;
+ap_52		ap;
+mm_np		mm;
+int			nfix, num, imx, imy, field, n_img;
+double		pix_x, pix_y;
+coord_3d	fix[];
+target		pix[];
+
+
+
+{
+  int	       	i, j,k, n_sel;
+  int	       	intx, inty;
+  double       	xp, yp, eps=10.0;
+//  target       	old[512];
+  target       	old[1024];
+  char	file_sort[256];
+  int   dummy,detection_pnr[1000];
+  
+ 
+  sprintf (file_sort, "for_sortgrid.%1d", n_img);
+  
+  fpp = fopen_r (file_sort);
+  k = 0;
+  while ( fscanf (fpp, "%d %lf %lf %lf %d", &fix[k].pnr,
+	  &fix[k].x, &fix[k].y, &fix[k].z, &dummy) != EOF){
+          detection_pnr[k]=dummy;
+		  k++;
+  }
+  fclose (fpp);
+
+  for (i=0; i<num; i++)	old[i] = pix[i];
+  for (i=0; i<nfix; i++)
+    {
+      pix[i].pnr = -999;  pix[i].x = -999;  pix[i].y = -999;
+      pix[i].n = 0; pix[i].nx = 0; pix[i].ny = 0;
+      pix[i].sumg = 0;
+  }
+
+  for (i=0; i<nfix; i++){ //...all yellow numbers selected in the sortgrtid.x files      
+	  //j = nearest_neighbour_pix in detected points (blue number)
+	  // 
+	  // if (j != -999)
+	  //    pix[i] = old[j];                 pix[i].pnr = fix[i].pnr;
+	  if(detection_pnr[i] !=-999){
+	        pix[i] = old[detection_pnr[i]];  pix[i].pnr = fix[i].pnr;
+	  }
+  }
+}
