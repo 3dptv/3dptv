@@ -5,8 +5,8 @@ Routine:		       	peakfitting.c
 Author/Copyright:		Hans-Gerd Maas
 
 Address:		       	Institute of Geodesy and Photogrammetry
-		      		ETH - Hoenggerberg
-		       		CH - 8093 Zurich
+		      		    ETH - Hoenggerberg
+		       		    CH - 8093 Zurich
 
 Creation Date:			Feb. 1990
 
@@ -279,8 +279,10 @@ int	       	nr;		       	/* image number for display */
 	    {
 	      intx1 = (int) (x1 + l * (x2 - x1) / s12);
 	      inty1 = (int) (y1 + l * (y2 - y1) / s12);
-	      gv = *(img + inty1*imx + intx1) + disco;
-	      if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;
+	      //gv = *(img + inty1*imx + intx1) + disco; //Beat March 2011
+		  gv = *(img + inty1*imx + intx1); //Beat March 2011
+	      //if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;//Beat March 2011
+		  if (gv < (gv1+l*(gv2-gv1)/s12)*0.2)	unify = 0; //Beat March 2011
 	      if (unify == 0)	break;
 	    }
 	  if (unify == 0)
