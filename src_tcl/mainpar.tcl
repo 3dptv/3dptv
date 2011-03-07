@@ -170,6 +170,14 @@ label $w.m.partcross.l
 
 $w.part.l config -text "Parameters for particle recognition" -font {Helvetica 13 bold}
 
+#---------------------------use relative tolerable discontinuity---------------------#
+
+frame $w.rel_disc
+checkbutton $w.rel_disc.button -text "use relative tol. discontinuity (%)?" -variable mp(rel_disc)
+
+
+#---------------------------end use relative tolerable discontinuity-----------------#
+
 #---------------------------read from target files-----------------------------------#
 
 frame $w.target
@@ -177,6 +185,9 @@ checkbutton $w.target.button -text "use existing _target files?" -variable mp(ta
 
 
 #---------------------------end read from target files-------------------------------#
+
+
+
 
 $w.partgv.l config -text "Greyvalue threshold,"
 $w.partgv.l1 config -text " 1. Img:"
@@ -231,9 +242,12 @@ pack  $w.m.psumgv.l $w.m.psumgv.e $w.m.partdisc.l $w.m.partdisc.e $w.m.partcross
 pack  $w.m.psumgv $w.m.partdisc $w.m.partcross  -side left -in $w.m
 pack $w.m -pady 4
 
+pack $w.rel_disc.button  -side left
+pack $w.rel_disc -pady 3
 
 pack $w.target.button  -side left
 pack $w.target -pady 3
+
 
 
 

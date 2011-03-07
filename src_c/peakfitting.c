@@ -33,7 +33,7 @@ int	       	nr;		       	/* image number for display */
   int     		n_wait;	      	      /* size of waitlist for connectivity */
   int	       	x8[8], y8[8];  	      /* neighbours for connectivity */
   int	       	p2;	       	      /* considered point number */
-  int	      	sumg_min, gvthres[4], thres, disco, nxmin,nxmax, nymin,nymax, nnmin, nnmax;
+  int	      	sumg_min, gvthres[4], thres, disco, nxmin,nxmax, nymin,nymax, nnmin, nnmax,rel_disc,dummy;
   /* parameters for target acceptance */
   int           pnr, sumg, xn, yn;	/* collecting variables for center of gravity */
   int         	n_target=0;	/* # of targets detected */
@@ -68,6 +68,9 @@ int	       	nr;		       	/* image number for display */
   fscanf (fpp, "%d  %d", &nymin, &nymax);	/* abs, in x, in y    	*/
   fscanf (fpp, "%d", &sumg_min);		       	/* min. sumg */
   fscanf (fpp, "%d", &cr_sz);				/* size of crosses */
+  fscanf (fpp, "%d", &dummy);				/* size of crosses */
+  fscanf (fpp, "%d", &dummy);				/* size of crosses */
+  fscanf (fpp, "%d", &rel_disc);
   fclose (fpp);
 
   /* give thres value refering to image number */
@@ -279,11 +282,16 @@ int	       	nr;		       	/* image number for display */
 	    {
 	      intx1 = (int) (x1 + l * (x2 - x1) / s12);
 	      inty1 = (int) (y1 + l * (y2 - y1) / s12);
-	      //gv = *(img + inty1*imx + intx1) + disco; //Beat March 2011
-		  gv = *(img + inty1*imx + intx1); //Beat March 2011
-	      //if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;//Beat March 2011
-		  if (gv < (gv1+l*(gv2-gv1)/s12)*0.2)	unify = 0; //Beat March 2011
-	      if (unify == 0)	break;
+		  if(rel_disc==0){//Beat March 2011
+	         gv = *(img + inty1*imx + intx1) + disco; 
+	         if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;
+	         if (unify == 0)	break;
+		  }
+		  else{//Beat March 2011
+		     gv = *(img + inty1*imx + intx1); //Beat March 2011
+		     if (gv < (gv1+l*(gv2-gv1)/s12)*(double)disco*0.01)	unify = 0; //Beat March 2011
+	         if (unify == 0)	break;
+		  }
 	    }
 	  if (unify == 0)
 	    {

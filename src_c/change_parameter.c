@@ -105,6 +105,8 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "mp", "mask", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "maskname", val, TCL_GLOBAL_ONLY);
+	fscanf (fp1, "%s", val);
+	Tcl_SetVar2(interp, "mp", "rel_disc", val, TCL_GLOBAL_ONLY);
 	fclose (fp1);
 
 
@@ -225,6 +227,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "cp", "ppsumgv", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "ppcrossize", val, TCL_GLOBAL_ONLY);
+	
 
 	fclose (fp1);
 
@@ -493,6 +496,8 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "maskname",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
+	valp = Tcl_GetVar2(interp, "mp", "rel_disc",  TCL_GLOBAL_ONLY);
+	fprintf (fp1, "%s\n", valp);
 
 	fclose (fp1);
 
@@ -608,6 +613,7 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "cp", "ppcrossize", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
+	
 
 	fclose (fp1);
 
