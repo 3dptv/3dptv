@@ -1630,8 +1630,8 @@ int	       	nr;  		/* image number for residual display */
       *Ex = Ex0;	*I = I0;	*ap = ap0; *G = G0;
   }
   else{	
-	  //rotation_matrix (Ex0, Ex0.dm);//////carefullll!!!!
-      //*Ex = Ex0;	*I = I0;	*ap = ap0; *G = G0;//////carefullll!!!!
+	  rotation_matrix (Ex0, Ex0.dm);//////carefullll!!!!
+      *Ex = Ex0;	*I = I0;	*ap = ap0; *G = G0;//////carefullll!!!!
 	  puts ("orientation does not converge");
   }
 }
