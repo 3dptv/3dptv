@@ -142,6 +142,7 @@ menu .mbar.calib.menu
 .mbar.calib.menu add command -label "Orientation" -command " set sel 6;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Sequence/Tracking/Shaking)" -command "sequence_cmd 2;trackcorr_cmd 2;  set sel 10;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Shaking)" -command " set sel 10;calib_cmd"
+.mbar.calib.menu add command -label "Orientation with particle positions (Shaking, discarding bad 3d points)" -command " set sel 20;calib_cmd"
 .mbar.calib.menu add command -label "Orientation from dumbbell (Sequence/Correction/Shaking)" -command "sequence_cmd 3; set sel 12;calib_cmd"
 .mbar.calib.menu add command -label "Restore previous Orientation" -command "restore_cmd"
 .mbar.calib.menu add command -label "Checkpoints" -command " set sel 7;calib_cmd"

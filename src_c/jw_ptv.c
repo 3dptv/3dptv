@@ -1231,9 +1231,14 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   int dumy,frameCount,currentFrame;
   int a[4],a1[4],a2[4],success=1;
   double residual;
+  int good[10000];
 
   
-  
+  	double  xa,ya,xb,yb,temp,d_inner=0.,av_dist=0.,x,y;
+	double X[4],Y[4],Z[4],aa[4],b[4],c[4],dist,dist_error,X_pos,Y_pos,Z_pos,XX,YY,ZZ,X1,Y1,Z1,X2,Y2,Z2;
+	double pX[6],pY[6],pZ[6];
+	double stdX,stdY,stdZ,rmsX[10000],av_rmsX;
+	int    count_inner=0,count_outer=0,pair_count=0,count_dist=0,m;
 
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -2186,7 +2191,7 @@ case 15: puts ("Show numbe on detected points");
 
       break; //Beat and Debashish Jan 2011 
 
-    
+ 
     case 10: puts ("Orientation from particles"); strcpy(buf, "");
 
 	strcpy (safety[0], "safety_0");
@@ -2420,7 +2425,302 @@ case 15: puts ("Show numbe on detected points");
 		   ap[i_img].p1, ap[i_img].p2,
 		   ap[i_img].scx, ap[i_img].she);
 	  fclose (fp1);
-	}
+	}//end of loop through images
+
+      Tcl_Eval(interp, ".text delete 3");
+      Tcl_Eval(interp, ".text delete 1");
+      Tcl_Eval(interp, ".text insert 1 \"Orientation from particles \"");
+      Tcl_Eval(interp, ".text delete 2");
+	  if (examine != 4)
+         Tcl_Eval(interp, ".text insert 2 \"...done, sigma0 for each image -> \"");
+	  if (examine == 4 && multi==0)
+		 Tcl_Eval(interp, ".text insert 2 \"resection data written to disk \"");
+      Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
+      Tcl_Eval(interp, ".text insert 3 $tbuf");
+
+      break;
+
+    case 20: puts ("Orientation from particles, discarding bad 3d-points"); strcpy(buf, "");
+
+	strcpy (safety[0], "safety_0");
+	strcat (safety[0], ".ori");
+	strcpy (safety[1], "safety_1");
+	strcat (safety[1], ".ori");
+	strcpy (safety[2], "safety_2");
+	strcat (safety[2], ".ori");
+	strcpy (safety[3], "safety_3");
+	strcat (safety[3], ".ori");
+	strcpy (safety_addpar[0], "safety_0");
+	strcat (safety_addpar[0], ".addpar");
+	strcpy (safety_addpar[1], "safety_1");
+	strcat (safety_addpar[1], ".addpar");
+	strcpy (safety_addpar[2], "safety_2");
+	strcat (safety_addpar[2], ".addpar");
+	strcpy (safety_addpar[3], "safety_3");
+	strcat (safety_addpar[3], ".addpar");
+
+	fpp = fopen_r ("parameters/sequence.par");
+  for (i=0; i<4; i++){
+     fscanf (fpp, "%s\n", seq_name[i]);     /* name of sequence */
+     //fscanf (fpp,"%d\n", &seq_first);
+     //fscanf (fpp,"%d\n", &seq_last);
+  }
+  fclose (fpp);
+
+  fpp = fopen_r ("parameters/shaking.par");
+  fscanf (fpp,"%d\n", &seq_first); 
+  fscanf (fpp,"%d\n", &seq_last);
+  fscanf (fpp,"%d\n", &max_shake_points);
+  fscanf (fpp,"%d\n", &max_shake_frames);
+  fclose (fpp);
+
+  /*  read from main parameter file  */
+  fpp = fopen_r ("parameters/ptv.par");
+  fscanf (fpp, "%d\n", &n_img);
+  fclose (fpp);
+      //here I will insert a check for each fix -point. Beat Nov 2011
+	  //The idea is to mark those n of nfix, which are bad, so not to use them in thenext loop
+      //here I will insert a check for each fix -point. Beat Nov 2011
+	  //The idea is to mark those n of nfix, which are bad, so not to use them in thenext loop
+      //here I will insert a check for each fix -point. Beat Nov 2011
+	  //The idea is to mark those n of nfix, which are bad, so not to use them in thenext loop
+
+      i=0;
+  frameCount=0;
+  currentFrame=0;
+  step_shake=(int)((double)(seq_last-seq_first+1)/(double)max_shake_frames+0.5);
+  printf("\nframe step size for each camera is %d\n", step_shake);
+  for (filenumber=seq_first+2; filenumber<seq_last+1-2; filenumber=filenumber+step_shake){//chnaged by Beat Feb 08
+
+	  if (filenumber < 10)        sprintf (filein, "res/rt_is.%1d", filenumber);
+      else if (filenumber < 100)  sprintf (filein, "res/rt_is.%2d",  filenumber);
+      else       sprintf (filein, "res/rt_is.%3d", filenumber);
+
+      FILEIN = fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+	  /////////open target file(s)!
+	  /* read targets of each camera */
+
+	  if (filenumber < 10)        sprintf (filein_ptv, "res/ptv_is.%1d", filenumber);
+      else if (filenumber < 100)  sprintf (filein_ptv, "res/ptv_is.%2d",  filenumber);
+      else       sprintf (filein_ptv, "res/ptv_is.%3d", filenumber);
+
+      
+	  // to only use quadruplets for shaking that can be linked
+	  FILEIN_ptv = fopen (filein_ptv, "r");
+      if (! FILEIN_ptv) printf("Can't open ascii file: %s\n", filein_ptv);
+	  /////////open target file(s)!
+	  /* read targets of each camera */
+	  for (i_img=0; i_img<n_img; i_img++){
+         nt4[3][i]=0;
+         compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein_T);
+
+         FILEIN_T= fopen (filein_T, "r");
+         if (! FILEIN_T) printf("Can't open ascii file: %s\n", filein_T);
+
+         fscanf (FILEIN_T, "%d\n", &nt4[3][i_img]);
+         for (j=0; j<nt4[3][i_img]; j++){
+	        fscanf (FILEIN_T, "%4d %lf %lf %d %d %d %d %d\n",
+		         &t4[3][i_img][j].pnr, &t4[3][i_img][j].x,
+		         &t4[3][i_img][j].y, &t4[3][i_img][j].n ,
+		         &t4[3][i_img][j].nx ,&t4[3][i_img][j].ny,
+		         &t4[3][i_img][j].sumg, &t4[3][i_img][j].tnr);
+	     }
+         fclose (FILEIN_T);
+	  }
+	  ////////done reading target files
+
+      fscanf(FILEIN, "%d\n", &dumy); /* read # of 3D points on dumy */
+	  fscanf(FILEIN_ptv, "%d\n", &dumy); /* read # of 3D points on dumy */
+      do{
+          /*read dataset row by row, x,y,z and correspondences */
+		  a[0]=-1;a[1]=-1;a[2]=-1;a[3]=-1;
+		  if (n_img==4){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1], &a[2], &a[3]);
+				fscanf(FILEIN_ptv, "%d %d %lf %lf %lf\n",
+	            &prev, &next, &dummy_float, &dummy_float, &dummy_float);
+		  }
+		  if (n_img==3){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1], &a[2]);
+				fscanf(FILEIN_ptv, "%d %d %lf %lf %lf\n",
+	            &prev, &next, &dummy_float, &dummy_float, &dummy_float);
+		  }
+		  if (n_img==2){ // Alex's patch. 24.09.09. Working on Wesleyan data of 2 cameras only
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1]);
+				fscanf(FILEIN_ptv, "%d %d %lf %lf %lf\n",
+	            &prev, &next, &dummy_float, &dummy_float, &dummy_float);
+		  }
+          ////////////auch pix lesen according a0,a1,a2,a3!!!  
+		  if( (a[0]>-1 && a[1]>-1 && a[2]>-1 && a[3]>-1 && next>-1 && prev>-1 && filenumber==seq_first+2 ) ){// OR ALLE QUADRUPLETS
+		      for (i_img=0; i_img<n_img; i_img++){
+			     pix[i_img][i].x=t4[3][i_img][a[i_img]].x;
+		         pix[i_img][i].y=t4[3][i_img][a[i_img]].y;
+		         pix[i_img][i].pnr=i; 
+                 fix[i].pnr=i;
+			  }        
+              i++;
+              nfix =i;
+			  if(currentFrame<filenumber){
+                 currentFrame=filenumber;
+			     frameCount++;
+			  }
+		  }		  
+
+      }while(!feof(FILEIN));
+      fclose(FILEIN);
+  
+  }//end of loop through seq
+  
+		for (i=0; i<nfix ; i++){
+			for (i_img=0; i_img<n_img; i_img++){
+	           pixel_to_metric (pix[i_img][i].x, pix[i_img][i].y,
+			                    imx,imy, pix_x, pix_y,
+			                    &crd[i_img][i].x, &crd[i_img][i].y,
+			                    chfield);
+	           crd[i_img][i].pnr = pix[i_img][i].pnr;
+	        }
+		}
+		for (i=0; i<nfix ; i++){
+			////here comes the actual check!!!!!
+			////here comes the actual check!!!!!
+			////here comes the actual check!!!!!
+			////here comes the actual check!!!!!
+			////here comes the actual check!!!!!
+            //new det_lsq function, bloody fast!
+		    if(crd[0][i].x>-999){
+			    x = crd[0][i].x - I[0].xh;
+	            y = crd[0][i].y - I[0].yh;
+	            //correct_brown_affin (x, y, ap[0], &x, &y);
+		        ray_tracing_v2 (x,y, Ex[0], I[0], G[0], mmp, &X[0], &Y[0], &Z[0], &aa[0], &b[0], &c[0]);
+		    }		
+		    if(crd[1][i].x>-999){
+			    x = crd[1][i].x - I[1].xh;
+	            y = crd[1][i].y - I[1].yh;
+	            //correct_brown_affin (x, y, ap[1], &x, &y);
+		        ray_tracing_v2 (x,y, Ex[1], I[1], G[1], mmp, &X[1], &Y[1], &Z[1], &aa[1], &b[1], &c[1]);
+		    }		
+		    if(crd[2][i].x>-999){
+			    x = crd[2][i].x - I[2].xh;
+	            y = crd[2][i].y - I[2].yh;
+	            //correct_brown_affin (x, y, ap[2], &x, &y);
+		        ray_tracing_v2 (x,y, Ex[2], I[2], G[2], mmp, &X[2], &Y[2], &Z[2], &aa[2], &b[2], &c[2]);
+		    }		
+		    if(crd[3][i].x>-999){
+			    x = crd[3][i].x - I[3].xh;
+	            y = crd[3][i].y - I[3].yh;
+	            //correct_brown_affin (x, y, ap[3], &x, &y);
+		        ray_tracing_v2 (x,y, Ex[3], I[3], G[3], mmp, &X[3], &Y[3], &Z[3], &aa[3], &b[3], &c[3]);
+		    }
+
+		    count_inner=0;
+		    X_pos=0.;Y_pos=0.;Z_pos=0.;
+		    for (n=0;n<n_img;n++){
+			    for(m=n+1;m<n_img;m++){
+				    if(crd[n][i].x>-999 && crd[m][i].x>-999){
+                        mid_point(X[n],Y[n],Z[n],aa[n],b[n],c[n],X[m],Y[m],Z[m],aa[m],b[m],c[m],&dist,&XX,&YY,&ZZ);
+					    pX[count_inner]=XX;
+						pY[count_inner]=YY;
+						pZ[count_inner]=ZZ;
+						count_inner++;
+                        d_inner += dist;
+					    X_pos+=XX;Y_pos+=YY;Z_pos+=ZZ;
+				    }
+			    }
+		    }
+            d_inner/=(double)count_inner;
+		    X_pos/=(double)count_inner;Y_pos/=(double)count_inner;Z_pos/=(double)count_inner;
+			stdX=0;stdY=0;stdZ=0;
+			for (n=0;n<count_inner;n++){
+                stdX+=pow(pX[n]-X_pos,2);
+				stdY+=pow(pY[n]-Y_pos,2);
+				stdZ+=pow(pZ[n]-Z_pos,2);
+			}
+			rmsX[i]=pow(stdX+stdY+stdZ,0.5);
+		    //end of new det_lsq
+            ////end of actual check
+			////end of actual check
+			////end of actual check
+			////end of actual check
+		}
+		av_rmsX=0;
+		for (i=0; i<nfix ; i++){
+            av_rmsX+=rmsX[i];
+		}
+		av_rmsX=av_rmsX/(double)nfix;
+		for (i=0; i<nfix ; i++){
+			if(rmsX[i]<2*av_rmsX){
+                good[i]=1;
+			}
+			else{
+                good[i]=0;
+			}
+		}
+      //end of check for each fix -point. 
+	  //end of check for each fix -point.
+	  //end of check for each fix -point.
+      for (i_img=0; i_img<n_img; i_img++){
+       
+	     orient_v6 (interp, Ex[i_img], I[i_img], G[i_img], ap[i_img], mmp,
+		            nfix, fix, good, crd[i_img],
+		            &Ex[i_img], &I[i_img], &G[i_img], &ap[i_img], i_img);
+	     /* ================= */
+
+
+	     /* save orientation and additional parameters */
+         //make safety copy of ori files
+
+         fp1 = fopen( img_ori[i_img], "r" );
+         if(fp1 != NULL) {
+            fclose(fp1);
+            read_ori (&sEx[i_img], &sI[i_img], &sG[i_img], img_ori[i_img]);
+            fp1 = fopen (img_addpar0[i_img], "r");
+	        if (! fp1)  fp1 = fopen ("addpar.raw", "r");
+
+	        if (fp1) {
+	           fscanf (fp1, "%lf %lf %lf %lf %lf %lf %lf",
+		       &sap[i_img].k1,&sap[i_img].k2,&sap[i_img].k3,
+		       &sap[i_img].p1,&sap[i_img].p2,
+		       &sap[i_img].scx,&sap[i_img].she);
+	           fclose (fp1);} 
+		    else {
+	           printf("no addpar.raw\n");
+	           sap[i_img].k1=sap[i_img].k2=sap[i_img].k3=sap[i_img].p1=sap[i_img].p2=sap[i_img].she=0.0;
+	           sap[i_img].scx=1.0;
+	        }
+
+            write_ori (sEx[i_img], sI[i_img], sG[i_img], safety[i_img]);
+		    fp1 = fopen (safety_addpar[i_img], "w");
+	        fprintf (fp1, "%f %f %f %f %f %f %f",
+		    sap[i_img].k1, sap[i_img].k2, sap[i_img].k3,
+		    sap[i_img].p1, sap[i_img].p2,
+		    sap[i_img].scx, sap[i_img].she);
+	        fclose (fp1);
+         }
+	     else{
+		    write_ori (Ex[i_img], I[i_img], G[i_img], safety[i_img]);
+		    fp1 = fopen (safety_addpar[i_img], "w");
+	        fprintf (fp1, "%f %f %f %f %f %f %f",
+		    ap[i_img].k1, ap[i_img].k2, ap[i_img].k3,
+		    ap[i_img].p1, ap[i_img].p2,
+		    ap[i_img].scx, ap[i_img].she);
+	        fclose (fp1);
+
+	     }
+	     write_ori (Ex[i_img], I[i_img], G[i_img], img_ori[i_img]);
+	     fp1 = fopen (img_addpar[i_img], "w");
+	     fprintf (fp1, "%f %f %f %f %f %f %f",
+		          ap[i_img].k1, ap[i_img].k2, ap[i_img].k3,
+		          ap[i_img].p1, ap[i_img].p2,
+		          ap[i_img].scx, ap[i_img].she);
+	     fclose (fp1);
+	  }//end of loop through images
+
       Tcl_Eval(interp, ".text delete 3");
       Tcl_Eval(interp, ".text delete 1");
       Tcl_Eval(interp, ".text insert 1 \"Orientation from particles \"");

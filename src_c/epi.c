@@ -294,8 +294,8 @@ const char** argv;
   else{
       tol_band_width=eps;
   }
-  if(tol_band_width<0.04){
-       tol_band_width=0.04;
+  if(tol_band_width<0.06){
+       tol_band_width=0.06;
   }
 
 
