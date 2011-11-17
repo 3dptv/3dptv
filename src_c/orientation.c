@@ -41,10 +41,10 @@ int	       	nr;  		/* image number for residual display */
     k1flag, k2flag, k3flag, p1flag, p2flag;
   int  	intx1, intx2, inty1, inty2;
   double       	dm = 0.00001,  drad = 0.0000001;
-  double       	X[1800][16], Xh[1800][16], y[1800], yh[1800], ident[10],
-    XPX[16][16], XPy[16], beta[16], Xbeta[1800],
-    resi[1800], omega=0, sigma0, sigmabeta[16],
-    P[1800], p, sumP, pixnr[3600];
+  double       	X[2200][16], Xh[2200][16], y[2200], yh[2200], ident[10],
+    XPX[16][16], XPy[16], beta[16], Xbeta[2200],
+    resi[2200], omega=0, sigma0, sigmabeta[16],
+    P[2200], p, sumP, pixnr[4400];
   double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
   FILE 	*fp1;
   int dummy, multi;
@@ -68,7 +68,7 @@ int	       	nr;  		/* image number for residual display */
 
 
   /* init X, y (set to zero) */
-  for (i=0; i<1800; i++)
+  for (i=0; i<2200; i++)
     {
       for (j=0; j<16; j++)  X[i][j] = 0;
       y[i] = 0;  P[i] = 0;
@@ -1217,10 +1217,10 @@ int	       	nr;  		/* image number for residual display */
     k1flag, k2flag, k3flag, p1flag, p2flag;
   int  	intx1, intx2, inty1, inty2;
   double       	dm = 0.00001,  drad = 0.0000001,drad2 = 0.00001, dg=0.1;
-  double       	X[1800][19], Xh[1800][19], y[1800], yh[1800], ident[10],
-    XPX[19][19], XPy[19], beta[19], Xbeta[1800],
-    resi[1800], omega=0, sigma0, sigmabeta[19],
-    P[1800], p, sumP, pixnr[3600];
+  double       	X[2200][19], Xh[2200][19], y[2200], yh[2200], ident[10],
+    XPX[19][19], XPy[19], beta[19], Xbeta[2200],
+    resi[2200], omega=0, sigma0, sigmabeta[19],
+    P[2200], p, sumP, pixnr[4400];
   double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
   FILE 	*fp1;
   int dummy, multi,numbers;
@@ -1266,7 +1266,7 @@ int	       	nr;  		/* image number for residual display */
   //}
 
   /* init X, y (set to zero) */
-  for (i=0; i<1800; i++)
+  for (i=0; i<2200; i++)
     {
       for (j=0; j<19; j++)  X[i][j] = 0;
       y[i] = 0;  P[i] = 0;
@@ -1888,7 +1888,7 @@ int         good[];       /*flag if it is good 3d-point
 	  y[n+1] = crd[i].y - yp;
 
 	  n += 2;
-	  }//end of if good=true loop
+	  }//end of if good==1 loop
 
 	}//end of loop through fix
       n_obs = n;

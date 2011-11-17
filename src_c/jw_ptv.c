@@ -1844,8 +1844,8 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 		        &ap[i_img].scx,&ap[i_img].she);
 	        fclose (fp1);} else {
 	           printf("no addpar.raw\n");
-	           ap[i].k1=ap[i].k2=ap[i].k3=ap[i].p1=ap[i].p2=ap[i].she=0.0;
-	           ap[i].scx=1.0;
+	           ap[i_img].k1=ap[i_img].k2=ap[i_img].k3=ap[i_img].p1=ap[i_img].p2=ap[i_img].she=0.0;
+	           ap[i_img].scx=1.0;
 	      }
 	      ////////////////////////////////////////
 		  
