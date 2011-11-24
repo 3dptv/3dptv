@@ -386,17 +386,16 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
   /* ----------------------------------------------------------------------- */
 
   /* give each used pix the correspondence number */
-  for (i=0; i<match; i++)
-    {
-      for (j=0; j<n_img; j++)
-	{
-	  p1 = geo[j][con[i].p[j]].pnr;
-	  if (p1 > -1 && p1 < 1202590843)
-	    {
-	      pix[j][p1].tnr= i;
-	    }
-	}
-    }
+  for (i=0; i<match; i++){
+      for (j=0; j<n_img; j++){
+		  if (con[i].p[j] > -1){ //Bug, detected in Nov 2011 by Koni&Beat
+	          p1 = geo[j][con[i].p[j]].pnr;
+	          if (p1 > -1 && p1 < 1202590843){
+	              pix[j][p1].tnr= i;
+	          }
+		  }
+	  }
+  }
 
   /* draw crosses on canvas */
   if (display) {
