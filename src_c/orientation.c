@@ -22,6 +22,14 @@ Routines contained:
 Related routines:
 
 ******************************************************************/
+
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
+
 #include "ptv.h"
 
 void orient (interp, Ex0, I0, G0, ap0, mm, nfix, fix, crd, Ex, I, G, ap, nr)

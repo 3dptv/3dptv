@@ -11,6 +11,13 @@
 ** Changes:
 **
 *******************************************************************************/
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
+
 #include "ptv.h"
 
 int seq_track_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)

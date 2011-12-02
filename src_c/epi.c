@@ -1,3 +1,9 @@
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
 #include "ptv.h"
 
 double epi_line (xl, yl, Ex1, I1, G1, Ex2, I2, G2)

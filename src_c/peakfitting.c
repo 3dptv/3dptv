@@ -13,6 +13,12 @@ Creation Date:			Feb. 1990
 Description:
 
 ****************************************************************************/
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
 
 #include "ptv.h"
 

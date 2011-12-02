@@ -13,6 +13,12 @@ Creation Date:	       	1988/89
 Description:	       	establishment of correspondences for 2/3/4 cameras
 
 ****************************************************************************/
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
 
 #include "ptv.h"
 

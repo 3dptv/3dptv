@@ -13,6 +13,14 @@
   Routines contained:   parameter_panel_init, done_proc_c
   
 *********************************************************************/
+
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
+
 #include "ptv.h"
 
 /********************************************************************/

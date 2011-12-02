@@ -18,6 +18,13 @@ Description:	       	reads objects, detected by detection etc.,
 		       	does not work in each imaginable case !
 ****************************************************************************/
 
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
+
 #include "ptv.h"
 
 void just_plot (interp, Ex, I, G, ap, mm, imx,imy, pix_x,pix_y,

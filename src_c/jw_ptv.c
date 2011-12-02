@@ -16,6 +16,14 @@ Description:	    target detection, correspondences and
 Routines contained:    	many ...
 
 ****************************************************************************/
+
+/*
+Copyright (c) 1990-2011 ETH Zurich
+
+See the file license.txt for copying permission.
+*/
+
+
 #include "ptv.h"
 
 #define nmax 20240
