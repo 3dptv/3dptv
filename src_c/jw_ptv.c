@@ -1221,12 +1221,13 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
   int i, j, sel, i_img, k, n, sup,dummy,multi,planes;
   int prev, next; 
   double dummy_float;
+  double e1,e2,e3,varx,vary,cx,cy,nxp,nyp;
   int intx1, inty1, intx2, inty2;
   coord_2d    	apfig1[11][11];	/* regular grid for ap figures */
   coord_2d     	apfig2[11][11];	/* ap figures */
   coord_3d     	fix4[4];       	/* object points for preorientation */
   coord_2d     	crd0[4][12];    	/* image points for preorientation */
-  char	       	multi_filename[10][256],filename[256], val[256];
+  char	       	multi_filename[10][256],filename[256], val[256],filename2[256];
   const char *valp;
 
   FILE	*FILEIN;
@@ -2060,7 +2061,7 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 	  case 9: puts ("Plot initial guess");
       for (i=0; i<n_img; i++)
 	{
-	  /* read control point coordinates for man_ori points */
+	  /* read calblock points  */
 	  fp1 = fopen_r (fixp_name);
 	  k = 0;
 	  while ( fscanf (fp1, "%d %lf %lf %lf", &fix[k].pnr,
@@ -2069,12 +2070,12 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 	  nfix = k;
 
 	  /* take clicked points from control point data set */
-	  for (j=0; j<4; j++)	for (k=0; k<nfix; k++)
+	  /*for (j=0; j<4; j++)	for (k=0; k<nfix; k++)
 	    {
 	      if (fix[k].pnr == nr[i][j])	fix4[j] = fix[k];
-	    }
+	    }*/
 
-	  /* get approx for orientation and ap */
+	  /* read orientation orientation and ap */
 	  read_ori (&Ex[i], &I[i], &G[i], img_ori0[i]);
 	  fp1 = fopen (img_addpar0[i], "r");
 	  if (! fp1)  fp1 = fopen ("addpar.raw", "r");
@@ -2092,7 +2093,7 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 
 
 	  /* transform clicked points */
-	  for (j=0; j<4; j++)
+	  /*for (j=0; j<4; j++)
 	    {
 	      pixel_to_metric (pix0[i][j].x, pix0[i][j].y,
 			       imx,imy, pix_x, pix_y,
@@ -2100,13 +2101,13 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 			       chfield);
 	      correct_brown_affin (crd0[i][j].x, crd0[i][j].y, ap[i],
 				   &crd0[i][j].x, &crd0[i][j].y);
-	    }
+	    }*/
 
 	  /* raw orientation with 4 points */
-	  raw_orient_v3 (Ex[i], I[i], G[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],&G[i],1);
+	  /*raw_orient_v3 (Ex[i], I[i], G[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],&G[i],1);*/
 	  
 	 
-	  /* sorting of detected points by back-projection */
+	  /* just plot the stuff */
 	  just_plot (interp, Ex[i], I[i], G[i], ap[i], mmp,
 			imx,imy, pix_x,pix_y,
 			nfix, fix,  chfield, i);
@@ -2117,6 +2118,63 @@ case 16: puts ("Sort grid points using files"); //Beat Jan 2011
 	}
     
       break;
+
+case 30: puts ("map mm to pixel");
+     for (i=0; i<n_img; i++){
+
+	     /* read calblock points  */
+		 fp1 = fopen ("points4mapping.txt", "r");
+	     fp1 = fopen_r (fixp_name);
+	     k = 0;
+	     while ( fscanf (fp1, "%d %lf %lf %lf", &fix[k].pnr,
+			  &fix[k].x, &fix[k].y, &fix[k].z) != EOF) k++;
+	     fclose (fp1);
+	     nfix = k;	  
+
+	     /* read orientation orientation and ap */
+	     read_ori (&Ex[i], &I[i], &G[i], img_ori0[i]);
+	     fp1 = fopen (img_addpar0[i], "r");
+	     if (! fp1)  fp1 = fopen ("addpar.raw", "r");
+
+	     if (fp1) {
+	        fscanf (fp1, "%lf %lf %lf %lf %lf %lf %lf",
+		    &ap[i].k1,&ap[i].k2,&ap[i].k3,
+		    &ap[i].p1,&ap[i].p2,
+		    &ap[i].scx,&ap[i].she);
+	        fclose (fp1);} else {
+	        printf("no addpar.raw\n");
+	        ap[i].k1=ap[i].k2=ap[i].k3=ap[i].p1=ap[i].p2=ap[i].she=0.0;
+	        ap[i].scx=1.0;
+	     }
+	  
+	     /* reproject all calibration plate points into pixel space, varying all co*/
+         sprintf (filename2, "mm2pixel_mapping_cam%d.txt", i);
+         fp2 = fopen (filename2, "w");	     
+         for (n=0; n<nfix; n++){
+			 //first, compute central projection
+			 img_coord (fix[n].x, fix[n].y, fix[n].z,  Ex[i], I[i], G[i], ap[i], mmp, &nxp,&nyp);
+             metric_to_pixel (nxp, nyp, imx,imy, pix_x,pix_y, &nxp, &nyp, chfield);
+			 cx=nxp;
+			 cy=nyp;
+			 //now project variation +/- 0.5mm
+			 varx=0;
+			 vary=0;
+			 for (e1=-0.5;e1<=0.5;e1=e1+1){
+				 for (e2=-0.5;e2<=0.5;e2=e2+1){
+					 for (e3=-0.5;e3<=0.5;e3=e3+1){
+                         img_coord (fix[n].x+e1, fix[n].y+e2, fix[n].z+e3,  Ex[i], I[i], G[i], ap[i], mmp, &nxp,&nyp);
+                         metric_to_pixel (nxp, nyp, imx,imy, pix_x,pix_y, &nxp, &nyp, chfield);
+                         varx+=fabs(nxp-cx)/8;
+						 vary+=fabs(nyp-cy)/8;
+					 }
+				 }
+			 }
+			 fprintf (fp2, "%f %f\n",2*varx,2*vary);//so it write out 1mm per soandsomany pixel
+         }
+         fclose (fp2);
+	}
+    break;
+
 case 14: puts ("Sortgrid = initial guess");
 
 		for (i=0; i<n_img; i++)

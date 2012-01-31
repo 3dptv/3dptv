@@ -381,7 +381,7 @@ const char** argv;
 			  // with brighter targets 
 		      corr *= ((double) (sumg + pix[p2].sumg));
 
-		      if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg){
+			  if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg){
 				 if ( *count < maxcand) {
 			        cand[*count].pnr = j;
 			        cand[*count].tol = d;

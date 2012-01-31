@@ -147,6 +147,7 @@ menu .mbar.calib.menu
 .mbar.calib.menu add command -label "Restore previous Orientation" -command "restore_cmd"
 .mbar.calib.menu add command -label "Checkpoints" -command " set sel 7;calib_cmd"
 .mbar.calib.menu add command -label "Ap figures" -command "set sel 8;calib_cmd"
+.mbar.calib.menu add command -label "map mm to pixel" -command " set sel 30;calib_cmd"
 
 tooltip::tooltip .mbar.calib.menu -index 0 "This is a menu tooltip"
 
