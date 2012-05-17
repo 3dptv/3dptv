@@ -20,8 +20,8 @@ https://github.com/3dptv/3dptv/zipball/master
 5 If all the paths are the same as ours, Build the solution and you should see the 3DPTV software up and running
 
 If you use different paths it is important to:
-	a. add \Tcl\Include to the list of included directories
-	b. add \Tcl\tcl84.lib and \Tcl\tk84.lib to the additional libraries
+	a. add Tcl\/Include to the list of included directories
+	b. add \Tcl\/tcl84.lib and \Tcl\tk84.lib to the additional libraries
 	c. on Windows XP it is important to ignore LIBC.LIB and also to use MFC as Static Library
 
 
