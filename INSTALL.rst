@@ -4,7 +4,7 @@ Prerequisities
 1. Download and install ActiveTCL 8.4 ( not 8.5 or 8.6) e.g. 
 http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.295590-win32-ix86-threaded.exe
 
-- Install it to ``C:\\Tcl `` (the path is important)
+- Install it to C:\\Tcl  (the path is important)
 
 2. Download Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
 
