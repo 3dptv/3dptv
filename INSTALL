@@ -1,7 +1,7 @@
 Prerequisities:
 
 1. Download and install ActiveTCL 8.4 ( not 8.5 or 8.6) e.g. 
-<a href="http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.295590-win32-ix86-threaded.exe"> Link </a> 
+http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.295590-win32-ix86-threaded.exe
 
 Install it to C:\Tcl (the path is important)
 
