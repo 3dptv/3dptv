@@ -1,27 +1,28 @@
-We're in process of moving our development to Github more news soon (this will only replace points 1-2)
-
 Prerequisities:
-Download and install Tcl/Tk for your platform. We recommend ActiveTCL. NOTE: use 8.4 version only, we're not updated to use 8.5 !!!!
 
-1. Install subversion control
+1. Download and install ActiveTCL 8.4 ( not 8.5 or 8.6) e.g. 
+http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.295590-win32-ix86-threaded.exe 
 
-Install an SVN client, we recommend free TortoiseSVN for Windows, e.g. http://tortoisesvn.net/downloads 
+Install it to C:\Tcl (the path is important)
 
-2. Checkout the 3D-PTV project from origo
+2. Download Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
 
-- Prepare an empty folder on your hard drive, for example D:\svn-ptv. 
-- Right click this folder and then select SVN checkout.... 
-- As URL of repository we recommend to use either https://svn.origo.ethz.ch/ptv/branches/stable_Sept09 or https://svn.origo.ethz.ch/ptv/. 
-- The former is tested and stable and the latter guaranties that you will always have the latest version.
+Install it anywhere, e.g. C:\Program Files\VC2010
 
-- If you use the trunk version make sure that whenever you work again with 3D-PTV right-click your D:\svn-ptv folder and update it to the most current version. 
-- If you make a useful modification to the code yourself use the SVN Update function and we will all profit from it. You may also choose to create a branch so you can develop your own version of the code.
+3. Download and unpack the newest version of 3DPTV software from our tarball on Github:
+https://github.com/3dptv/3dptv/zipball/master
 
-3. Download the project file
-http://ptv.origo.ethz.ch/system/files/3dptv.vcproj
+Install it to C:\PTV (the path is important)
 
-- Download (by right-clicking, Save Link As...) the project file  and store it inside the src_c folder. 
+4. Double-click the C:\PTV\3dptv_vc2010\3dptv_vc2010.sln to open the 3DPTV package in Visual C++ 2010 Express. 
 
-4. Set two paths in the project settings
+5. If all the paths are the same as ours, Build the solution and you should see the 3DPTV software up and running
 
-- Open the project and in the <Solution Explorer> at the top of the file tree you will see 3D-PTV. Right-click it and go to Configuration Porperties->Debugging->Command Arguments/Working Directory. Enter the paths according to your file structure that they point to ptv.tcl and the the folder where you have your folders res, img, parameters and cal.
+If you use different paths it is important to:
+a) add \Tcl\Include to the list of included directories
+b) add \Tcl\tcl84.lib and \Tcl\tk84.lib to the additional libraries
+c) on Windows XP it is important to ignore LIBC.LIB and also to use MFC as Static Library
+
+
+
+
