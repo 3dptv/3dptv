@@ -10,6 +10,10 @@ http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.2
 
 - Install it anywhere, e.g. ``C:\Program Files\VC2010``
 
+
+Important note for the first-time installation - RESTART YOUR WINDOWS after installing the ActiveTcl and Visual C++ 
+
+
 Download the software
 ---------------------
 
