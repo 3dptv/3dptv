@@ -32,7 +32,7 @@ https://github.com/3dptv/3dptv/zipball/master
 
 - Install it to ``C:\PTV`` (the path is important)
 
-Installation
+Compilation from source
 ------------
 
 1. Double-click the ``C:\PTV\3dptv_vc2010\3dptv_vc2010.sln`` to open the 3DPTV package in Visual C++ 2010 Express. 
