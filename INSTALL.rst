@@ -11,8 +11,7 @@ http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.2
 
 	1. download https://github.com/downloads/3dptv/3dptv/3dptv.exe (Tcl/Tk 8.4 has to be installed)
 	2. download the software package https://github.com/3dptv/3dptv/zipball/master
-	3. uncompress the software package e.g. in C:\PTV and run the software by 
-``C:\PTV\test\start.bat``
+	3. uncompress the software package e.g. in C:\PTV and run the ``C:\PTV\test\start.bat``
 
 
 
