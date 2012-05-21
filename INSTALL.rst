@@ -6,7 +6,18 @@ http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.2
 
 - Install it to ``C:\Tcl``  (the path is important)
 
-2. Download Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+
+2. If you use 32bit Windows platform you can try to use the binary distribution:
+
+	1. download https://github.com/downloads/3dptv/3dptv/3dptv.exe (Tcl/Tk 8.4 has to be installed)
+	2. download the software package https://github.com/3dptv/3dptv/zipball/master
+	3. uncompress the software package e.g. in C:\PTV and run the software by 
+``C:\PTV\test\start.bat``
+
+
+
+
+3. If you need to compile from source, download Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
 
 - Install it anywhere, e.g. ``C:\Program Files\VC2010``
 
