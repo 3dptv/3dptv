@@ -30,7 +30,7 @@ Download the software
 1. Download and unpack the newest version of 3DPTV software from our tarball on Github:
 https://github.com/3dptv/3dptv/zipball/master
 
-- Install it to ``C:\PTV`` (the path is important)
+- Expand the compressed file  into ``C:\PTV`` folder (the path is important it is prescribed by the Visual C++ project file)
 
 Compilation from source
 ------------
