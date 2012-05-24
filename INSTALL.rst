@@ -27,8 +27,11 @@ Important note for the first-time installation - RESTART YOUR WINDOWS after inst
 Download the software
 ---------------------
 
-1. Download and unpack the newest version of 3DPTV software from our tarball on Github:
+1. If you wish to compile from source - download and unpack the newest version of 3DPTV software from our tarball on Github:
 https://github.com/3dptv/3dptv/zipball/master
+
+2. If you want to try the pre-compiled binary executables visit https://github.com/3dptv/3dptv/downloads for the 
+Windows 32bit XP or Windows 7 64bit (with Tcl/Tk 32bit libraries) versions. 
 
 - Expand the compressed file  into ``C:\PTV`` folder (the path is important it is prescribed by the Visual C++ project file)
 
