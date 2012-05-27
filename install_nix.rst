@@ -1,4 +1,3 @@
-
 Installation and Handling of the PTV-Software
 =============================================
 
@@ -7,7 +6,7 @@ software and gives a description of the input data
 file which have to be provided.
 
 The test data set contains the following:
-<pre>
+::
 
 Cam1*                   Cam3.addpar*            man_ori.dat*
 Cam1.addpar*            Cam3.ori*               parameters/
@@ -17,7 +16,7 @@ Cam2.addpar*            Cam4.ori*               start.bat*
 Cam2.ori*               calFieldApril.txt*
 Cam3*                   img/
 
-</pre>
+
 
 images for calibration, camera orientation data, files for
 additional parameters as well as the coordinate file of the
