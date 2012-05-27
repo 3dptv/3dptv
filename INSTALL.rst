@@ -32,7 +32,7 @@ https://github.com/3dptv/3dptv/zipball/master
 
 - Expand the compressed file  into ``C:\PTV`` folder (the path is important it is prescribed by the Visual C++ project file)
 
-Compilation from source
+Compilation from source on Windows platform
 ------------
 
 1. Double-click the ``C:\PTV\3dptv_vc2010\3dptv_vc2010.sln`` to open the 3DPTV package in Visual C++ 2010 Express. 
@@ -43,6 +43,12 @@ If you use different paths it is important to:
 	a. add ``\Tcl\Include`` to the list of included directories
 	b. add ``\Tcl\tcl84.lib`` and ``\Tcl\tk84.lib`` to the additional libraries
 	c. on Windows XP it is important to ignore ``LIBC.LIB`` and also to use ``MFC as Static Library``
+	
+	
+	
+Compilation from source on _nix platforms
+
+1. Read https://github.com/3dptv/3dptv/blob/master/install_nix.rst
 
 
 
