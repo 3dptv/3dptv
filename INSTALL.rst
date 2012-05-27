@@ -50,6 +50,7 @@ If you use different paths it is important to:
 	
 	
 Compilation from source on _nix platforms
+-----------------------------------------
 
 1. Read https://github.com/3dptv/3dptv/blob/master/install_nix.rst
 
