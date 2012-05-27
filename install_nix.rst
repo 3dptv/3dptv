@@ -7,7 +7,6 @@ file which have to be provided.
 
 The test data set contains the following:
 ::
-
 Cam1*                   Cam3.addpar*            man_ori.dat*
 Cam1.addpar*            Cam3.ori*               parameters/
 Cam1.ori*               Cam4*                   ptvmanual.pdf*
@@ -15,7 +14,7 @@ Cam2*                   Cam4.addpar*            res/
 Cam2.addpar*            Cam4.ori*               start.bat*
 Cam2.ori*               calFieldApril.txt*
 Cam3*                   img/
-
+::
 
 
 images for calibration, camera orientation data, files for
