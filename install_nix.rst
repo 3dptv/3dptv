@@ -7,7 +7,6 @@ file which have to be provided.
 
 The test data set contains the following::
 
-
 Cam1*                   Cam3.addpar*            man_ori.dat*
 Cam1.addpar*            Cam3.ori*               parameters/
 Cam1.ori*               Cam4*                   ptvmanual.pdf*
@@ -66,7 +65,7 @@ tclIndex	Index with relative paths to Tcl functions
 /src_c		source code directory
 /src_tcl	tcl script directory
 
-The contents of the /src_c:
+The contents of the /src_c::
 
 change_parameter.c*     jw_main.c*              segmentation.c*
 checkpoints.c*          jw_ptv.c*               sortgrid.c*
@@ -83,7 +82,7 @@ intersect.c*            ray_tracing.c*          unixmakefile*
 jw_ImgFmtTIF.c*         rotation.c*             vrml.c*
 
 
-The contents of the /src_tcl:
+The contents of the /src_tcl::
 
 button.tcl*     display.tcl*    mainpar.tcl
 calpar.tcl*     draw.tcl*       trackpar.tcl*
@@ -94,7 +93,7 @@ The directory /src_c contains a makefile (homemakefile.mak)
 which can be open with Microsoft Visual C++. During opening
 this file, a new workspace will be generated.
 
-Notice: The paths to the libs in the makefile have to be adjusted:
+Notice: The paths to the libs in the makefile have to be adjusted::
 
 INC_DIR1 = C:\Tcl\include\
 
