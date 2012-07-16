@@ -472,6 +472,9 @@ int n_img;
 			}
 			count ++;
 		}
+		
+		fclose (FILEIN);
+
 
 	}
 	nfix=count;
