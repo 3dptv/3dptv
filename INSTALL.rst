@@ -6,13 +6,9 @@ http://downloads.activestate.com/ActiveTcl/releases/8.4.19.6/ActiveTcl8.4.19.6.2
 
 	- Install it to ``C:\Tcl``  (the path is important)
 
-2. If you want to compile from the source code on Windows, you recommend downloading the Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
 
 
-Important note for the first-time installation - RESTART YOUR WINDOWS after installing the ActiveTcl and Visual C++ 
-
-
-Download the software
+Download the pre-compiled binary for Windows 32- or 64-bit platform
 ---------------------
 
 
@@ -28,9 +24,13 @@ https://github.com/3dptv/3dptv/zipball/master
 Compilation instructions from source on Windows platform
 ------------
 
-1. Double-click the ``3dptv_vc2010.sln`` to open the 3DPTV package in Visual C++ 2010 Express. 
+1. If you want to compile from the source code on Windows, you recommend downloading the Visual C++  2010 Express http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
 
-2. If all the paths are the same as ours, Build the solution and you should see the 3DPTV software up and running
+	Important note for the first-time installation - RESTART YOUR WINDOWS after installing the ActiveTcl and Visual C++ 
+
+2. Double-click the ``3dptv_vc2010.sln`` to open the 3DPTV package in Visual C++ 2010 Express. 
+
+3. If all the paths are the same as ours, Build the solution and you should see the 3DPTV software up and running
 
 If you use different paths it is important to:
 	a. add ``\Tcl\Include`` to the list of included directories
