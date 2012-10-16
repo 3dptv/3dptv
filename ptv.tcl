@@ -44,8 +44,8 @@ tooltip::tooltip .mbar.start "Initiates all variables. Needs to be clicked first
 menubutton .mbar.pre -text "Pretracking" -relief raised \
     -underline 0 -menu .mbar.pre.menu
 
-tooltip::tooltip .mbar.pre "To get a first idea how and how many 2d particles are detected and to see  
-how many triplets and quadruplets are found for the given calibration and settings."
+tooltip::tooltip .mbar.pre "To get a first idea how and howmany 2d particles are detected and to see  
+howmany triplets and quadruplets are found for the given calibration and settings."
 
 button .mbar.3d -text "3D-Coordinates" -command "determination_cmd"
 
@@ -124,7 +124,7 @@ menu .mbar.track.menu
 .mbar.track.menu add command -label "VRML Tracks" -command "VRMLtracks"
 .mbar.track.menu add command -label "VRML Detection" -command "VRMLdetections"
 .mbar.track.menu add command -label "VRML Detection + Tracks" -command "VRMLdettracks"
-.mbar.track.menu add command -label "Tracking (just) in 3d" -command "ptv_cmd"
+#.mbar.track.menu add command -label "PTV" -command "ptv_cmd"
 
 menu .mbar.calib.menu
 
@@ -136,18 +136,12 @@ menu .mbar.calib.menu
 .mbar.calib.menu add command -label "Orientation with file" -command " set sel 4;calib_cmd"
 .mbar.calib.menu add command -label "Show initial guess" -command " set sel 9;calib_cmd"
 .mbar.calib.menu add command -label "Sortgrid" -command " set sel 5;calib_cmd"
-.mbar.calib.menu add command -label "Sortgrid = initial guess" -command " set sel 14;calib_cmd"
-.mbar.calib.menu add command -label "Show number on detected points" -command " set sel 15;calib_cmd"
-.mbar.calib.menu add command -label "Sortgrid with file" -command " set sel 16;calib_cmd"
 .mbar.calib.menu add command -label "Orientation" -command " set sel 6;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Sequence/Tracking/Shaking)" -command "sequence_cmd 2;trackcorr_cmd 2;  set sel 10;calib_cmd"
 .mbar.calib.menu add command -label "Orientation with particle positions (Shaking)" -command " set sel 10;calib_cmd"
-.mbar.calib.menu add command -label "Orientation with particle positions (Shaking, discarding bad 3d points)" -command " set sel 20;calib_cmd"
-.mbar.calib.menu add command -label "Orientation from dumbbell (Sequence/Correction/Shaking)" -command "sequence_cmd 3; set sel 12;calib_cmd"
 .mbar.calib.menu add command -label "Restore previous Orientation" -command "restore_cmd"
 .mbar.calib.menu add command -label "Checkpoints" -command " set sel 7;calib_cmd"
 .mbar.calib.menu add command -label "Ap figures" -command "set sel 8;calib_cmd"
-.mbar.calib.menu add command -label "map mm to pixel" -command " set sel 30;calib_cmd"
 
 tooltip::tooltip .mbar.calib.menu -index 0 "This is a menu tooltip"
 
