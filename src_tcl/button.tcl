@@ -1,5 +1,5 @@
 # Bindungs 
-    
+#    
 proc bindings0 { } {
 # Bindings after imgcoord: left > measure case 5, middle > zoom normal case1, right > delete case 4
 
