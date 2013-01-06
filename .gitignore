@@ -1,2 +1,7 @@
 
 src_c/homemakefile
+
+[Dd]ebug/
+[Rr]elease/
+ipch/
+*.sdf
