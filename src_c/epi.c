@@ -108,7 +108,7 @@ int epi_mm_2D (double x1, double y1, Exterior Ex1, Interior I1, Glass G1,
 	   at the waterside of the glass; 
 	   min. and max. depth give window in object space, which can be 
 	   transformed into _2 image */
-	double a, b, c, xa,ya,xb,yb;
+	double a, b, c;
 	double X1,Y1,Z1,X,Y,Z;
 
 	double Zmin, Zmax;
@@ -171,8 +171,8 @@ void find_candidate (coord_2d crd[], target pix[], int num,
 	m = (yb-ya)/(xb-xa);  b = ya - m*xa;	/* line equation: y = m*x + b */
 
 
-	if (xa > xb) {temp = xa; xa = xb; xb = temp;} /* sort search window */
-	if (ya > yb) {temp = ya; ya = yb; yb = temp;}
+	if (xa > xb) { temp = xa; xa = xb; xb = temp; }	/* sort search window */
+	if (ya > yb) { temp = ya; ya = yb; yb = temp; }
 
 	if ((xb>xmin) && (xa<xmax) && (yb>ymin) && (ya<ymax)) {  /* sensor area */
 		/* binarized search for start point of candidate search */
@@ -254,7 +254,7 @@ void find_candidate_plus (coord_2d crd[], target pix[], int num,
 	else
 		tol_band_width=eps;
 	
-	if (tol_band_width < 0.06) 
+	if (tol_band_width < 0.06)
 		tol_band_width = 0.06;
 
 	/* define sensor format for search interrupt */
@@ -275,8 +275,8 @@ void find_candidate_plus (coord_2d crd[], target pix[], int num,
 	if (xa == xb)  xa += 1e-10;
 	m = (yb-ya)/(xb-xa);  b = ya - m*xa;
 
-	if (xa > xb) {temp = xa; xa = xb; xb = temp;}
-	if (ya > yb) {temp = ya; ya = yb;  yb = temp;}
+	if (xa > xb) { temp = xa; xa = xb; xb = temp; }
+	if (ya > yb) { temp = ya; ya = yb; yb = temp; }
 
 	if ((xb>xmin) && (xa<xmax) && (yb>ymin) && (ya<ymax)) { /* sensor area */
 		/* binarized search for start point of candidate search */
@@ -289,45 +289,48 @@ void find_candidate_plus (coord_2d crd[], target pix[], int num,
 		for (j=j0, *count=0; j<num; j++) {				/* candidate search */
 			if (crd[j].x > xb+tol_band_width) return;	/* finish search */
 
-			if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width)) {
-				if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width)) {
-					d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-		  
-					// Beat: modified in April 2010 to allow for better treatment of 
-					// different sized traced particles, in particular colloids and tracers
-					// old : if (d < eps) {
-					// new : // if (nx>ny) particle_size=nx;
-					//		 // else	   particle_size=ny;
-					//		 if (d < tol_band_width) {
+			//  ad holten, 12-2012 : merged the two if's
+			//  if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width)) {
+			//	    if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width)) {
+			if (crd[j].y > ya-tol_band_width && crd[j].y < yb+tol_band_width &&
+				crd[j].x > xa-tol_band_width && crd[j].x < xb+tol_band_width)
+			{
+				d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
+	  
+				// Beat: modified in April 2010 to allow for better treatment of 
+				// different sized traced particles, in particular colloids and tracers
+				// old : if (d < eps) {
+				// new : // if (nx>ny) particle_size=nx;
+				//		 // else	   particle_size=ny;
+				//		 if (d < tol_band_width) {
 
-					if (d < tol_band_width) {
-						p2 = crd[j].pnr;
-						if (n  < pix[p2].n) 	 qn  = (double) n/pix[p2].n;
-						else					 qn  = (double) pix[p2].n/n;
-						if (nx < pix[p2].nx)	 qnx = (double) nx/pix[p2].nx;
-						else					 qnx = (double) pix[p2].nx/nx;
-						if (ny < pix[p2].ny)	 qny = (double) ny/pix[p2].ny;
-						else					 qny = (double) pix[p2].ny/ny;
-						if (sumg < pix[p2].sumg) qsumg = (double) sumg/pix[p2].sumg;
-						else					 qsumg = (double) pix[p2].sumg/sumg;
+				if (d < tol_band_width) {
+					p2 = crd[j].pnr;
+					if (n  < pix[p2].n) 	 qn  = (double) n/pix[p2].n;
+					else					 qn  = (double) pix[p2].n/n;
+					if (nx < pix[p2].nx)	 qnx = (double) nx/pix[p2].nx;
+					else					 qnx = (double) pix[p2].nx/nx;
+					if (ny < pix[p2].ny)	 qny = (double) ny/pix[p2].ny;
+					else					 qny = (double) pix[p2].ny/ny;
+					if (sumg < pix[p2].sumg) qsumg = (double) sumg/pix[p2].sumg;
+					else					 qsumg = (double) pix[p2].sumg/sumg;
 
-						// empirical correlation coefficient from shape and 
-						// brightness parameters 
-						corr = (4*qsumg + 2*qn + qnx + qny);
-						// create a tendency to prefer those matches
-						// with brighter targets 
-						corr *= ((double) (sumg + pix[p2].sumg));
+					// empirical correlation coefficient from shape and 
+					// brightness parameters 
+					corr = (4*qsumg + 2*qn + qnx + qny);
+					// create a tendency to prefer those matches
+					// with brighter targets 
+					corr *= ((double) (sumg + pix[p2].sumg));
 
-						if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg) {
-							if (*count < maxcand) {
-								cand[*count].pnr = j;
-								cand[*count].tol = d;
-								cand[*count].corr = corr;
-								(*count)++;
-							} else {
-								dummy = (int)maxcand;
-								printf("in find_candidate_plus: count > maxcand\n");
-							}
+					if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg) {
+						if (*count < maxcand) {
+							cand[*count].pnr = j;
+							cand[*count].tol = d;
+							cand[*count].corr = corr;
+							(*count)++;
+						} else {
+							dummy = (int)maxcand;
+							printf("in find_candidate_plus: count > maxcand\n");
 						}
 					}
 				}
@@ -384,38 +387,39 @@ void find_candidate_plus_msg (coord_2d crd[], target pix[], int num,
 		for (j=j0, *count=0; j<num; j++) {				/* candidate search */
 			if (crd[j].x > xb+tol_band_width)  return;	/* finish search */
 
-			if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width)) {
-				if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width)) {
-					d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-					if ( d < tol_band_width ){
-						p2 = crd[j].pnr;
-						if (n  < pix[p2].n) 	 qn  = (double) n/pix[p2].n;
-						else					 qn  = (double) pix[p2].n/n;
-						if (nx < pix[p2].nx)	 qnx = (double) nx/pix[p2].nx;
-						else					 qnx = (double) pix[p2].nx/nx;
-						if (ny < pix[p2].ny)	 qny = (double) ny/pix[p2].ny;
-						else					 qny = (double) pix[p2].ny/ny;
-						if (sumg < pix[p2].sumg) qsumg = (double) sumg/pix[p2].sumg;
-						else					 qsumg = (double) pix[p2].sumg/sumg;
+			// ad holten, 12-2012 : merged two if's to a single one 
+			if (crd[j].y > ya-tol_band_width && crd[j].y < yb+tol_band_width &&
+				crd[j].x > xa-tol_band_width && crd[j].x < xb+tol_band_width)
+			{
+				d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
+				if ( d < tol_band_width ){
+					p2 = crd[j].pnr;
+					if (n  < pix[p2].n) 	 qn  = (double) n/pix[p2].n;
+					else					 qn  = (double) pix[p2].n/n;
+					if (nx < pix[p2].nx)	 qnx = (double) nx/pix[p2].nx;
+					else					 qnx = (double) pix[p2].nx/nx;
+					if (ny < pix[p2].ny)	 qny = (double) ny/pix[p2].ny;
+					else					 qny = (double) pix[p2].ny/ny;
+					if (sumg < pix[p2].sumg) qsumg = (double) sumg/pix[p2].sumg;
+					else					 qsumg = (double) pix[p2].sumg/sumg;
 
-						// empirical correlation coefficient from shape and 
-						// brightness parameters 
-						corr = (4*qsumg + 2*qn + qnx + qny);
-						// create a tendency to prefer those matches
-						// with brighter targets 
-						corr *= ((double) (sumg + pix[p2].sumg));
+					// empirical correlation coefficient from shape and 
+					// brightness parameters 
+					corr = (4*qsumg + 2*qn + qnx + qny);
+					// create a tendency to prefer those matches
+					// with brighter targets 
+					corr *= ((double) (sumg + pix[p2].sumg));
 
-						if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg) {
-							if (*count >= maxcand) {
-								printf("More candidates than (maxcand): %d\n",*count);
-								return;
-							}
-							cand[*count].pnr = p2;
-							cand[*count].tol = d;
-							cand[*count].corr = corr;
-							(*count)++;
-							printf ("%d %3.0f/%3.1f \n", p2, corr, d*1000);
+					if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg) {
+						if (*count >= maxcand) {
+							printf("More candidates than (maxcand): %d\n",*count);
+							return;
 						}
+						cand[*count].pnr = p2;
+						cand[*count].tol = d;
+						cand[*count].corr = corr;
+						(*count)++;
+						printf ("%d %3.0f/%3.1f \n", p2, corr, d*1000);
 					}
 				}
 			}

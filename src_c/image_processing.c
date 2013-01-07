@@ -22,7 +22,6 @@ Routines contained: filter_3:	3*3 filter, reads matrix from filter.par
 								marks the image in a certain (monocomp)
 								color and writes image
 ****************************************************************************/
-
 #include "ptv.h"
 
 
@@ -31,18 +30,22 @@ void filter_3(unsigned char *img, unsigned char *img_lp)
 	register unsigned char *ptr, *ptr1, *ptr2, *ptr3, *ptr4, *ptr5,
 						   *ptr6, *ptr7, *ptr8, *ptr9;
 	int   end;
-	float m[9], sum;
+	float m[9], sum, val;
 	short buf;
 	FILE  *fp;
 	register int i;
 	
 	/* read filter elements from parameter file */
-	fp = fopen_r ("filter.par");
-	for (i=0, sum=0; i<9; i++) {
-		fscanf (fp, "%f", &m[i]);
-		sum += m[i];
+	fp = fopen_rp("filter.par");		// replaced fopen_r, ad holten 12-2012
+	sum = 0;
+	if (fp) {
+		for (i=0, sum=0; i<9; i++) {
+			fscanf (fp, "%f", &m[i]);
+			sum += m[i];
+		}
+		fclose (fp);
 	}
-	fclose (fp);  if (sum == 0) exit(1);
+	if (sum == 0) exit(1);
 	
 	end = imgsize - 513;
 	
@@ -52,13 +55,13 @@ void filter_3(unsigned char *img, unsigned char *img_lp)
 	ptr7 = img + 2*imx;  ptr8 = img + 2*imx + 1;  ptr9 = img + 2*imx + 2;
 
 	for (i=513; i<end; i++) {
-		buf = m[0] * *ptr1++  +  m[1] * *ptr2++  +	m[2] * *ptr3++
+		val = m[0] * *ptr1++  +  m[1] * *ptr2++  +	m[2] * *ptr3++
 			+ m[3] * *ptr4++  +  m[4] * *ptr5++  +	m[5] * *ptr6++
 			+ m[6] * *ptr7++  +  m[7] * *ptr8++  +	m[8] * *ptr9++;
-		buf /= sum;
+		buf = (short)(val/sum);
 		if (buf > 255) buf = 255;
 		if (buf < 8)   buf = 8;
-		*ptr++ = buf;
+		*ptr++ = (unsigned char) buf;
 	}
 }
 
@@ -77,17 +80,16 @@ void enhance(unsigned char *img)
 	histogram(img, histo);
 	for (i=0, sum=0; (i<255)&&(sum<imx); sum+=histo[i], i++);  gmin = i;	
 	for (i=255, sum=0; (i>0)&&(sum<512); sum+=histo[i], i--);  gmax = i;	
-	offs = gmin;  diff = gmax - gmin;  gain = 255 / diff;
+	offs = gmin;  diff = (float)(gmax - gmin);  gain = (float)255 / diff;
 	
 	for (ptr=img; ptr<end; ptr++)
 	{
 		if (*ptr < gmin) *ptr = gmin;  else if (*ptr > gmax) *ptr = gmax;
-		*ptr = (*ptr - offs) * gain;
+		*ptr = (unsigned char) ((*ptr - offs) * gain);
 		if (*ptr < 8) *ptr = 8; 	   /* due monocomp colors */
 	}
 }
 #endif
-
 
 void histogram(unsigned char *img, int *hist)
 {
@@ -173,6 +175,7 @@ void lowpass_n(int n, unsigned char* img, unsigned char *img_lp)
 		}
 	}
 	free (buf1);
+	free (buf2);		// added, ad holten, 12-2012
 }
 #endif
 
@@ -197,9 +200,9 @@ void unsharp_mask(int n, unsigned char *img0, unsigned char *img_lp)
 	}
 	buf2 = (int *) calloc (imx, sizeof(int));
 
-	/* set imgum = img0 (so there cannot be written to the original image) */
-	for (ptrl=imgum, ptrr=img0; ptrl<(imgum+imgsize); ptrl++, ptrr++)
-	  *ptrl = *ptrr;
+	// for (ptrl=imgum, ptrr=img0; ptrl<(imgum+imgsize); ptrl++, ptrr++)
+	//  *ptrl = *ptrr;
+	copy_images(img0, imgum);	// ad holten, 12-2012
 
 	/* cut off high gray values (not in general use !)
 	for (ptrz=imgum; ptrz<(imgum+imgsize); ptrz++) if (*ptrz > 160) *ptrz = 160; */
@@ -280,6 +283,7 @@ void unsharp_mask(int n, unsigned char *img0, unsigned char *img_lp)
 		}
 	}
 	free (buf1);
+	free (buf2);		// added, ad holten, 12-2012
 }
 
 
@@ -351,11 +355,13 @@ void split (unsigned char *img, int field)
 
 void copy_images(unsigned char *img1, unsigned char *img2)
 {
-	register unsigned char *ptr1, *ptr2;
-	unsigned char		   *end;
+	// ad holten, 12-2012  replaced with memcpy()
+	//register unsigned char *ptr1, *ptr2;
+	//unsigned char		   *end;
 
-	for (end=img1+imgsize, ptr1=img1, ptr2=img2; ptr1<end; ptr1++, ptr2++)
-		*ptr2 = *ptr1;
+	//for (end=img1+imgsize, ptr1=img1, ptr2=img2; ptr1<end; ptr1++, ptr2++)
+	//	*ptr2 = *ptr1;
+	memcpy(img2, img1, imgsize*sizeof(char));
 }
 
 /*------------------------------------------------------------------------

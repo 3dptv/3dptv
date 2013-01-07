@@ -15,7 +15,6 @@ Description:		computes x', y' from given Point and orientation
 
 Routines contained:
 ****************************************************************************/
-
 #include "ptv.h"
 
 void img_coord (double X, double Y, double Z, Exterior Ex, Interior I, Glass G, 
@@ -24,8 +23,9 @@ void img_coord (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 	double deno, r, dx, dy;
 	Exterior Ex_t;
 	double X_t, Y_t, Z_t, cross_p[3], cross_c[3];
-	//trans
-	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	// removed memory bugs, ad holten 12-2012
+	//	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	multimed_nlay_v2 (Ex_t, Ex, mm, X_t,Y_t,Z_t, &X_t,&Y_t);
 	back_trans_Point(X_t, Y_t, Z_t, mm, G, cross_p, cross_c, &X, &Y, &Z);
 
@@ -79,7 +79,6 @@ void img_coord_old (double X, double Y, double Z, Exterior Ex, Interior I,
 }
 #endif
 
-
 #ifdef EVER_CALLED		// Unused function, ad holten 12-2012
 void img_xy (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 			 double *x, double *y)
@@ -100,7 +99,6 @@ void img_xy (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 }
 #endif
 
-
 #ifdef EVER_CALLED		// Unused function, ad holten 12-2012
 void img_xy_mm (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 			 mm_np mm, double *x, double *y)
@@ -110,7 +108,9 @@ void img_xy_mm (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 	double X_t, Y_t, Z_t, cross_p[3], cross_c[3];
 
 	//trans
-	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	// removed memory bugs, ad holten 12-2012
+	//   trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	multimed_nlay_v2 (Ex_t, Ex,mm, X_t, Y_t, Z_t, &X_t, &Y_t);
 	back_trans_Point(X_t, Y_t, Z_t, mm, G, cross_p, cross_c, &X, &Y, &Z);
 
@@ -128,15 +128,16 @@ void img_xy_mm (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 }
 #endif
 
-
 void img_xy_mm_geo (double X, double Y, double Z, Exterior Ex, Interior I, Glass G,
 			 mm_np mm, double *x, double *y)
 {
 	double deno;
 	Exterior Ex_t;
-	double X_t, Y_t, Z_t, cross_p[3], cross_c[3], Xh, Yh, Zh;
+	double X_t, Y_t, Z_t, cross_p[3], cross_c[3];	// removed Xh, Yh, Zh;	ad holten, 12-2012
 
-	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	// removed memory bugs, ad holten 12-2012
+	// trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+	trans_Cam_Point(Ex, mm, G, X, Y, Z, &Ex_t, &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	multimed_nlay_v2 (Ex_t, Ex,mm, X_t, Y_t, Z_t, &X_t, &Y_t);
 	back_trans_Point(X_t, Y_t, Z_t, mm, G,cross_p, cross_c, &X, &Y, &Z);
 

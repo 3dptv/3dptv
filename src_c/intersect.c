@@ -28,6 +28,12 @@ void intersect_rt (double X1, double Y1, double Z1, double a1, double b1, double
 /* intersection, given two points with direction cosines */
 /* only valid, if Z1 = Z2 = 0 , which is the case after ray tracing */
 {
+	// ad holten, test first if lines are parallel
+	if (a1/c1 == a2/c2 && b1/c1 == b2/c2) {		// if parallel, return high values 
+		*X = *Y = *Z = 1e6;						// ie, out of the measuring volume
+		return;
+	}
+
 	if (fabs(b1-b2) > fabs(a1-a2)) *Z = (Y2-Y1) / ((b1/c1) - (b2/c2));
 	else						   *Z = (X2-X1) / ((a1/c1) - (a2/c2));
 	
@@ -172,6 +178,7 @@ void intersect_rt_3m(double X1, double Y1, double Z1, double a1, double b1, doub
 	*Y = (Y1+(*Z)*(b1/c1) + Y2+(*Z)*(b2/c2) + Y3+(*Z)*(b3/c3)) / 3;
 }
 #endif
+
 
 #ifdef EVER_CALLED		// Unused function, ad holten 12-2012
 void intersect_3 (double X1, double Y1, double Z1, double a1, double b1, double c1,
