@@ -13,11 +13,12 @@ Description:		display of image sequences
 Routines contained: flow_demo_c
 
 **********************************************************************/
+
 #include "ptv.h"
 
 int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int i, i_seq, nr, j,pft_version=3,num_points,dumy;
+	int i, i_seq, nr, j,pft_version=3, num_points;
 	char		   name[128];
 	unsigned char  *imgf;
 	Tk_PhotoHandle img_handle;
@@ -25,7 +26,8 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	nr = atoi(argv[1]);
 
-	fpp = fopen_r ("parameters/sequence.par");
+	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return TCL_OK;
 	for (i=0; i<4; i++)
 		fscanf (fpp, "%s\n", seq_name[i]);	   /* name of sequence */
 	fscanf (fpp,"%d\n", &seq_first);
@@ -39,7 +41,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	fpp = fopen ("parameters/pft_version.par", "r");
 	if (fpp) {
 		fscanf (fpp, "%d\n", &pft_version);
-		pft_version=pft_version+3;
+		pft_version = pft_version+3;
 		fclose (fpp);
 	}
 	else {
@@ -51,9 +53,9 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	/* load and display images */
 	for (i_seq=seq_first; i_seq<=seq_last; i_seq++) {
 		compose_name_plus_nr (seq_name[nr], "", i_seq, name);
-		fp1 = fopen_r (name);
-		if (! fp1)
-			return TCL_OK;
+		fp1 = fopen_rp(name);				// replaced fopen_r, ad holten 12-2012
+		if (!fp1) return TCL_OK;
+
 		sprintf (buf, "display camera %d, image %d", nr+1, i_seq);
 		Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
 		Tcl_Eval(interp, ".text delete 2");
@@ -73,15 +75,15 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			/* read targets of camera nr*/
 			nt4[3][nr]=0;
 
-			fp1= fopen (filename, "r");
-			if (! fp1) printf("Can't open ascii file: %s\n", filename);
+			fp1 = fopen_rp(filename);			// replaced fopen, ad holten 12-2012
+			if (!fp1) return TCL_OK;
 
 			fscanf (fp1, "%d\n", &nt4[3][nr]);
 			for (j=0; j<nt4[3][nr]; j++){
 				fscanf (fp1, "%4d %lf %lf %d %d %d %d %d\n",
-					&pix[nr][j].pnr, &pix[nr][j].x,
-					&pix[nr][j].y, &pix[nr][j].n ,
-					&pix[nr][j].nx ,&pix[nr][j].ny,
+					&pix[nr][j].pnr,  &pix[nr][j].x,
+					&pix[nr][j].y,    &pix[nr][j].n ,
+					&pix[nr][j].nx ,  &pix[nr][j].ny,
 					&pix[nr][j].sumg, &pix[nr][j].tnr);
 			}
 			fclose (fp1);
@@ -97,21 +99,31 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			if (fp1) {
 				fscanf (fp1, "%d\n", &num_points);
 				for (j=0; j<num_points; j++) {
-					if (n_img==4) {
-						fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
-							&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
-							&geo[0][j].pnr, &geo[1][j].pnr, &geo[2][j].pnr, &geo[3][j].pnr);
-					}
-					if (n_img==3) {
-						fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
-							&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
-							&geo[0][j].pnr, &geo[1][j].pnr, &geo[2][j].pnr);
-					}
-					if (n_img==2){ // Alex's patch. 24.09.09. Working on Wesleyan data of 2 cameras only
-						fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
-							&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
-							&geo[0][j].pnr, &geo[1][j].pnr);
-					}
+					// ad holten, 12-2012, replaced the next lines with bugs
+					//		if (n_img==4) {
+					//			fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
+					//				&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
+					//				&geo[0][j].pnr, &geo[1][j].pnr, &geo[2][j].pnr, &geo[3][j].pnr);
+					//		}
+					//		if (n_img==3) {
+					//			fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
+					//				&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
+					//				&geo[0][j].pnr, &geo[1][j].pnr, &geo[2][j].pnr);
+					//		}
+					//		if (n_img==2){ // Alex's patch. 24.09.09. Working on Wesleyan data of 2 cameras only
+					//			fscanf(fp1, "%d %lf %lf %lf %d %d %d %d\n",
+					//				&dumy, &fix[j].x, &fix[j].y, &fix[j].z,
+					//				&geo[0][j].pnr, &geo[1][j].pnr);
+					//		}
+					// by:
+
+					for (i=0; i<4; i++)	geo[i][j].pnr = -1;
+					fscanf(fp1, "%*d %lf %lf %lf %d %d",
+						&fix[j].x, &fix[j].y, &fix[j].z, &geo[0][j].pnr, &geo[1][j].pnr);
+
+					if (n_img >= 3)	fscanf(fp1, "%d", &geo[2][j].pnr);
+					if (n_img == 4) fscanf(fp1, "%d", &geo[3][j].pnr);
+					fscanf(fp1, "\n");
 				}
 				fclose (fp1);
 				if (display) {

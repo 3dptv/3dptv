@@ -24,6 +24,7 @@ See the file license.txt for copying permission.
 
 /* #define maxcand 100 */
 
+
 /****************************************************************************/
 /*--------------- 4 camera model: consistent quadruplets -------------------*/
 /****************************************************************************/
@@ -133,10 +134,16 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 			list[i1][i2][p1].n = count;
 		}
 	}
-
-	/* repair memory fault (!?) */
-	for (j=0; j<4; j++) for (i=0; i<nmax; i++) tim[j][i] = 0;
-
+	// commented out, ad holten, 12-2012
+	// /* repair memory fault (!?) */
+	// for (j=0; j<4; j++) for (i=0; i<nmax; i++) tim[j][i] = 0;
+	
+	// but tested, to be sure that everything is alright. WILL BE REMOVED LATER
+	for (j=0; j<4; j++) for (i=0; i<nmax; i++) 
+		if (tim[j][i] != 0) {
+			printf(">>>>>>>>>> correspondences_4: ERROR on line 144, CHECK CODE <<<<<<<<<<<<<<<< \n");
+			i = nmax; j = 4;
+		}
 
 	/* ------------------------------------------------------------------ */
 	/* ------------------------------------------------------------------ */
@@ -198,17 +205,20 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		/* -------------------------------------------------------------------- */
 
 		/* sort quadruplets for match quality (.corr) */
+
 		quicksort_con (con0, match0);
 
 		/* -------------------------------------------------------------------- */
 
 		/* take quadruplets from the top to the bottom of the sorted list
 		   only if none of the points has already been used */
+		// simplified 'if (p1 > -1) if (++tim[0][p1] > 1)' to 
+		//            'if (p1 > -1 && ++tim[0][p1] > 1)'   and so on, ad holten 12-2012
 		for (i=0, match=0; i<match0; i++) {
-			p1 = con0[i].p[0];	if (p1 > -1) if (++tim[0][p1] > 1) continue;
-			p2 = con0[i].p[1];	if (p2 > -1) if (++tim[1][p2] > 1) continue;
-			p3 = con0[i].p[2];	if (p3 > -1) if (++tim[2][p3] > 1) continue;
-			p4 = con0[i].p[3];	if (p4 > -1) if (++tim[3][p4] > 1) continue;
+			p1 = con0[i].p[0];	if (p1 > -1 && ++tim[0][p1] > 1) continue;
+			p2 = con0[i].p[1];	if (p2 > -1 && ++tim[1][p2] > 1) continue;
+			p3 = con0[i].p[2];	if (p3 > -1 && ++tim[2][p3] > 1) continue;
+			p4 = con0[i].p[3];	if (p4 > -1 && ++tim[3][p4] > 1) continue;
 			con[match++] = con0[i];
 		}
 
@@ -242,7 +252,7 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 				for (m=0; m<list[i2][i3][p2].n; m++) {
 					p31 = list[i2][i3][p2].p2[m];
 					if (p3 == p31) {
-						corr = (list[i1][i2][i].corr[j]
+						corr = (  list[i1][i2][i].corr[j]
 								+ list[i1][i3][i].corr[k]
 								+ list[i2][i3][p2].corr[m])
 							   /
@@ -272,10 +282,10 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		// take triplets from the top to the bottom of the sorted list
 		// only if none of the points has already been used
 		for (i=0; i<match0; i++) {
-			p1 = con0[i].p[0];	if (p1 > -1)  if (++tim[0][p1] > 1) continue;
-			p2 = con0[i].p[1];	if (p2 > -1)  if (++tim[1][p2] > 1) continue;
-			p3 = con0[i].p[2];	if (p3 > -1)  if (++tim[2][p3] > 1) continue;
-			p4 = con0[i].p[3];	if (p4 > -1 && n_img > 3) if (++tim[3][p4] > 1) continue;
+			p1 = con0[i].p[0];	if (p1 > -1 && ++tim[0][p1] > 1) continue;
+			p2 = con0[i].p[1];	if (p2 > -1 && ++tim[1][p2] > 1) continue;
+			p3 = con0[i].p[2];	if (p3 > -1 && ++tim[2][p3] > 1) continue;
+			p4 = con0[i].p[3];	if (p4 > -1 && n_img > 3 && ++tim[3][p4] > 1) continue;
 
 			con[match++] = con0[i];
 		}
@@ -284,17 +294,26 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		sprintf (buf, "%d consistent quadruplets, %d triplets ", match4, match3);
 		puts (buf);
 
-		/* repair artifact (?) */
-		if (n_img == 3) 
-			for (i=0; i<match; i++) con[i].p[3] = -1;
+		///* repair artifact (?) */			// commented out ad holten, 12-2012
+		//if (n_img == 3) 
+		//	for (i=0; i<match; i++) con[i].p[3] = -1;
+		if (n_img == 3) {	// added for a test (WILL BE REMOVED LATER)
+			for (i=0; i<match; i++) 
+				if (con[i].p[3] != -1) {
+					printf(">>>>>>>>>>>>>> correspondences_4: ERROR on line 144, CHECK CODE <<<<<<<<<<<<<<<<< \n");
+					con[i].p[3] = -1;
+				}
+		}
 	}
 
 	/* ----------------------------------------------------------------------- */
 	/* ----------------------------------------------------------------------- */
 
 	// search consistent pairs :  12, 13, 14, 23, 24, 34
+
 	// only if an object model is available or if only 2 images are used
-	if (1<2 && n_img>1 && allCam_flag==0) {
+	// if (1<2 && n_img>1 && allCam_flag==0) {		//	removed 1<2, ad holten, 12-2012
+	if (n_img>1 && allCam_flag==0) {
 		puts ("Search pairs");
 
 		match0 = 0;
@@ -333,10 +352,10 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		// take pairs from the top to the bottom of the sorted list
 		// only if none of the points has already been used 
 		for (i=0; i<match0; i++) {
-			p1 = con0[i].p[0];	if (p1 > -1)  if (++tim[0][p1] > 1) continue;
-			p2 = con0[i].p[1];	if (p2 > -1)  if (++tim[1][p2] > 1) continue;
-			p3 = con0[i].p[2];	if (p3 > -1 && n_img > 2) if (++tim[2][p3] > 1) continue;
-			p4 = con0[i].p[3];	if (p4 > -1 && n_img > 3) if (++tim[3][p4] > 1) continue;
+			p1 = con0[i].p[0];	if (p1 > -1 && ++tim[0][p1] > 1) continue;
+			p2 = con0[i].p[1];	if (p2 > -1 && ++tim[1][p2] > 1) continue;
+			p3 = con0[i].p[2];	if (p3 > -1 && n_img > 2 && ++tim[2][p3] > 1) continue;
+			p4 = con0[i].p[3];	if (p4 > -1 && n_img > 3 && ++tim[3][p4] > 1) continue;
 
 			con[match++] = con0[i];
 		}
@@ -359,16 +378,14 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 	/* ----------------------------------------------------------------------- */
 
 	/* give each used pix the correspondence number */
-	for (i=0; i<match; i++) {
-		for (j=0; j<n_img; j++) {
-			if (con[i].p[j] > -1) { //Bug, detected in Nov 2011 by Koni&Beat
+	for (i=0; i<match; i++)
+		for (j=0; j<n_img; j++)
+			if (con[i].p[j] > -1) { // Bug, detected in Nov 2011 by Koni&Beat
 				p1 = geo[j][con[i].p[j]].pnr;
-				if (p1 > -1 && p1 < 1202590843) {
+				if (p1 > -1 && p1 < 1202590843)
 					pix[j][p1].tnr = i;
-				}
 			}
-		}
-	}
+		
 
 	/* draw crosses on canvas */
 	if (display) {
@@ -437,9 +454,9 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 	}
 	/* ----------------------------------------------------------------------- */
 	/* free memory for lists of correspondences */
-	for (i1=0; i1<n_img-1; i1++) {
-		for (i2=i1+1; i2<n_img; i2++) free (list[i1][i2]);
-	}
+	for (i1=0; i1<n_img-1; i1++)
+		for (i2=i1+1; i2<n_img; i2++) 
+			free (list[i1][i2]);
 
 	free (con0);
 

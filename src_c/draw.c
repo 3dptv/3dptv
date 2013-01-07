@@ -153,7 +153,8 @@ int mark_track_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	cr_sz = atoi(Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY));
 
-	fpp = fopen_r ("parameters/sequence.par");
+	fpp = fopen_rp ("parameters/sequence.par");			// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return TCL_OK;
 	for (i_img=0; i_img<4; i_img++)
 		fscanf (fpp, "%s\n", seq_name[i_img]); 
 
@@ -213,7 +214,8 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 
 	cr_sz = atoi(Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY));
 
-	fpp = fopen_r ("parameters/sequence.par");
+	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return TCL_OK;
 
 	/* name of sequence */
 	fscanf (fpp,"%d\n", &seq_first);
@@ -225,12 +227,16 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 	Tcl_Eval(interp, ".text delete 2");
 	Tcl_Eval(interp, ".text insert 2 $tbuf");
 
+	line1 = line2 = NULL;		// added, ad holten, 12-2012
 	for (i=seq_first; i<seq_last;i++) {
-		if		(i < 10)  sprintf (val, "res/ptv_is.%1d", i);
-		else if (i < 100) sprintf (val, "res/ptv_is.%2d", i);
-		else			  sprintf (val, "res/ptv_is.%3d", i);
- 
-		fp1 = fopen (val, "r");
+		// ad holten, 12-2012, replaced next lines
+		//		 if      (i < 10)  sprintf (val, "res/ptv_is.%1d", i);
+		//		 else if (i < 100) sprintf (val, "res/ptv_is.%2d", i);
+		//		 else			   sprintf (val, "res/ptv_is.%3d", i);
+		sprintf(val, "res/ptv_is.%d", i);
+
+		fp1 = fopen_rp(val);		// replaced fopen, ad holten 12-2012			
+		if (!fp1) break;
 	  
 		color = ((double)(i-seq_first))/((double)(seq_last-2-seq_first));
 		fscanf (fp1,"%d\n", &anz1);
@@ -247,11 +253,15 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 		fclose (fp1);
 
 		/* read next time step */	  
-		if (i+1 < 10)		sprintf (val, "res/ptv_is.%1d", i+1);
-		else if (i+1 < 100) sprintf (val, "res/ptv_is.%2d",  i+1);
-		else				sprintf (val, "res/ptv_is.%3d",  i+1);
+		// ad holten, 12-2012, replaced next lines,
+		//		if (i+1 < 10)       sprintf (val, "res/ptv_is.%1d", i+1);
+		//		else if (i+1 < 100) sprintf (val, "res/ptv_is.%2d", i+1);
+		//		else				sprintf (val, "res/ptv_is.%3d", i+1);
+		sprintf (val, "res/ptv_is.%d", i+1);
 
-		fp1 = fopen (val, "r"); 	 
+		fp1 = fopen_rp(val);			// replaced fopen, ad holten 12-2012
+		if (!fp1) break;
+
 		fscanf (fp1,"%d\n", &anz2);
 		line2 = (vector*) calloc(anz2, sizeof (vector));
 
@@ -294,7 +304,11 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 
 		strcpy(val, "");
 		free(line1); free(line2);
+		line1 = line2 = NULL;			// added, ad holten, 12-2012
 	}  /* end of sequence loop */
+ 
+	if (line1 != NULL) free(line1);		// added, ad holten, 12-2012
+	if (line2 != NULL) free(line2);		// ie. call free() if not deallocated yet
   
 	sprintf(val, "...done");
 	Tcl_SetVar(interp, "tbuf", val, TCL_GLOBAL_ONLY);
