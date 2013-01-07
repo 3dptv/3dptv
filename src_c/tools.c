@@ -18,7 +18,6 @@ int round (double x)
 }
 #endif
 
-
 void write_ori (Exterior Ex, Interior I, Glass G, char filename[64])
 /* write exterior and interior orientation */
 {
@@ -26,33 +25,46 @@ void write_ori (Exterior Ex, Interior I, Glass G, char filename[64])
 	int 	 i;
 
 	fp = fopen (filename, "w");
-	fprintf (fp, "%11.4f %11.4f %11.4f\n	%10.7f	%10.7f	%10.7f\n\n",
+	fprintf (fp, "%11.4f %11.4f %11.4f\n    %10.7f  %10.7f  %10.7f\n\n",
 		Ex.x0, Ex.y0, Ex.z0, Ex.omega, Ex.phi, Ex.kappa);
-	for (i=0; i<3; i++) fprintf (fp, "	  %10.7f %10.7f %10.7f\n",
+	for (i=0; i<3; i++)  fprintf (fp, "    %10.7f %10.7f %10.7f\n",
 		Ex.dm[i][0], Ex.dm[i][1], Ex.dm[i][2]);
-	fprintf (fp,"\n    %8.4f %8.4f\n	%8.4f\n", I.xh, I.yh, I.cc);
-	fprintf (fp,"\n    %20.15f %20.15f	%20.15f\n", G.vec_x, G.vec_y, G.vec_z);
+	fprintf (fp,"\n    %8.4f %8.4f\n    %8.4f\n", I.xh, I.yh, I.cc);
+	fprintf (fp,"\n    %20.15f %20.15f  %20.15f\n", G.vec_x, G.vec_y, G.vec_z);
 	fclose (fp);
 }
 
 
-void read_ori (Exterior *Ex, Interior *I, Glass *G, char filename[64])
+int read_ori (Exterior *Ex, Interior *I, Glass *G, char filename[64])
 /* read exterior and interior orientation */
 {
 	FILE	*fp;
 	int 	 i;
 
-	fp = fopen_r (filename);
+	fp = fopen_rp (filename);		// replaced fopen_r(), ad holten, 12-2012
+	if (!fp) return 0;
+
 	fscanf (fp, "%lf %lf %lf %lf %lf %lf",
-	  &(Ex->x0), &(Ex->y0), &(Ex->z0),
-	  &(Ex->omega), &(Ex->phi), &(Ex->kappa));
+		&(Ex->x0), &(Ex->y0), &(Ex->z0), &(Ex->omega), &(Ex->phi), &(Ex->kappa));
 	for (i=0; i<3; i++)
 		fscanf (fp, " %lf %lf %lf", &(Ex->dm[i][0]), &(Ex->dm[i][1]), &(Ex->dm[i][2]));
 	fscanf (fp, "%lf %lf %lf", &(I->xh), &(I->yh), &(I->cc));
 	fscanf (fp, "%lf %lf %lf", &(G->vec_x), &(G->vec_y), &(G->vec_z));
 	fclose (fp);
+	return 1;
 }
 
+
+FILE *fopen_rp (char *filename)
+/*	tries to open 'filename' for reading;
+	prints a message, if the file can't be opened. */
+{
+	FILE *fp = fopen(filename, "r");
+	if (! fp)
+		printf ("Could not open this file:\n    %s\n", filename);
+	
+	return (fp);
+}
 
 FILE *fopen_r (CHAR filename[256])
 /*	tries to open a file;
@@ -75,7 +87,7 @@ FILE *fopen_r (CHAR filename[256])
 	return (fpr);
 }
 
-void read_image (Tcl_Interp* interp, char path[128], unsigned char *img)
+int read_image (Tcl_Interp* interp, char path[128], unsigned char *img)
 {
 	int  i, j;
 	Tk_PhotoHandle img_handle;
@@ -94,13 +106,15 @@ void read_image (Tcl_Interp* interp, char path[128], unsigned char *img)
 		}
 	}
 	else {
-		fp1 = fopen_r (path);
+		fp1 = fopen_rp (path);		// replaced fopen_r, ad holten 12-2012
+		if (!fp1) return 0;
 		fread (img, 1, imgsize, fp1);
 		fclose (fp1);
 		img_handle = Tk_FindPhoto( interp, "temp");
 		Tk_PhotoGetImage (img_handle, &img_block);
 		tclimg2cimg (interp, img, &img_block);
 	}
+	return 1;
 }
 
 int write_tiff (const char path[256], unsigned char *data, int nx, int ny)
@@ -163,26 +177,29 @@ int write_tiff (const char path[256], unsigned char *data, int nx, int ny)
 
 void compose_name_plus_nr (char basename[256], char str[256], int nr, char filename[256])
 {
-	char	nr_ch[256];
 
-	//	if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
-	//	else if (nr < 100)	  sprintf (nr_ch, "0%2d",  nr);
-	if		(nr < 10)	sprintf (nr_ch, "%1d", nr);
-	else if (nr < 100)	sprintf (nr_ch, "%2d",	nr);
-	else				sprintf (nr_ch, "%3d",	nr);
+	// replaced code, ad holten 12-2012
+	//	char	nr_ch[256];
+	//	//	if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
+	//	//	else if (nr < 100)	  sprintf (nr_ch, "0%2d",  nr);
+	//	if		(nr < 10)	sprintf (nr_ch, "%1d", nr);
+	//	else if (nr < 100)	sprintf (nr_ch, "%2d",	nr);
+	//	else				sprintf (nr_ch, "%3d",	nr);
+	//	sprintf (filename, "%s%s%s", basename, str, nr_ch);
 
-	sprintf (filename, "%s%s%s", basename, str, nr_ch);
+	sprintf (filename, "%s%s%d", basename, str, nr);
 }
 
 void compose_name_plus_nr_str (char basename[256], char str[256], int nr, char filename[256])
 {
-	char	nr_ch[256];
+	// replaced code, ad holten 12-2012
+	//	char	nr_ch[256];
+	//	if (nr < 10)		sprintf (nr_ch, "%1d", nr);
+	//	else if (nr < 100)	  sprintf (nr_ch, "%2d",  nr);
+	//	else	 sprintf (nr_ch, "%3d",  nr);
+	//	sprintf (filename, "%s%s%s", basename, nr_ch, str);
 
-	if (nr < 10)		sprintf (nr_ch, "%1d", nr);
-	else if (nr < 100)	  sprintf (nr_ch, "%2d",  nr);
-	else	 sprintf (nr_ch, "%3d",  nr);
-
-	sprintf (filename, "%s%s%s", basename, nr_ch, str);
+	sprintf (filename, "%s%d%s", basename, nr, str);
 }
 
 /* find nearest neighbours */

@@ -36,10 +36,12 @@ void checkpoint_proc (Tcl_Interp* interp)
 	puts ("check points");
 
 	for (i=0; i<n_img; i++) {
-		// read_ori (&Ex[i], &I[i], img_ori[i]); // bug, ad holten, 12-2012
-		read_ori (&Ex[i], &I[i], &G[i], img_ori[i]); // bug, ad holten, 12-2012
+		// read_ori (&Ex[i], &I[i], img_ori[i]);		// bug repaired, ad holten, 12-2012
+		if (!read_ori (&Ex[i], &I[i], &G[i], img_ori[i]))
+			return;										// added, ad holten, 12-2012
 	  
-		fp1 = fopen_r (img_addpar[i]);
+		fp1 = fopen_rp (img_addpar[i]);					// replaced fopen_r(), ad holten, 12-2012
+		if (!fp1) return;
 		fscanf (fp1,"%lf %lf %lf %lf %lf %lf %lf",
 			&ap[i].k1, &ap[i].k2, &ap[i].k3, &ap[i].p1, &ap[i].p2,
 			&ap[i].scx, &ap[i].she);
@@ -47,13 +49,15 @@ void checkpoint_proc (Tcl_Interp* interp)
 	}
 
 	/* read calibration plate coordinates */
-	fp3 = fopen_r (fixp_name);
+	fp3 = fopen_rp (fixp_name);							// replaced fopen_r(), ad holten, 12-2012
+	if (!fp3) return;
 	for (i=0; i<nfix; i++)
 		fscanf (fp3,"%d %lf %lf %lf", &fix[i].pnr,&fix[i].x,&fix[i].y,&fix[i].z);
 	fclose (fp3);
 
 	/* read, which points shall be used  (those not used for orientation) */
-	fp1 = fopen_r ("parameters/orient.par");
+	fp1 = fopen_rp ("parameters/orient.par");			// replaced fopen_r(), ad holten, 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d", &useflag);
 	fclose (fp1);  
 
@@ -73,13 +77,14 @@ void checkpoint_proc (Tcl_Interp* interp)
 		if (n_img > 1  &&  crd[1][i].pnr != fix[i].pnr) continue;
 		if (n_img > 2  &&  crd[2][i].pnr != fix[i].pnr) continue;
 		if (n_img > 3  &&  crd[3][i].pnr != fix[i].pnr) continue;
+
+		// commented out, ad holten, 14-2012
+		// /* do not use the corner points of plate 85 */
+		// if (nfix == 85	&&	fix[i].pnr == 1)  continue;
+		// if (nfix == 85	&&	fix[i].pnr == 7)  continue;
+		// if (nfix == 85	&&	fix[i].pnr == 43) continue;
+		// if (nfix == 85	&&	fix[i].pnr == 49) continue;
 	  
-		/* do not use the corner points of plate 85 */
-		if (nfix == 85	&&	fix[i].pnr == 1)  continue;
-		if (nfix == 85	&&	fix[i].pnr == 7)  continue;
-		if (nfix == 85	&&	fix[i].pnr == 43) continue;
-		if (nfix == 85	&&	fix[i].pnr == 49) continue;
-		   
 		switch (n_img) {
 			case 2: det_lsq_2 (Ex, I, G, ap, mmp,
 						crd[0][i].x,crd[0][i].y,
@@ -108,10 +113,10 @@ void checkpoint_proc (Tcl_Interp* interp)
 		/* draw residual vectors into img0 */
 		intx1 = (int) pix[0][i].x;
 		inty1 = (int) pix[0][i].y;
-		intx2 = intx1 + (fix[i].x - X)*5*Ex[0].z0/I[0].cc;
-		inty2 = inty1 + (fix[i].y - Y)*5*Ex[0].z0/I[0].cc;
+		intx2 = (int)(intx1 + (fix[i].x - X)*5*Ex[0].z0/I[0].cc);
+		inty2 = (int)(inty1 + (fix[i].y - Y)*5*Ex[0].z0/I[0].cc);
 		drawvector (interp,intx1, inty1, intx2, inty2, 1, 0, "yellow");
-		inty2 = inty1 + (fix[i].z - Z)*5*Ex[0].z0/I[0].cc;
+		inty2 = (int)(inty1 + (fix[i].z - Z)*5*Ex[0].z0/I[0].cc);
 		drawvector (interp, intx1, inty1, intx1, inty2, 1, 0, "blue");
 
 		count1++;

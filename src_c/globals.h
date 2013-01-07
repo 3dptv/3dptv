@@ -251,10 +251,10 @@ void sortgrid_file (Tcl_Interp* interp, Exterior Ex, Interior I, Glass G, ap_52 
 
 // --- tools.c ---
 void  write_ori (Exterior Ex, Interior I, Glass G, char filename[64]);
-void  read_ori (Exterior *Ex, Interior *I, Glass *G, char filename[64]);
+int   read_ori (Exterior *Ex, Interior *I, Glass *G, char filename[64]);
 FILE  *fopen_r (CHAR filename[256]);
 FILE  *fopen_rp (char *filename);
-void  read_image (Tcl_Interp* interp, char path[128], unsigned char *img);
+int   read_image (Tcl_Interp* interp, char path[128], unsigned char *img);
 int   write_tiff (const char path[256], unsigned char *data, int nx, int ny);
 void  compose_name_plus_nr (char basename[256], char str[256], int nr, char filename[256]);
 void  compose_name_plus_nr_str (char basename[256], char str[256], int nr, char filename[256]);
