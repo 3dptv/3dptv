@@ -18,6 +18,11 @@ Routines contained: 	   -
 
 ****************************************************************************/
 
+
+// Repaired 'pointer to array' errors, ad holten, 12-2012 
+// In all the calls to trans_Cam_Point() the & is stripped of from the arguments
+//    &cross_p and &cross_c.	(lines: 699 711 727 737 753 763 780 790 808 831)
+
 #include "ptv.h"
 
 double get_mmf_from_mmLUT ();
@@ -197,7 +202,6 @@ void  multimed_nlay_true (Exterior ex, Glass gl,mm_np mm,
 }
 #endif
 
-
 void  multimed_nlay (Exterior ex, mm_np mm, 
 					 double X, double Y, double Z, double *Xq, double *Yq)
 {
@@ -372,7 +376,7 @@ double multimed_r_nlay (Exterior ex, mm_np mm, double X, double Y, double Z)
 	double dir_water_x=-X;
 	double dir_water_z=ex.z0-Z;
 	double dist=pow(dir_water_x*dir_water_x+dir_water_z*dir_water_z,0.5);
-	double xInInterFace,comp_parallel,comp_perpendicular,dir_air_x,dir_air_z,error_x,error_z;
+
 	dir_water_x = dir_water_x/dist;
 	dir_water_z = dir_water_z/dist;
 
@@ -533,11 +537,11 @@ void trans_Cam_Point(Exterior ex, mm_np mm, Glass gl, double X, double Y, double
 	ex_t->y0=0.;
 	ex_t->z0=dist_cam_glas+mm.d[0];
 
-	*X_t=sqrt( pow(cross_p[0]-(cross_c[0]-mm.d[0]*gl.vec_x/dist_o_glas),2.)
+	*X_t = sqrt( pow(cross_p[0]-(cross_c[0]-mm.d[0]*gl.vec_x/dist_o_glas),2.)
 			+pow(cross_p[1]-(cross_c[1]-mm.d[0]*gl.vec_y/dist_o_glas),2.)
 			+pow(cross_p[2]-(cross_c[2]-mm.d[0]*gl.vec_z/dist_o_glas),2.));
-	*Y_t=0;
-	*Z_t=dist_point_glas;
+	*Y_t = 0;
+	*Z_t = dist_point_glas;
 }
 
 void back_trans_Point(double X_t, double Y_t, double Z_t, mm_np mm, Glass G,
@@ -550,9 +554,9 @@ void back_trans_Point(double X_t, double Y_t, double Z_t, mm_np mm, Glass G,
 			 +pow(cross_p[2]-(cross_c[2]-mm.d[0]*G.vec_z/nGl),2.));
 	
 
-	*X=cross_c[0]-mm.d[0]*G.vec_x/nGl+X_t*(cross_p[0]-(cross_c[0]-mm.d[0]*G.vec_x/nGl))/nVe+Z_t*G.vec_x/nGl;
-	*Y=cross_c[1]-mm.d[0]*G.vec_y/nGl+X_t*(cross_p[1]-(cross_c[1]-mm.d[0]*G.vec_y/nGl))/nVe+Z_t*G.vec_y/nGl;
-	*Z=cross_c[2]-mm.d[0]*G.vec_z/nGl+X_t*(cross_p[2]-(cross_c[2]-mm.d[0]*G.vec_z/nGl))/nVe+Z_t*G.vec_z/nGl;
+	*X = cross_c[0]-mm.d[0]*G.vec_x/nGl+X_t*(cross_p[0]-(cross_c[0]-mm.d[0]*G.vec_x/nGl))/nVe+Z_t*G.vec_x/nGl;
+	*Y = cross_c[1]-mm.d[0]*G.vec_y/nGl+X_t*(cross_p[1]-(cross_c[1]-mm.d[0]*G.vec_y/nGl))/nVe+Z_t*G.vec_y/nGl;
+	*Z = cross_c[2]-mm.d[0]*G.vec_z/nGl+X_t*(cross_p[2]-(cross_c[2]-mm.d[0]*G.vec_z/nGl))/nVe+Z_t*G.vec_z/nGl;
 }
 
 double multimed_r_nlay_v2 (Exterior ex, Exterior ex_o, mm_np mm,
@@ -568,7 +572,7 @@ double multimed_r_nlay_v2 (Exterior ex, Exterior ex_o, mm_np mm,
 	double dir_water_x=-X;
 	double dir_water_z=ex.z0-Z;
 	double dist=pow(dir_water_x*dir_water_x+dir_water_z*dir_water_z,0.5);
-	double xInInterFace,comp_parallel,comp_perpendicular,dir_air_x,dir_air_z,error_x,error_z;
+
 	dir_water_x=dir_water_x/dist;
 	dir_water_z=dir_water_z/dist;
 
@@ -670,7 +674,8 @@ void init_mmLUT (int i_cam)
 
 	/* find extrema in depth */
 
-	fpp = fopen ("parameters/criteria.par", "r");
+	fpp = fopen_rp("parameters/criteria.par");	// replaced fopen(), ad holten 12-2012
+	if (!fpp) return;
 	fscanf (fpp, "%lf\n", &X);
 	fscanf (fpp, "%lf\n", &Zmin);
 	fscanf (fpp, "%lf\n", &Zmax);
@@ -693,9 +698,10 @@ void init_mmLUT (int i_cam)
 	correct_brown_affin (x, y, ap[i_cam], &x,&y);
 	ray_tracing_v2 (x,y, Ex[i_cam], I[i_cam], G[i_cam], mmp, &X1, &Y1, &Z1, &a, &b, &c);
 	Z = Zmin;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
+	
 	//trans
 	trans_Cam_Point(Ex[i_cam], mmp,G[i_cam], X,Y,Z, &Ex_t[i_cam], 
-		&X_t, &Y_t, &Z_t, &cross_p, &cross_c);
+		&X_t, &Y_t, &Z_t, cross_p, cross_c);
 
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
@@ -706,7 +712,7 @@ void init_mmLUT (int i_cam)
 	if (R > Rmax) Rmax = R;
 	Z = Zmax;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam], mmp, G[i_cam], X,Y,Z, &Ex_t[i_cam], &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -722,7 +728,7 @@ void init_mmLUT (int i_cam)
 	ray_tracing_v2 (x,y, Ex[i_cam], I[i_cam], G[i_cam], mmp, &X1, &Y1, &Z1, &a, &b, &c);
 	Z = Zmin;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam], mmp, G[i_cam], X,Y,Z, &Ex_t[i_cam], &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -732,7 +738,7 @@ void init_mmLUT (int i_cam)
 	if (R > Rmax)  Rmax = R;
 	Z = Zmax;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam], mmp, G[i_cam], X,Y,Z, &Ex_t[i_cam], &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -748,7 +754,7 @@ void init_mmLUT (int i_cam)
 	ray_tracing_v2 (x,y, Ex[i_cam], I[i_cam], G[i_cam], mmp, &X1, &Y1, &Z1, &a, &b, &c);
 	Z = Zmin;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam], mmp, G[i_cam], X,Y,Z, &Ex_t[i_cam], &X_t, &Y_t, &Z_t, cross_p, cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -758,7 +764,7 @@ void init_mmLUT (int i_cam)
 	if (R > Rmax) Rmax = R;
 	Z = Zmax;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t, cross_p, cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -775,7 +781,7 @@ void init_mmLUT (int i_cam)
 	ray_tracing_v2 (x,y, Ex[i_cam], I[i_cam], G[i_cam], mmp, &X1, &Y1, &Z1, &a, &b, &c);
 	Z = Zmin;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,cross_p,cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -785,7 +791,7 @@ void init_mmLUT (int i_cam)
 	if (R > Rmax)  Rmax = R;
 	Z = Zmax;	X = X1 + (Z-Z1) * a/c;	 Y = Y1 + (Z-Z1) * b/c;
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,cross_p,cross_c);
 	if(Z_t<Zmin_t) Zmin_t=Z_t;
 	if(Z_t>Zmax_t) Zmax_t=Z_t;
 	//
@@ -798,12 +804,12 @@ void init_mmLUT (int i_cam)
 	Rmax += (rw - fmod (Rmax, rw));
 
 	/* get # of rasterlines in r,z */
-	nr = Rmax/rw + 1;
-	nz = (Zmax_t-Zmin_t)/rw + 1;
+	nr = (int)(Rmax/rw + 1);
+	nz = (int)((Zmax_t-Zmin_t)/rw + 1);
 
 	/* create twodimensional mmLUT structure */
 	//trans
-	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+	trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],&X_t,&Y_t,&Z_t,cross_p,cross_c);
 
 	mmLUT[i_cam].origin.x = Ex_t[i_cam].x0;
 	mmLUT[i_cam].origin.y = Ex_t[i_cam].y0;
@@ -827,7 +833,7 @@ void init_mmLUT (int i_cam)
 		//													Ri[i]+Ex[i_cam].x0, Ex[i_cam].y0, Zi[j]);
 		//trans
 		trans_Cam_Point(Ex[i_cam],mmp,G[i_cam],X,Y,Z,&Ex_t[i_cam],
-			&X_t,&Y_t,&Z_t,&cross_p,&cross_c);
+		 	&X_t,&Y_t,&Z_t,cross_p,cross_c);
 
 		mmLUT[i_cam].data[i*nz + j] = 
 			multimed_r_nlay_v2 (Ex_t[i_cam], Ex[i_cam], mmp, 
@@ -888,7 +894,8 @@ void volumedimension (double *xmax, double *xmin, double *ymax, double *ymin,
 	/* find extrema of imaged object volume */
 	/* ==================================== */
 
-	fpp = fopen ("parameters/criteria.par", "r");
+	fpp = fopen_rp("parameters/criteria.par");	// replaced fopen, ad holten, 12-2012
+	if (!fpp) return;
 	fscanf (fpp, "%lf\n", &X);
 	fscanf (fpp, "%lf\n", &Zmin);
 	fscanf (fpp, "%lf\n", &Zmax);

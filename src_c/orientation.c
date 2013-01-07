@@ -278,7 +278,7 @@ void orient (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 ap0,
 	}
 
 	/* compute residuals etc. */
-	matmul ( Xbeta, X, beta, n_obs, 16, 1);
+	matmul (Xbeta, X, beta, n_obs, 16, 1);
 
 	omega = 0;
 	for (i=0; i<n_obs; i++) {
@@ -346,11 +346,11 @@ void orient (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 ap0,
 	//if(multi==0){
 	for (i=0; i<n_obs-10; i+=2)
 	{
-		n = pixnr[i/2];
+		n     = (int) pixnr[i/2];
 		intx1 = (int) pix[nr][n].x;
 		inty1 = (int) pix[nr][n].y;
-		intx2 = intx1 + resi[i]*5000;
-		inty2 = inty1 + resi[i+1]*5000;
+		intx2 = (int) (intx1 + resi[i]*5000);
+		inty2 = (int) (inty1 + resi[i+1]*5000);
 
 		drawcross (interp, intx1, inty1, 3, nr , "orange");
 		drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");
@@ -368,15 +368,16 @@ void orient (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 ap0,
 
 void prepare_eval (int n_img, int *n_fix)
 {
-	int 	i_img,i,j,filenumber,step_shake,count=0,a,b,dumy,num_points;
-	int 	adress[4];
-	double	xa,ya,xb,yb,temp,m,bb,d=0.,dummy;
+	int 	i_img,i,j,filenumber,step_shake,count=0,num_points;
+	int 	address[4];
+	double	d=0.,dummy;
 	FILE	*FILEIN;
 	char	filein[256];
 	FILE	*FILEIN_T;
 	char	filein_T[256];
 
-	fpp = fopen ("parameters/sequence.par","r");
+	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen(), ad holten, 12-2012
+	if (!fpp) return;
 	fscanf (fpp, "%s\n", seq_name[0]);	   /* name of sequence */
 	fscanf (fpp, "%s\n", seq_name[1]);	   /* name of sequence */
 	fscanf (fpp, "%s\n", seq_name[2]);	   /* name of sequence */
@@ -400,8 +401,8 @@ void prepare_eval (int n_img, int *n_fix)
 		/* read targets of each camera */
 		for (i_img=0;i_img<n_img;i_img++) {
 			compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein_T);
-			FILEIN_T= fopen (filein_T, "r");
-			if (! FILEIN_T) printf("Can't open ascii file: %s\n", filein_T);
+			FILEIN_T = fopen_rp (filein_T);		// replaced fopen_r(), ad holten 12-2012
+			if (! FILEIN_T) return;
 
 			fscanf (FILEIN_T, "%d\n", &nt4[3][i_img]);
 			for (j=0; j<nt4[3][i_img]; j++) {
@@ -416,29 +417,39 @@ void prepare_eval (int n_img, int *n_fix)
 
 		/* read rt_is or db_is	*/
 		sprintf (filein, "res/db_is.%d", filenumber);
-		FILEIN = fopen (filein, "r");
-		if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+		FILEIN = fopen_rp (filein);				// replaced fopen_r(), ad holten 12-2012
+		if (! FILEIN) return;
 		fscanf(FILEIN, "%d\n", &num_points);
-		for (i=0;i<num_points;i++){
-			//read points from rt_is
-			adress[0]=-1;adress[1]=-1;adress[2]=-1;adress[3]=-1;
-			if (n_img==4) {
-				fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
-					&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2], &adress[3]);
-			}
-			if (n_img==3) {
-				fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
-					&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2]);
-			}
-			if (n_img==2) { 
-				fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
-					&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[1]);
-			}
-			//then fill in crd stuff
+		for (i=0;i<num_points;i++) {
+			// replaced the next code (potential memory bugs), ad holten 12-2012 
+			//		adress[0]=-1;adress[1]=-1;adress[2]=-1;adress[3]=-1;
+			//		if (n_img==4) {
+			//			fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+			//				&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2], &adress[3]);
+			//		}
+			//		if (n_img==3) {
+			//			fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+			//				&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[0], &adress[1], &adress[2]);
+			//		}
+			//		if (n_img==2) { 
+			//			fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+			//			&dumy, &fix[count].x, &fix[count].y, &fix[count].z, &adress[1]);
+			//		}
+			// by
+
+			// read points from rt_is
+			address[0] = address[1] = address[2] = address[3] = -1;
+			fscanf(FILEIN, "%*d %lf %lf %lf %d %d",
+				&fix[count].x, &fix[count].y, &fix[count].z, &address[1], &address[1]);
+			if (n_img >= 3) fscanf(FILEIN, "%d", &address[2]);
+			if (n_img == 4) fscanf(FILEIN, "%d", &address[3]);
+			fscanf(FILEIN, "\n");
+
+			// then fill in crd stuff
 			for (i_img=0;i_img<n_img;i_img++) {
-				if (adress[i_img]>-1) {
-					pix[i_img][count].x=t4[3][i_img][adress[i_img]].x;
-					pix[i_img][count].y=t4[3][i_img][adress[i_img]].y;
+				if (address[i_img]>-1) {
+					pix[i_img][count].x=t4[3][i_img][address[i_img]].x;
+					pix[i_img][count].y=t4[3][i_img][address[i_img]].y;
 				}
 				else{
 					pix[i_img][count].x=-999;
@@ -456,7 +467,7 @@ void prepare_eval (int n_img, int *n_fix)
 				}
 				crd[i_img][count].pnr=count;
 			}
-			count ++;
+			count++;
 		}
 		fclose (FILEIN);
 	}
@@ -585,90 +596,100 @@ void mid_point(double A1x, double A1y, double A1z, double Ux, double Uy, double 
 void eval_ori_v2 (double db_scale, double weight_scale, int n_img, int nfix, 
 				  double *d_outer, double *av_dist_error, double *residual)
 {
-	int    i_img,i,count_inner=0,count_outer=0,pair_count=0,count_dist=0,n,m;
-	double xa,ya,xb,yb,temp,d_inner=0.,av_dist=0.,x,y;
+	int    i,j,count_inner=0,count_outer=0,pair_count=0,count_dist=0,n,m;
+	double d_inner=0.,av_dist=0.,x,y;
 	double X[4],Y[4],Z[4],a[4],b[4],c[4],dist,dist_error,X_pos,Y_pos,Z_pos,XX,YY,ZZ,X1,Y1,Z1,X2,Y2,Z2;
 	double tmp_d=0.,tmp_dist=0.;
 	*d_outer=0.;
 	*av_dist_error=0.;
 
-	for (i=0;i<nfix;i++) {
+	for (i=0; i<nfix; i++) {
 		//new det_lsq function, bloody fast!
-		if (crd[0][i].x>-999) {
-			x = crd[0][i].x - I[0].xh;
-			y = crd[0][i].y - I[0].yh;
-			//correct_brown_affin (x, y, ap[0], &x, &y);
-			ray_tracing_v2 (x,y, Ex[0], I[0], G[0], mmp, &X[0], &Y[0], &Z[0], &a[0], &b[0], &c[0]);
-		}		 
-		if (crd[1][i].x>-999) {
-			x = crd[1][i].x - I[1].xh;
-			y = crd[1][i].y - I[1].yh;
-			//correct_brown_affin (x, y, ap[1], &x, &y);
-			ray_tracing_v2 (x,y, Ex[1], I[1], G[1], mmp, &X[1], &Y[1], &Z[1], &a[1], &b[1], &c[1]);
-		}		 
-		if (crd[2][i].x>-999) {
-			x = crd[2][i].x - I[2].xh;
-			y = crd[2][i].y - I[2].yh;
-			//correct_brown_affin (x, y, ap[2], &x, &y);
-			ray_tracing_v2 (x,y, Ex[2], I[2], G[2], mmp, &X[2], &Y[2], &Z[2], &a[2], &b[2], &c[2]);
-		}		 
-		if (crd[3][i].x>-999) {
-			x = crd[3][i].x - I[3].xh;
-			y = crd[3][i].y - I[3].yh;
-			//correct_brown_affin (x, y, ap[3], &x, &y);
-			ray_tracing_v2 (x,y, Ex[3], I[3], G[3], mmp, &X[3], &Y[3], &Z[3], &a[3], &b[3], &c[3]);
+		//	replaced the next code
+		//		if (crd[0][i].x>-999) {
+		//			x = crd[0][i].x - I[0].xh;
+		//			y = crd[0][i].y - I[0].yh;
+		//			//correct_brown_affin (x, y, ap[0], &x, &y);
+		//			ray_tracing_v2 (x,y, Ex[0], I[0], G[0], mmp, &X[0], &Y[0], &Z[0], &a[0], &b[0], &c[0]);
+		//		}		 
+		//		if (crd[1][i].x>-999) {
+		//			x = crd[1][i].x - I[1].xh;
+		//			y = crd[1][i].y - I[1].yh;
+		//			//correct_brown_affin (x, y, ap[1], &x, &y);
+		//			ray_tracing_v2 (x,y, Ex[1], I[1], G[1], mmp, &X[1], &Y[1], &Z[1], &a[1], &b[1], &c[1]);
+		//		}		 
+		//		if (crd[2][i].x>-999) {
+		//			x = crd[2][i].x - I[2].xh;
+		//			y = crd[2][i].y - I[2].yh;
+		//			//correct_brown_affin (x, y, ap[2], &x, &y);
+		//			ray_tracing_v2 (x,y, Ex[2], I[2], G[2], mmp, &X[2], &Y[2], &Z[2], &a[2], &b[2], &c[2]);
+		//		}		 
+		//		if (crd[3][i].x>-999) {
+		//			x = crd[3][i].x - I[3].xh;
+		//			y = crd[3][i].y - I[3].yh;
+		//			//correct_brown_affin (x, y, ap[3], &x, &y);
+		//			ray_tracing_v2 (x,y, Ex[3], I[3], G[3], mmp, &X[3], &Y[3], &Z[3], &a[3], &b[3], &c[3]);
+		//		}
+		// by		ad holten, 12-2012
+		for (j=0; j<4; j++) {
+			if (crd[j][i].x > -999) {
+				x = crd[j][i].x - I[j].xh;
+				y = crd[j][i].y - I[j].yh;
+				// correct_brown_affin (x, y, ap[3], &x, &y);
+				ray_tracing_v2 (x,y, Ex[j], I[j], G[j], mmp, &X[j], &Y[j], &Z[j], &a[j], &b[j], &c[j]);
+			}
 		}
 
 		count_inner=0;
-		X_pos=0.;Y_pos=0.;Z_pos=0.;
-		for (n=0;n<n_img;n++) {
-			for(m=n+1;m<n_img;m++) {
+		X_pos=0.; Y_pos=0.; Z_pos=0.;
+		for (n=0; n<n_img; n++) {
+			for(m=n+1; m<n_img; m++) {
 				if(crd[n][i].x>-999 && crd[m][i].x>-999) {
 					mid_point(X[n],Y[n],Z[n],a[n],b[n],c[n],X[m],Y[m],Z[m],a[m],b[m],c[m],&dist,&XX,&YY,&ZZ);
 					count_inner++;
 					d_inner += dist;
-					X_pos+=XX;Y_pos+=YY;Z_pos+=ZZ;
+					X_pos+=XX; Y_pos+=YY; Z_pos+=ZZ;
 				}
 			}
 		}
-		d_inner/=(double)count_inner;
-		X_pos/=(double)count_inner;Y_pos/=(double)count_inner;Z_pos/=(double)count_inner;
+		d_inner /= (double)count_inner;
+		X_pos /= (double)count_inner; Y_pos /= (double)count_inner; Z_pos /= (double)count_inner;
 		//end of new det_lsq
 
-		if(Z_pos>G[0].vec_z){
-			d_inner=Z_pos-G[0].vec_z+d_inner;
-		}
+		if(Z_pos > G[0].vec_z)
+			d_inner = Z_pos-G[0].vec_z+d_inner;
+
 		*d_outer +=d_inner;
 		
 		count_outer++;
 		if(pair_count==0) {
-			X1=X_pos;Y1=Y_pos;Z1=Z_pos;
+			X1 = X_pos;  Y1 = Y_pos;  Z1 = Z_pos;
 		}
 		if(pair_count==1) {
-			X2=X_pos;Y2=Y_pos;Z2=Z_pos;
+			X2 = X_pos; Y2 = Y_pos;  Z2 = Z_pos;
 		}
 		///here I introduce penalty for scale
 		pair_count++;
 		if(pair_count==2){
-			pair_count=0;			 
-			dist=sqrt(pow(X2-X1,2.)+pow(Y2-Y1,2.)+pow(Z2-Z1,2.));
-			av_dist+=dist;
-			if(dist<db_scale){
-				dist_error=1-dist/db_scale;
+			pair_count = 0;			 
+			dist = sqrt(pow(X2-X1,2.)+pow(Y2-Y1,2.)+pow(Z2-Z1,2.));
+			av_dist += dist;
+			if (dist < db_scale) {
+				dist_error = 1-dist/db_scale;
 			}
-			else{
-				dist_error=1-db_scale/dist;
+			else {
+				dist_error = 1-db_scale/dist;
 			}
-			*av_dist_error+=dist_error;
+			*av_dist_error += dist_error;
 			count_dist++;
 		}
 		///end of eval
 	}
 	av_dist /=(double)count_dist;
 	*d_outer /=(double)count_outer;
-	*d_outer/=av_dist;
+	*d_outer /= av_dist;
 	*av_dist_error /=(double)count_dist;
-	*residual=*d_outer+weight_scale*(*av_dist_error);
+	*residual = *d_outer+weight_scale*(*av_dist_error);
 }
 
 void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 *ap)
@@ -679,9 +700,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 // ap_52	*ap 	add. parameters, approx and result
 // int		n_img,nfix	# of object points
 {
-	int 	i,j,itnum,max_itnum,i_img,dummy;
-	double	residual, best_residual, old_val,dm = 0.0001,  drad = 0.00001,sens,factor,weight_scale;   
-	double	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
+	int 	itnum,max_itnum,i_img,dummy;
+	double	residual, best_residual, dm = 0.0001,  drad = 0.00001,factor,weight_scale;   
 	double	db_scale,eps0,epi_miss, dist;
 	int 	useflag, ccflag, scxflag, sheflag, interfflag, xhflag, yhflag,
 	k1flag, k2flag, k3flag, p1flag, p2flag;
@@ -697,7 +717,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 		fclose (fpp);
 	}
 
-	fp1 = fopen_r ("parameters/orient.par");
+	fp1 = fopen_rp ("parameters/orient.par");	// replaced fopen_r(), ad holten, 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d", &useflag);
 	fscanf (fp1,"%d", &ccflag);
 	fscanf (fp1,"%d", &xhflag);
@@ -736,19 +757,17 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 		eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
 		best_residual=residual;
 	
-		for (i_img=0;i_img<n_img;i_img++) {
+		for (i_img=0; i_img<n_img; i_img++) {
 		 
 			Ex[i_img].x0 += dm;
 			eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
 			if (best_residual-residual < 0) { //then try other direction
 				Ex[i_img].x0 -= 2*dm;
 				eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-				if(best_residual-residual < 0) {// then leave it unchanged
+				if (best_residual-residual < 0)		// then leave it unchanged
 					Ex[i_img].x0 += dm;
-				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -756,15 +775,13 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 
 			Ex[i_img].y0 += dm;
 			eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-			if(best_residual-residual < 0) { //then try other direction
+			if (best_residual-residual < 0) { //then try other direction
 				Ex[i_img].y0 -= 2*dm;
 				eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-				if (best_residual-residual < 0) {// then leave it unchanged
+				if (best_residual-residual < 0) // then leave it unchanged
 					Ex[i_img].y0 += dm;
-				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -775,12 +792,10 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 			if (best_residual-residual < 0) { //then try other direction
 				Ex[i_img].z0 -= 2*dm;
 				eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-				if (best_residual-residual < 0) { // then leave it unchanged
+				if (best_residual-residual < 0)	// then leave it unchanged
 					Ex[i_img].z0 += dm;
-				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -797,9 +812,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 					Ex[i_img].omega += drad;
 					rotation_matrix (Ex[i_img], Ex[i_img].dm);
 				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -816,9 +830,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 					Ex[i_img].phi += drad;
 					rotation_matrix (Ex[i_img], Ex[i_img].dm);
 				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -835,9 +848,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 					Ex[i_img].kappa+= drad;
 					rotation_matrix (Ex[i_img], Ex[i_img].dm);
 				}
-				else { // it was a success!
+				else	// it was a success!
 					best_residual=residual;
-				}
 			}
 			else { // it was a success!
 				best_residual=residual;
@@ -850,12 +862,10 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 					if (best_residual-residual < 0) { //then try other direction
 						I[i_img].cc -= 2*dm;
 						eval_ori_v2(db_scale,weight_scale,n_img, nfix, &epi_miss, &dist, &residual);
-						if (best_residual-residual < 0) { // then leave it unchanged
+						if (best_residual-residual < 0)	// then leave it unchanged
 							I[i_img].cc += dm;
-						}
-						else { // it was a success!
+						else	// it was a success!
 							best_residual=residual;
-						}
 					}
 					else { // it was a success!
 						best_residual=residual;
@@ -879,9 +889,8 @@ void orient_v5 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 							I[2].cc  =I[0].cc;
 							I[3].cc  =I[0].cc;
 						}
-						else { // it was a success!
+						else	// it was a success!
 							best_residual=residual;
-						}
 					}
 					else { // it was a success!
 						best_residual=residual;
@@ -934,9 +943,9 @@ void orient_v4 (int n_img, int nfix, Exterior *Ex, Interior *I, Glass *G, ap_52 
 // ap_52	*ap 	parameters, approx and result
 // int n_img,nfix;	# of object points
 {
-	int    i,j,itnum,max_itnum,i_img,dummy;
+	int    itnum,max_itnum,i_img,dummy;
 	double residual, best_residual, old_val,dm = 0.0001,  drad = 0.0001,sens,factor,weight_scale;	
-	double Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
+	// double Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
 	double db_scale,eps0,epi_miss, dist;
 	int    useflag, ccflag, scxflag, sheflag, interfflag, xhflag, yhflag,
 		   k1flag, k2flag, k3flag, p1flag, p2flag;
@@ -1186,7 +1195,8 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 
 
 	/* read, which parameters shall be used */
-	fp1 = fopen_r ("parameters/orient.par");
+	fp1 = fopen_rp ("parameters/orient.par");		// replaced fopen_r(), ad holten 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d", &useflag);
 	fscanf (fp1,"%d", &ccflag);
 	fscanf (fp1,"%d", &xhflag);
@@ -1527,7 +1537,8 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 	printf ("scale for x'  = %8.5f	 +/- %8.5f\n", ap0.scx, sigmabeta[14]);
 	printf ("shearing	   = %8.5f	 +/- %8.5f\n", ap0.she*ro, sigmabeta[15]*ro);
 
-	fp1 = fopen_r ("parameters/examine.par");
+	fp1 = fopen_rp ("parameters/examine.par");			// replaced fopen_r(), ad holten, 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d\n", &dummy);
 	fscanf (fp1,"%d\n", &multi);
 	fclose (fp1);
@@ -1554,11 +1565,11 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 //if(multi==0){
 	for (i=0; i<n_obs-10; i+=2)
 	{
-		n = pixnr[i/2];
+		n     = (int) pixnr[i/2];
 		intx1 = (int) pix[nr][n].x;
 		inty1 = (int) pix[nr][n].y;
-		intx2 = intx1 + resi[i]*5000;
-		inty2 = inty1 + resi[i+1]*5000;
+		intx2 = (int) (intx1 + resi[i]*5000);
+		inty2 = (int) (inty1 + resi[i+1]*5000);
 
 		drawcross (interp, intx1, inty1, 3, nr , "orange");
 		drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");
@@ -1609,7 +1620,8 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 
 
 	/* read, which parameters shall be used */
-	fp1 = fopen_r ("parameters/orient.par");
+	fp1 = fopen_rp ("parameters/orient.par");		// replaced fopen_r(), ad holten, 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d", &useflag);
 	fscanf (fp1,"%d", &ccflag);
 	fscanf (fp1,"%d", &xhflag);
@@ -1957,7 +1969,8 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 	printf ("scale for x'  = %8.5f	 +/- %8.5f\n", ap0.scx, sigmabeta[14]);
 	printf ("shearing	   = %8.5f	 +/- %8.5f\n", ap0.she*ro, sigmabeta[15]*ro);
 
-	fp1 = fopen_r ("parameters/examine.par");
+	fp1 = fopen_rp ("parameters/examine.par");		// replaced fopen_r(), ad holten, 12-2012
+	if (!fp1) return;
 	fscanf (fp1,"%d\n", &dummy);
 	fscanf (fp1,"%d\n", &multi);
 	fclose (fp1);
@@ -1983,11 +1996,11 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 	//if(multi==0){
 	for (i=0; i<n_obs-10; i+=2)
 	{
-		n = pixnr[i/2];
+		n     = (int) pixnr[i/2];
 		intx1 = (int) pix[nr][n].x;
 		inty1 = (int) pix[nr][n].y;
-		intx2 = intx1 + resi[i]*5000;
-		inty2 = inty1 + resi[i+1]*5000;
+		intx2 = (int) (intx1 + resi[i]*5000);
+		inty2 = (int) (inty1 + resi[i+1]*5000);
 
 		drawcross (interp, intx1, inty1, 3, nr , "orange");
 		drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");
@@ -2114,6 +2127,7 @@ void raw_orient (Exterior Ex0, Interior I, Glass G, ap_52 ap, mm_np mm,
 		puts ("raw orientation impossible");
 }
 #endif
+
 
 void raw_orient_v3 (Exterior Ex0, Interior I, Glass G0, ap_52 ap, mm_np mm, int nfix,
 					coord_3d fix[], coord_2d crd[], Exterior *Ex, Glass *G, int only_show)
