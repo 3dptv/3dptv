@@ -116,7 +116,8 @@ void targ_rec (Tcl_Interp* interp, unsigned char *img0, unsigned char *img, char
 
 
     /* read image name, filter dimension and threshold from parameter file */
-    fpp = fopen_r (par_file);
+    fpp = fopen_rp (par_file);	// replaced fopen_r(), ad holten 12-2012
+	if (!fpp) return;
     fscanf (fpp, "%d", &gvthres[0]);        /* threshold for binarization 1.image */
     fscanf (fpp, "%d", &gvthres[1]);        /* threshold for binarization 2.image */
     fscanf (fpp, "%d", &gvthres[2]);        /* threshold for binarization 3.image */
@@ -134,7 +135,9 @@ void targ_rec (Tcl_Interp* interp, unsigned char *img0, unsigned char *img, char
 
     /*  thresholding and connectivity analysis in image  */
 
-    for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)
+    // for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)		replaced, ad holten 12-2012
+    for (i=ymin+1; i<ymax-1; i++) 
+		for (j=xmin+1; j<xmax-1; j++)
     {
         gv = *(img + i*imx + j);
         if (   gv > thres 
@@ -223,8 +226,8 @@ void targ_rec (Tcl_Interp* interp, unsigned char *img0, unsigned char *img, char
 				pix[n_targets].y = y;
 				pix[n_targets].pnr = n_targets++;
 
-				xn = x;  yn = y;
-				drawcross (interp, (int) xn, (int) yn, cr_sz, nr, "Blue");
+				xn = (int)x;  yn = (int)y;
+				drawcross (interp, xn, yn, cr_sz, nr, "Blue");
 			}
 		}
     }
@@ -258,8 +261,12 @@ void simple_connectivity (Tcl_Interp* interp, unsigned char *img0, unsigned char
 	targpix waitlist[2048];
 
 	/* read image name, threshold and shape limits from parameter file */
-	fpp = fopen_r (par_file);
-	fscanf (fpp, "%d", &thres);				/* threshold for binarization        */
+    fpp = fopen_rp (par_file);	// replaced fopen_r(), ad holten 12-2012
+	if (!fpp) return;
+	fscanf (fpp, "%d", &thres);				/* threshold for binarization */
+	fscanf (fpp, "%*d");					// added, ad holten 12-2012
+	fscanf (fpp, "%*d");					//
+	fscanf (fpp, "%*d");					//
 	fscanf (fpp, "%d", &n);					/* threshold value for discontinuity */
 	fscanf (fpp, "%d%d", &nnmin, &nnmax);   /* min. and max. number of			 */
 	fscanf (fpp, "%d%d", &nxmin, &nxmax);   /* pixels per target,				 */
@@ -270,8 +277,9 @@ void simple_connectivity (Tcl_Interp* interp, unsigned char *img0, unsigned char
 
 
 	/*  thresholding and connectivity analysis in image  */
-
-	for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)
+	// for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)		replaced, ad holten 12-2012
+	for (i=ymin+1; i<ymax-1; i++)
+		for (j=xmin+1; j<xmax-1; j++)
 	{
 		gv = *(img + i*imx + j);
 		if ( gv > 2*thres)
@@ -343,9 +351,9 @@ void simple_connectivity (Tcl_Interp* interp, unsigned char *img0, unsigned char
 				pix[n_targets].tnr = -1;
 				pix[n_targets].pnr = n_targets++;
 
-				xn =  x;  yn = y;
+				xn = (int)x;  yn = (int)y;
 				// drawcross (xn, yn, cr_sz, 8);  // bug, ad holten, 12-2012
-				drawcross (interp, (int) xn, (int) yn, cr_sz, nr, "Blue");
+				drawcross (interp, xn, yn, cr_sz, nr, "Blue");
 			}
 		}
 	}

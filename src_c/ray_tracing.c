@@ -26,7 +26,7 @@ void dot(double a[3], double b[3], double *d);
 void modu(double a[3], double *m);
 
 
-#ifdef EVER_CALLED		// Unused function, ad holten 12-2012
+#ifdef EVER_CALLED		// added, ad holten 12-2012
 void ray_tracing (double x, double y, Exterior Ex, Interior I, mm_np mm,
 				  double *Xb2, double *Yb2, double *Zb2, double *a3, double *b3, double *c3)
 
@@ -165,8 +165,8 @@ void ray_tracing_v2 (double x, double y, Exterior Ex, Interior I, Glass G, mm_np
 					 double *a3, double *b3, double *c3)
 /* ray-tracing, see HOEHLE and Manual of Photogrammetry */
 {
-	double	a1, b1, c1, a2, b2, c2, Xb1, Yb1, Zb1, d1, d2, cosi1, cosi2,
-			vect1[3], vect2[3], factor, s2;
+	double	a1, b1, c1, a2, b2, c2, Xb1, Yb1, Zb1, d1, d2,
+			vect1[3], vect2[3], s2;
 
 	double a[3],b[3],base2[3],c,dummy,bn[3],bp[3],n,p;
 

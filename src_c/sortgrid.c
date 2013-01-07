@@ -30,10 +30,8 @@ void just_plot (Tcl_Interp* interp, Exterior Ex, Interior I, Glass G, ap_52 ap,
 				mm_np mm, int imx, int imy, double pix_x, double pix_y, 
 				int nfix, coord_3d fix[], int field, int n_img)
 {
-	int    i, j, intx, inty;
+	int    i, intx, inty;
 	double xp, yp, eps=10.0;
-	// target  old[512]; Alex, 17.09.09, working on Wesleyan data
-	target old[1024]; 
 
 	/* reproject all calibration plate points into pixel space
 	and search a detected target nearby */
@@ -107,21 +105,21 @@ void sortgrid_man (Tcl_Interp* interp, Exterior Ex, Interior I, Glass G, ap_52 a
 }
 
 
-///Beat and Debashish January 2011
+// Beat and Debashish January 2011
 void sortgrid_file (Tcl_Interp* interp, Exterior Ex, Interior I, Glass G, ap_52 ap, 
 					mm_np mm, int imx, int imy, double pix_x, double pix_y,
 					int nfix, coord_3d fix[], int num, target pix[], int field, int n_img)
 {
-	int    i, j,k, n_sel, intx, inty;
-	double xp, yp, eps=10.0;
-	//	target old[512];
+	int    i, k;
+	double eps=10.0;
 	target old[1024];
 	char   file_sort[256];
 	int    dummy, detection_pnr[1000];
 
 	sprintf (file_sort, "for_sortgrid.%1d", n_img);
 
-	fpp = fopen_r (file_sort);
+	fpp = fopen_rp (file_sort);			// replaced fopen_r(), ad holten, 12-2012
+	if (!fpp) return;
 	k = 0;
 	while (fscanf (fpp, "%d %lf %lf %lf %d", &fix[k].pnr,
 				&fix[k].x, &fix[k].y, &fix[k].z, &dummy) != EOF) {
