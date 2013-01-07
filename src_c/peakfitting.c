@@ -25,7 +25,6 @@ See the file license.txt for copying permission.
 void check_touch (peak *tpeak, int p1, int p2);
 
 
-
 int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[], 
 				  int xmin, int xmax, int ymin, int ymax, target pix[], int nr)
 /*
@@ -61,13 +60,13 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 	peak		  *peaks, *ptr_peak;	/* detected peaks */
 	targpix 	  waitlist[2048];		/* pix to be tested for connectivity */
 	FILE		  *fpp; 				/* parameter file pointer */
-  
 
 	/* read image name, threshold and shape limits from parameter file */
 
 	/*------------------------------------------------------------------------*/
 
-	fpp = fopen_r (par_file);
+	fpp = fopen_rp (par_file);	// replaced fopen_r(), ad holten 12-2012
+	if (!fpp) return 0;
 	fscanf (fpp, "%d", &gvthres[0]);			/* threshold for binarization 1.image */
 	fscanf (fpp, "%d", &gvthres[1]);			/* threshold for binarization 2.image */
 	fscanf (fpp, "%d", &gvthres[2]);			/* threshold for binarization 3.image */
@@ -78,20 +77,20 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 	fscanf (fpp, "%d  %d", &nymin, &nymax); 	/* abs, in x, in y		  */
 	fscanf (fpp, "%d", &sumg_min);				/* min. sumg */
 	fscanf (fpp, "%d", &cr_sz); 				/* size of crosses */
-	fscanf (fpp, "%d", &dummy); 				/* size of crosses */
-	fscanf (fpp, "%d", &dummy); 				/* size of crosses */
+	fscanf (fpp, "%d", &dummy);
+	fscanf (fpp, "%d", &dummy);
 	fscanf (fpp, "%d", &rel_disc);
 	fclose (fpp);
 
 	/* give thres value refering to image number */
-	thres=gvthres[nr];
+	thres = gvthres[nr];
 
 	/*------------------------------------------------------------------------*/
 	/* allocate memory */
 	/*------------------------------------------------------------------------*/
 
-	label_img = (short *) calloc (imgsize, sizeof(short));
-	peaks = (peak *) malloc (4*nmax * sizeof(peak));
+	label_img = (short*) calloc (imgsize, sizeof(short));
+	peaks = (peak*) malloc (4*nmax * sizeof(peak));
 	ptr_peak = peaks;
 
 	/*------------------------------------------------------------------------*/
@@ -100,21 +99,29 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 
 	puts("Searching local maxima, connectivity analysis, peak factor 2 set");
 
-	for (i=ymin; i<ymax-1; i++)  for (j=xmin; j<xmax; j++) //Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
+	//for (i=ymin; i<ymax-1; i++)
+	//	for (j=xmin; j<xmax; j++) //Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
+	
+	// replaced by the next code to avoid passing image bounds, ad holten 12-2012
+	if (ymin < 1)     ymin = 1;
+	if (ymax > imy-1) ymax = imy-1;
+
+    for (i=ymin; i<ymax; i++)
+		for (j=xmin; j<xmax; j++)
 	{
 		n = i*imx + j;
 
 		/* compare with threshold */
-		gv = *(img + n);   if (gv <= 2*thres)	 continue;
+		gv = *(img + n);   if (gv <= 2*thres) continue;
 
 		/* skip already labeled pixel */
-		if (*(label_img + n) != 0)	  continue;
+		if (*(label_img + n) != 0) continue;
 
 		/* check, wether pixel is a local maximum */
-		if (   gv >= *(img + n-1)
-			&& gv >= *(img + n+1)
-			&& gv >= *(img + n-imx)
-			&& gv >= *(img + n+imx)
+		if (   gv >= *(img + n-1    )
+			&& gv >= *(img + n+1    )
+			&& gv >= *(img + n-imx  )
+			&& gv >= *(img + n+imx  )
 			&& gv >= *(img + n-imx-1)
 			&& gv >= *(img + n+imx-1)
 			&& gv >= *(img + n-imx+1)
@@ -133,7 +140,7 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 			ptr_peak->x = 0;
 			ptr_peak->y = 0;
 			ptr_peak->n_touch = 0;
-			for (k=0; k<4; k++)    ptr_peak->touch[k] = 0;
+			for (k=0; k<4; k++) ptr_peak->touch[k] = 0;
 			ptr_peak++;
 
 			waitlist[0].x = j;	waitlist[0].y = i;	n_wait = 1;
@@ -160,16 +167,18 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 				{
 					yn = y8[k];
 					xn = x8[k];
-					if (xn<0 || xn>imx || yn<0 || yn>imy)	 continue;
+					// if (xn<0 || xn>imx || yn<0 || yn>imy) continue;		// Bug repaired, ad holten, 12-2012
+					if (xn<1 || xn>imx-2 || yn<1 || yn>imy-2) continue;
+
 					n = imx*yn + xn;
-					if (*(label_img + n) != 0)	  continue;
+					if (*(label_img + n) != 0) continue;
 					gv = *(img + n);
 
-					/* conditions for threshold, discontinuity, image borders */
-					/* and peak fitting */
+					/* conditions for threshold, discontinuity and peak fitting */
 					if (   (gv > thres)
-						&& (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax-1)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
 						&& (gv <= gvref+disco)
+						//		removed the image borders test from Beat, ad holten, 2012
+						//		&& (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax-1)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
 						&& (gvref + disco >= *(img + imx*(yn-1) + xn))
 						&& (gvref + disco >= *(img + imx*(yn+1) + xn))
 						&& (gvref + disco >= *(img + imx*yn + (xn-1)))
@@ -179,7 +188,7 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 						&& (gvref + disco >= *(img + imx*(yn-1) + xn+1))
 						&& (gvref + disco >= *(img + imx*(yn+1) + (xn-1)))
 						&& (gvref + disco >= *(img + imx*(yn+1) + (xn+1)))	*/
-					   )
+						)
 					{
 						*(label_img + imx*yn + xn) = n_peaks;
 						waitlist[n_wait].x = xn;	waitlist[n_wait].y = yn;
@@ -202,7 +211,8 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 
 	puts("Collecting peak data");
 
-	for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)
+	for (i=ymin; i<ymax; i++)
+		for (j=xmin; j<xmax; j++)
 	{
 		n = i*imx + j;
 
@@ -222,17 +232,28 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 			if (i > ptr_peak->ymax)    ptr_peak->ymax = i;
 
 			/* get touch events */
+			// bugs repaired, ad holten 12-2012 i = Y-axis, j = X-axis !!!
+			// if (i>0 && j>1) 	check_touch (ptr_peak, pnr, *(label_img+n-imx-1));
+			// if (i>0)			check_touch (ptr_peak, pnr, *(label_img+n-imx));
+			// if (i>0 && j<imy-1) check_touch (ptr_peak, pnr, *(label_img+n-imx+1));
 
-			if (i>0 && j>1) 	check_touch (ptr_peak, pnr, *(label_img+n-imx-1));
+			// if (j>0)			check_touch (ptr_peak, pnr, *(label_img+n-1));
+			// if (j<imy-1)		check_touch (ptr_peak, pnr, *(label_img+n+1));
+
+			// if (i<imx-1 && j>0) check_touch (ptr_peak, pnr, *(label_img+n+imx-1));
+			// if (i<imx-1)		check_touch (ptr_peak, pnr, *(label_img+n+imx));
+			// if (i<imx-1 && j<imy-1) check_touch (ptr_peak, pnr, *(label_img+n+imx+1));
+
+			if (i>0 && j>0) 	check_touch (ptr_peak, pnr, *(label_img+n-imx-1));
 			if (i>0)			check_touch (ptr_peak, pnr, *(label_img+n-imx));
-			if (i>0 && j<imy-1) check_touch (ptr_peak, pnr, *(label_img+n-imx+1));
+			if (i>0 && j<imx-1) check_touch (ptr_peak, pnr, *(label_img+n-imx+1));
 
 			if (j>0)			check_touch (ptr_peak, pnr, *(label_img+n-1));
-			if (j<imy-1)		check_touch (ptr_peak, pnr, *(label_img+n+1));
+			if (j<imx-1)		check_touch (ptr_peak, pnr, *(label_img+n+1));
 
-			if (i<imx-1 && j>0) check_touch (ptr_peak, pnr, *(label_img+n+imx-1));
-			if (i<imx-1)		check_touch (ptr_peak, pnr, *(label_img+n+imx));
-			if (i<imx-1 && j<imy-1) check_touch (ptr_peak, pnr, *(label_img+n+imx+1));
+			if (i<imy-1 && j>0) check_touch (ptr_peak, pnr, *(label_img+n+imx-1));
+			if (i<imy-1)		check_touch (ptr_peak, pnr, *(label_img+n+imx));
+			if (i<imy-1 && j<imx-1) check_touch (ptr_peak, pnr, *(label_img+n+imx+1));
 		}
 	}
 
@@ -244,8 +265,8 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 
 	for (i=0; i<n_peaks; i++)
 	{
-		if (peaks[i].n_touch == 0)	  continue;    /* no touching targets */
-		if (peaks[i].unr != 0)		  continue; 		 /* target already unified */
+		if (peaks[i].n_touch == 0) continue;	/* no touching targets */
+		if (peaks[i].unr != 0)     continue;	/* target already unified */
 
 		/* profile criterion */
 		/* point 1 */
@@ -258,9 +279,9 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 		{
 			p2 = peaks[i].touch[j] - 1;
 
-			if (p2 >= n_peaks) continue; /* workaround memory overwrite problem */
-			if ( p2 <0) continue;  /*  workaround memory overwrite problem */
-			if (peaks[p2].unr != 0) 		 continue; /* target already unified */
+			if (p2 >= n_peaks) continue;		/* workaround memory overwrite problem */
+			if (p2 < 0)        continue;		/*  workaround memory overwrite problem */
+			if (peaks[p2].unr != 0) continue;	/* target already unified */
 
 			/* point 2 */
 			x2 = peaks[p2].x / peaks[p2].sumg;
@@ -274,24 +295,23 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 			/* if any points is by more than disco below profile, do not unify */
 			if (s12 < 2.0)
 				unify = 1;
-			else
-				for (unify=1, l=1; l<s12; l++)
-				{
+			else {
+				for (unify=1, l=1; l<s12; l++) {
 					intx1 = (int) (x1 + l * (x2 - x1) / s12);
 					inty1 = (int) (y1 + l * (y2 - y1) / s12);
 					if (rel_disc==0) { //Beat March 2011
 						gv = *(img + inty1*imx + intx1) + disco; 
-						if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)  unify = 0;
+						if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2) unify = 0;
 						if (unify == 0)    break;
 					}
-					else { //Beat March 2011
-						gv = *(img + inty1*imx + intx1); //Beat March 2011
-						if (gv < (gv1+l*(gv2-gv1)/s12)*(double)disco*0.01)	  unify = 0; //Beat March 2011
+					else { // Beat March 2011
+						gv = *(img + inty1*imx + intx1);
+						if (gv < (gv1+l*(gv2-gv1)/s12)*(double)disco*0.01) unify = 0;
 						if (unify == 0)    break;
 					}
 				}
-			if (unify == 0)
-			{
+			}
+			if (unify == 0)	{
 				non_unified++;
 				continue;
 			}
@@ -319,10 +339,10 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 	for (i=0; i<n_peaks; i++)
 	{
 		/* check whether target touches image borders */
-		if (peaks[i].xmin == xmin  &&  (xmax-xmin) > 32)	continue;
-		if (peaks[i].ymin == ymin  &&  (xmax-xmin) > 32)	continue;
-		if (peaks[i].xmax == xmax-1  &&  (xmax-xmin) > 32)	  continue;
-		if (peaks[i].ymax == ymax-1  &&  (xmax-xmin) > 32)	  continue;
+		if (peaks[i].xmin == xmin   && (xmax-xmin) > 32) continue;
+		if (peaks[i].ymin == ymin   && (xmax-xmin) > 32) continue;
+		if (peaks[i].xmax == xmax-1 && (xmax-xmin) > 32) continue;
+		if (peaks[i].ymax == ymax-1 && (xmax-xmin) > 32) continue;
 
 		if (   peaks[i].unr == 0
 			&& peaks[i].sumg > sumg_min
@@ -342,32 +362,28 @@ int peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[],
 			/* draw cross */
 			if (display)
 				drawcross(interp, (int) pix[n_target].x, (int) pix[n_target].y,
-						  cr_sz, nr, "blue");
+					cr_sz, nr, "blue");
 
 			/* target shape parameters */
 			pix[n_target].sumg = sumg;
-			pix[n_target].n = peaks[i].n;
-			pix[n_target].nx = peaks[i].xmax - peaks[i].xmin + 1;
-			pix[n_target].ny = peaks[i].ymax - peaks[i].ymin + 1;
+			pix[n_target].n   = peaks[i].n;
+			pix[n_target].nx  = peaks[i].xmax - peaks[i].xmin + 1;
+			pix[n_target].ny  = peaks[i].ymax - peaks[i].ymin + 1;
 			pix[n_target].tnr = -1;
 			pix[n_target].pnr = n_target++;
 		}
 	}
 
 	/* get number of touch events */
-	if (examine==10)
+	if (examine == 10)
 	{
 		for (x=0,i=0; i<n_target; i++)
-		{
 			x += pix[i].n;
-		}
 		x /= n_target;
 		printf ("Average number of pix per target: %6.3f\n", x);
 
 		for (sumg=0,i=0; i<n_peaks; i++)
-		{
 			sumg += peaks[i].n_touch;
-		}
 		printf ("Number of touch events: %d\n", sumg/2);
 
 		y = 2*n_target*n_target*x/imgsize;
@@ -384,19 +400,15 @@ void check_touch (peak *tpeak, int p1, int p2)
 {
 	int    m, done;
 
-
 	if (p2 == 0)  return;		 /* p2 not labeled */
 	if (p2 == p1) return;		 /* p2 belongs to p1 */
 
 	/* check wether p1, p2 are already marked as touching */
 	for (done=0, m=0; m<tpeak->n_touch; m++)
-	{
 		if (tpeak->touch[m] == p2)	done = 1;
-	}
 
 	/* mark touch event */
-	if (done == 0)
-	{
+	if (done == 0) {
 		tpeak->touch[tpeak->n_touch] = p2;
 		tpeak->n_touch++;
 		/* don't allow for more than 4 touchs */

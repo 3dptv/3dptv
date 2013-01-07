@@ -16,9 +16,11 @@ Description:		point positioning with least squares adjustment
 Routines contained: 	   
 
 ****************************************************************************/
+
+
 #include "ptv.h"
 
-#ifdef EVER_CALLED		// Unused function, ad holten 12-2012
+#ifdef EVER_CALLED		// added, ad holten 12-2012
 void det_lsq_old (Exterior Ex[4], Interior I[4], ap_52 ap[4], mm_np mm, 
 				  double x1, double y1, double x2, double y2, 
 				  double x3, double y3, double x4, double y4, 
@@ -194,10 +196,10 @@ void det_lsq_old (Exterior Ex[4], Interior I[4], ap_52 ap[4], mm_np mm,
 void dist_to_ray(double x, double y, Exterior Ex, Interior I, Glass G, ap_52 ap, mm_np mm, 
 				 double Xp, double Yp, double Zp, double *dist)
 {
-	double gX[4],gY[4],gZ[4],a[4],b[4],c[4];
-	double x01,x02,x03,x12,x13,x23;
-	double y01,y02,y03,y12,y13,y23;
-	double z01,z02,z03,z12,z13,z23;
+	//double gX[4],gY[4],gZ[4],a[4],b[4],c[4];
+	//double x01,x02,x03,x12,x13,x23;
+	//double y01,y02,y03,y12,y13,y23;
+	//double z01,z02,z03,z12,z13,z23;
 	 
 	*dist=1;
 }
@@ -236,9 +238,9 @@ void pos_from_ray(Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np 
 	point_line_line(Ex[2], I[2], G[2], mmp, gX[2], gY[2], gZ[2], a[2], b[2], c[2],
 					Ex[3], I[3], G[3],		gX[3], gY[3], gZ[3], a[3], b[3], c[3], &x23,&y23,&z23);
 
-	*Xp=(1./6.)*(x01+x02+x03+x12+x13+x23);	
-	*Yp=(1./6.)*(y01+y02+y03+y12+y13+y23);	
-	*Zp=(1./6.)*(z01+z02+z03+z12+z13+z23);	  
+	*Xp = (x01+x02+x03+x12+x13+x23)/6.;	
+	*Yp = (y01+y02+y03+y12+y13+y23)/6.;	
+	*Zp = (z01+z02+z03+z12+z13+z23)/6.;	  
 	*dist=1;
 }
 
@@ -247,12 +249,11 @@ void det_lsq_3d(Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 				double x3, double y3, double x4, double y4, 
 				double *Xp, double *Yp, double *Zp)
 {
-
 	int 	i,count_inner=0,n,m,flag[4];
 	double	d_inner=0.,x,y;
-	double	X[4],Y[4],Z[4],a[4],b[4],c[4],dist,dist_error,X_pos[6],Y_pos[6],Z_pos[6],XX,YY,ZZ,si0,sqX,sqY,sqZ;
+	double	X[4],Y[4],Z[4],a[4],b[4],c[4],dist,X_pos[6],Y_pos[6],Z_pos[6],XX,YY,ZZ,si0,sqX,sqY,sqZ;
 
-	//new det_lsq function, bloody fast!
+	// new det_lsq function, bloody fast!
 	flag[0]=0; flag[1]=0; flag[2]=0; flag[3]=0;
 	if (x1>-999) {
 		flag[0]=1;
@@ -325,7 +326,7 @@ void det_lsq_3d(Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 
 }
 
-#ifdef EVER_CALLED		// Unused function, ad holten 12-2012
+#ifdef EVER_CALLED		// added ad holten, 12-2012
 void det_lsq (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm, 
 				double x1, double y1, double x2, double y2, 
 				double x3, double y3, double x4, double y4, 
@@ -405,8 +406,8 @@ void det_lsq (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm,
 				
 				/* multimedia factor (radial shift) */
 				//trans
-
-				trans_Cam_Point(Ex[i],mm,G[i],*Xp,*Yp,*Zp,&Ex_t[i],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
+				// removed badly placed &'s, ad holten 12-2012
+				trans_Cam_Point(Ex[i],mm,G[i],*Xp,*Yp,*Zp,&Ex_t[i],Xp_t,Yp_t,Zp_t,cross_p,cross_c);
 				mmf = multimed_r_nlay_v2 (Ex_t[i], Ex[i], mm, Xp_t, Yp_t, Zp_t);
 
 				X[2*i][0]	*= mmf;  X[2*i][1]	 *= mmf;///
@@ -514,10 +515,8 @@ void det_lsq_3 (Exterior Ex[3], Interior I[3], Glass G[3], ap_52 ap[3], mm_np mm
 	double	xp1, yp1, xp2, yp2, xp3, yp3;
 	double	X1,Y1,Z1, a1,b1,c1,X2,Y2,Z2, a2,b2,c2;
 
-	double	multimed_r_nlay_v2 ();
-	Exterior  Ex_t[3];
-	double	*Xp_t,*Yp_t,*Zp_t,cross_p[3],cross_c[3];
-	double	X_t[6][3];
+	Exterior Ex_t[3];
+	double	 Xp_t, Yp_t, Zp_t, cross_p[3], cross_c[3];		// stripped * from *Xp_t, *Yp_t, *Zp_t, ad holten, 12-2012
 
 	/* approximate values (rt_is with the uncorrected image coordinates) */
 	ray_tracing_v2 (x1, y1, Ex[0], I[0],G[0],
@@ -551,8 +550,10 @@ void det_lsq_3 (Exterior Ex[3], Interior I[3], Glass G[3], ap_52 ap[3], mm_np mm
 		X[1][1] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[1][1] - Zy*Ex[0].dm[1][2]);
 		X[1][2] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[2][1] - Zy*Ex[0].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0], &Xp_t, &Yp_t, &Zp_t, cross_p, cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, Xp_t, Yp_t, Zp_t);
 
 		X[0][0] *= mmf;    X[0][1] *= mmf;
 		X[0][0] *= mmf;    X[0][1] *= mmf;	  
@@ -578,15 +579,17 @@ void det_lsq_3 (Exterior Ex[3], Interior I[3], Glass G[3], ap_52 ap[3], mm_np mm
 		X[3][1] = ((-I[1].cc)/(N*N)) * (N*Ex[1].dm[1][1] - Zy*Ex[1].dm[1][2]);
 		X[3][2] = ((-I[1].cc)/(N*N)) * (N*Ex[1].dm[2][1] - Zy*Ex[1].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[1],mm,G[1],*Xp,*Yp,*Zp,&Ex_t[1],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[1],mm,G[1],*Xp,*Yp,*Zp,&Ex_t[1], &Xp_t, &Yp_t, &Zp_t, cross_p, cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, Xp_t, Yp_t, Zp_t);
 
-		X[2][0] *= mmf;    X[2][1] *= mmf;///
-		X[3][0] *= mmf;    X[3][1] *= mmf;///
+		X[2][0] *= mmf;    X[2][1] *= mmf;
+		X[3][0] *= mmf;    X[3][1] *= mmf;
 	  
 	  
-	  /********************************************************************/
-	  /* derivatives d(x''',y''') / d(X,Y,Z)  (Kraus) */
+		/********************************************************************/
+		/* derivatives d(x''',y''') / d(X,Y,Z)  (Kraus) */
 	  
 		Zx =  Ex[2].dm[0][0] * (*Xp - Ex[2].x0)
 			+ Ex[2].dm[1][0] * (*Yp - Ex[2].y0)
@@ -605,16 +608,14 @@ void det_lsq_3 (Exterior Ex[3], Interior I[3], Glass G[3], ap_52 ap[3], mm_np mm
 		X[5][1] = ((-I[2].cc)/(N*N)) * (N*Ex[2].dm[1][1] - Zy*Ex[2].dm[1][2]);
 		X[5][2] = ((-I[2].cc)/(N*N)) * (N*Ex[2].dm[2][1] - Zy*Ex[2].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[2],mm,G[2],*Xp,*Yp,*Zp,&Ex_t[2],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[2], Ex[2], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[2],mm,G[2],*Xp,*Yp,*Zp,&Ex_t[2], &Xp_t, &Yp_t, &Zp_t,cross_p,cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[2], Ex[2], mm, Xp_t, Yp_t, Zp_t);
 
-
-		X[4][0] *= mmf;    X[4][1] *= mmf;///
-
-		X[5][0] *= mmf;    X[5][1] *= mmf;///
+		X[4][0] *= mmf;    X[4][1] *= mmf;
+		X[5][0] *= mmf;    X[5][1] *= mmf;
 		  
-		/********************************************************************/
-
 		img_coord (*Xp,*Yp,*Zp, Ex[0],I[0], G[0], ap[0], mm, &xp1, &yp1);
 		img_coord (*Xp,*Yp,*Zp, Ex[1],I[1], G[1], ap[1], mm, &xp2, &yp2);
 		img_coord (*Xp,*Yp,*Zp, Ex[2],I[2], G[2], ap[2], mm, &xp3, &yp3);
@@ -670,10 +671,8 @@ void det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 	double	xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4;
 	double	X1,Y1,Z1, a1,b1,c1,X2,Y2,Z2, a2,b2,c2;
 
-	double	multimed_r_nlay_v2 ();
-	Exterior	Ex_t[4];
-	double	X_t[8][3];
-	double	*Xp_t,*Yp_t,*Zp_t,cross_p[3],cross_c[3];
+	Exterior Ex_t[4];
+	double	 Xp_t, Yp_t, Zp_t, cross_p[3],cross_c[3];	// stripped * from *Xp_t,*Yp_t,*Zp_t, ad holten, 12-2012
 
 
 	/* approximate values (rt_is with the uncorrected image coordinates) */
@@ -709,8 +708,10 @@ void det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 		X[1][1] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[1][1] - Zy*Ex[0].dm[1][2]);
 		X[1][2] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[2][1] - Zy*Ex[0].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0], &Xp_t, &Yp_t, &Zp_t,cross_p,cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, Xp_t, Yp_t, Zp_t);
 
 		X[0][0] *= mmf;    X[0][1] *= mmf;///
 		X[1][0] *= mmf;    X[1][1] *= mmf;///
@@ -736,8 +737,10 @@ void det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 		X[3][1] = ((-I[1].cc)/(N*N)) * (N*Ex[1].dm[1][1] - Zy*Ex[1].dm[1][2]);
 		X[3][2] = ((-I[1].cc)/(N*N)) * (N*Ex[1].dm[2][1] - Zy*Ex[1].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[1],mm,G[1],*Xp,*Yp,*Zp,&Ex_t[1],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[1],mm,G[1],*Xp,*Yp,*Zp,&Ex_t[1], &Xp_t, &Yp_t, &Zp_t, cross_p,cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, Xp_t, Yp_t, Zp_t);
 
 		X[2][0] *= mmf;    X[2][1] *= mmf;///
 		X[3][0] *= mmf;    X[3][1] *= mmf;///
@@ -763,14 +766,15 @@ void det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 		X[5][1] = ((-I[2].cc)/(N*N)) * (N*Ex[2].dm[1][1] - Zy*Ex[2].dm[1][2]);
 		X[5][2] = ((-I[2].cc)/(N*N)) * (N*Ex[2].dm[2][1] - Zy*Ex[2].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[2],mm,G[2],*Xp,*Yp,*Zp,&Ex_t[2],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[2], Ex[2], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[2],mm,G[2],*Xp,*Yp,*Zp,&Ex_t[2], &Xp_t, &Yp_t, &Zp_t,cross_p,cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[2], Ex[2], mm, Xp_t, Yp_t, Zp_t);
 
-		X[4][0] *= mmf;    X[4][1] *= mmf;///
-		X[5][0] *= mmf;    X[5][1] *= mmf;///
+		X[4][0] *= mmf;    X[4][1] *= mmf;
+		X[5][0] *= mmf;    X[5][1] *= mmf;
 	  
-	  
-		/********************************************************************/
+	  	/********************************************************************/
 		/* derivatives d(x'''',y'''') / d(X,Y,Z)  (Kraus) */
 
 		Zx =  Ex[3].dm[0][0] * (*Xp - Ex[3].x0)
@@ -790,8 +794,10 @@ void det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np mm
 		X[7][1] = ((-I[3].cc)/(N*N)) * (N*Ex[3].dm[1][1] - Zy*Ex[3].dm[1][2]);
 		X[7][2] = ((-I[3].cc)/(N*N)) * (N*Ex[3].dm[2][1] - Zy*Ex[3].dm[2][2]);
 		//trans
-		trans_Cam_Point(Ex[3],mm,G[3],*Xp,*Yp,*Zp,&Ex_t[3],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[3], Ex[3], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[3],mm,G[3],*Xp,*Yp,*Zp,&Ex_t[3], &Xp_t, &Yp_t, &Zp_t,cross_p,cross_c);
+		// stripped * from Xp_t, Yp_t, Zp_t. ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[3], Ex[3], mm, Xp_t, Yp_t, Zp_t);
 
 		X[6][0] *= mmf;    X[6][1] *= mmf;///
 		X[7][0] *= mmf;    X[7][1] *= mmf;///
@@ -854,10 +860,9 @@ void det_lsq_2 (Exterior Ex[2], Interior I[2], Glass G[2], ap_52 ap[2], mm_np mm
 	double	xp1, yp1, xp2, yp2;
 	double	X1,Y1,Z1, a1,b1,c1, X2,Y2,Z2, a2,b2,c2;
 
-	double	multimed_r_nlay_v2 ();
-	Exterior	Ex_t[2];
-	double	X_t[4][3];
-	double	*Xp_t,*Yp_t,*Zp_t,cross_p[3],cross_c[3];
+	Exterior Ex_t[2];
+	double	 X_t[4][3];
+	double	 Xp_t, Yp_t, Zp_t, cross_p[3],cross_c[3];			// stripped * from *Xp_t, *Yp_t, *Zp_t, ad holten 12-2012
 
 	/* approximate values (rt_is with the uncorrected image coordinates) */
 	ray_tracing_v2 (x1, y1, Ex[0], I[0],G[0],
@@ -887,12 +892,15 @@ void det_lsq_2 (Exterior Ex[2], Interior I[2], Glass G[2], ap_52 ap[2], mm_np mm
 		X[0][1] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[1][0] - Zx*Ex[0].dm[1][2]);
 		X[0][2] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[2][0] - Zx*Ex[0].dm[2][2]);
 		X[1][0] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[0][1] - Zy*Ex[0].dm[0][2]);
+		
 		X[1][1] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[1][1] - Zy*Ex[0].dm[1][2]);
 		X[1][2] = ((-I[0].cc)/(N*N)) * (N*Ex[0].dm[2][1] - Zy*Ex[0].dm[2][2]);
 
 		//trans
-		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[0],mm,G[0],*Xp,*Yp,*Zp,&Ex_t[0], &Xp_t, &Yp_t, &Zp_t,cross_p,cross_c);
+		// stripped *'s from Xp_t, Yp_t, Zp_t, ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[0], Ex[0], mm, Xp_t, Yp_t, Zp_t);
 		// do stuff
 		X[0][0] *= mmf;    X[0][1] *= mmf;	  X[1][0] *= mmf;	 X[1][1] *= mmf;
 	  
@@ -918,21 +926,38 @@ void det_lsq_2 (Exterior Ex[2], Interior I[2], Glass G[2], ap_52 ap[2], mm_np mm
 		X[3][2] = ((-I[1].cc)/(N*N)) * (N*Ex[1].dm[2][1] - Zy*Ex[1].dm[2][2]);
 
 		//trans
-		trans_Cam_Point(Ex[1],mm,G[1],*Xp,*Yp,*Zp,&Ex_t[1],&Xp_t,&Yp_t,&Zp_t,&cross_p,&cross_c);
-		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, *Xp_t, *Yp_t, *Zp_t);
+		// added & to Xp_t, Yp_t, Zp_t, stripped & from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[1], mm, G[1], *Xp, *Yp, *Zp, &Ex_t[1], &Xp_t, &Yp_t, &Zp_t, cross_p, cross_c);
+		// stripped *'s from Xp_t, Yp_t, Zp_t, ad holten 12-2012
+		mmf = multimed_r_nlay_v2 (Ex_t[1], Ex[1], mm, Xp_t, Yp_t, Zp_t);
 
-		trans_Cam_Point(Ex[i],mm,G[i],X[2][0],X[2][1],X[2][2],&Ex_t[i],
-					  &X_t[2][0],&X_t[2][1],&X_t[2][2],&cross_p,&cross_c);
-		X_t[2][0] *= mmf;	 X_t[2][1] *= mmf;///
-		back_trans_Point(X_t[2][0],X_t[2][1],X_t[2][2],mm, G[i],cross_p,cross_c,
-					  &X[2][0],&X[2][1],&X[2][2]);
+		// more BUGS, undefind index i used in the next code, assuming 0 and 1 are to be used
+		//		trans_Cam_Point(Ex[i], mm, G[i], X[2][0], X[2][1], X[2][2], &Ex_t[i],
+		//					  &X_t[2][0], &X_t[2][1], &X_t[2][2], cross_p, cross_c);
+		//		X_t[2][0] *= mmf;	 X_t[2][1] *= mmf;
+		//		back_trans_Point(X_t[2][0], X_t[2][1], X_t[2][2],mm, G[i], cross_p, cross_c,
+		//					  &X[2][0], &X[2][1], &X[2][2]);
+		//
+		//		trans_Cam_Point(Ex[i], mm,G[i], X[3][0], X[3][1], X[3][2], &Ex_t[i],
+		//					  &X_t[3][0], &X_t[3][1], &X_t[3][2], cross_p, cross_c);
+		//		X_t[3][0] *= mmf;	 X_t[3][1] *= mmf;
+		//		back_trans_Point(X_t[3][0], X_t[3][1], X_t[3][2],mm, G[i],cross_p,cross_c,
+		//					  &X[3][0],&X[3][1],&X[3][2]);
 
-		trans_Cam_Point(Ex[i],mm,G[i],X[3][0],X[3][1],X[3][2],&Ex_t[i],
-					  &X_t[3][0],&X_t[3][1],&X_t[3][2],&cross_p,&cross_c);
-		X_t[3][0] *= mmf;	 X_t[3][1] *= mmf;///
-		back_trans_Point(X_t[3][0],X_t[3][1],X_t[3][2],mm, G[i],cross_p,cross_c,
+		// i replaced by 0, stripped &'s from cross_p, cross_c, ad holten 12-2012
+		trans_Cam_Point(Ex[0], mm, G[0], X[2][0], X[2][1], X[2][2], &Ex_t[0],
+					  &X_t[2][0], &X_t[2][1], &X_t[2][2], cross_p, cross_c);
+		X_t[2][0] *= mmf;	 X_t[2][1] *= mmf;
+		back_trans_Point(X_t[2][0], X_t[2][1], X_t[2][2],mm, G[0], cross_p, cross_c,
+					  &X[2][0], &X[2][1], &X[2][2]);
+
+		//  i replaced by 1, i replaced by 0, ad holten 12-2012
+		trans_Cam_Point(Ex[1], mm,G[1], X[3][0], X[3][1], X[3][2], &Ex_t[1],
+					  &X_t[3][0], &X_t[3][1], &X_t[3][2], cross_p, cross_c);
+		X_t[3][0] *= mmf;	 X_t[3][1] *= mmf;
+		back_trans_Point(X_t[3][0], X_t[3][1], X_t[3][2],mm, G[1],cross_p,cross_c,
 					  &X[3][0],&X[3][1],&X[3][2]);
-	  
+
 		/********************************************************************/
 	  
 		img_coord (*Xp,*Yp,*Zp, Ex[0],I[0], G[0], ap[0], mm, &xp1, &yp1);
