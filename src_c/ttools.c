@@ -17,6 +17,7 @@ Routines contained: 	pix_in_next, candsearch_in_pix, searchposition,
 ****************************************************************************/
 #include "ptv.h"
 
+#ifdef EVER_CALLED		// Unused function, ad holten 12-2012
 int pix_in_next (target next[], int num, double x, double y, 
 				 double dl, double dr, double du, double dd, int found[POSI])
 {
@@ -50,7 +51,7 @@ int pix_in_next (target next[], int num, double x, double y,
 	}
 	return (zaehler);
 }
-
+#endif
 
 int candsearch_in_pix (target next[], int num, double x, double y, 
 				 double dl, double dr, double du, double dd, int p[4])
@@ -196,7 +197,8 @@ void readseqtrackcrit ()
 	int i_img;
 	/* reads pixfiles and try to track particles in imagespace
 	 over the sequence */
-	fpp = fopen_r ("parameters/sequence.par");
+	fpp = fopen_rp ("parameters/sequence.par");	// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return;
 	for (i_img=0; i_img<4; i_img++) {
 		fscanf (fpp, "%s\n", seq_name[i_img]);
 	}
@@ -205,7 +207,8 @@ void readseqtrackcrit ()
 	fscanf (fpp,"%d\n", &seq_last);
 	fclose (fpp);
 
-	fpp = fopen_r ("parameters/track.par");
+	fpp = fopen_rp ("parameters/track.par");	// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return;
 	fscanf (fpp, "%lf\n", &tpar.dvxmin);
 	fscanf (fpp, "%lf\n", &tpar.dvxmax);
 	fscanf (fpp, "%lf\n", &tpar.dvymin);
@@ -224,7 +227,8 @@ void readseqtrackcrit ()
 	fclose (fpp);
 
 	/* read illuminated layer data */
-	fpp = fopen_r ("parameters/criteria.par");
+	fpp = fopen_rp ("parameters/criteria.par");	// replaced fopen_r, ad holten 12-2012
+	if (!fpp) return;
 	fscanf (fpp, "%lf\n", &X_lay[0]);
 	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
 	fscanf (fpp, "%lf\n", &Zmax_lay[0]);

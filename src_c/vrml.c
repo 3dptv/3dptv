@@ -18,7 +18,7 @@ Routines contained: vrmltracks_c, vrmldetections_c, vrmldettracks_c
 
 int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int    i, anz1, anz2, m, j, k;
+	int    i, anz1, anz2, m, j;
 	FILE   *fp1, *fp2;
 	char   val[256];
 	vector *line1, *line2;
@@ -129,12 +129,14 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	fprintf(fp2, "\n\n# start trajectories\n\n");
 	/* read trackfile from ptv and create vectorfield */
 
+	line1 = line2 = NULL;					// added, ad holten 2012
 	for (i=seq_first; i<seq_last;i++)
 	{
-		if      (i < 10)  sprintf (val, "res/ptv_is.00%1d", i);
-		else if (i < 100) sprintf (val, "res/ptv_is.0%2d",  i);
-		else              sprintf (val, "res/ptv_is.%3d",  i);
-
+		// replaced lines, ad holten 12-2012
+		//	if      (i < 10)  sprintf (val, "res/ptv_is.00%1d", i);
+		//	else if (i < 100) sprintf (val, "res/ptv_is.0%2d",  i);
+		//	else              sprintf (val, "res/ptv_is.%3d",  i);
+		sprintf (val, "res/ptv_is.%03d", i);
 		printf("Create VRML, read file: %s\n", val);
 		fp1 = fopen (val, "r");
 
@@ -155,11 +157,15 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 		fclose (fp1);
 
 		/* read next time step */
-		if      (i+1 < 10)  sprintf (val, "res/ptv_is.00%1d", i+1);
-		else if (i+1 < 100) sprintf (val, "res/ptv_is.0%2d",  i+1);
-		else                sprintf (val, "res/ptv_is.%3d",  i+1);
+		// replaced next lines, ad holten 12-2012
+		//	if      (i+1 < 10)  sprintf (val, "res/ptv_is.00%1d", i+1);
+		//	else if (i+1 < 100) sprintf (val, "res/ptv_is.0%2d",  i+1);
+		//	else                sprintf (val, "res/ptv_is.%3d",  i+1);
 
-		fp1 = fopen (val, "r");
+		sprintf (val, "res/ptv_is.%03d", i+1);
+		fp1 = fopen_rp (val);		// replaced fopen(), ad holten 12-2012
+		if (!fp1) break;
+
 		fscanf (fp1,"%d\n", &anz2);
 		line2 = (vector *) malloc (anz2 * sizeof (vector));
 
@@ -177,7 +183,7 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 		fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
 		fprintf(fp2, "    diffuseColor 1.0 %.4f 0.0 }\n\n", color);
 
-		for(j=0;j<anz1;j++) {
+		for(j=0; j<anz1; j++) {
 			m = line1[j].n;
 			if (m >= 0) {
 	 
@@ -269,7 +275,11 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 		fprintf(fp2, "# end of time step %d\n\n", i);     
 		strcpy(val, "");
 		free(line1); free(line2);
+		line1 = line2 = NULL;			// added, ad holten 2012
 	}  /* end of sequence loop */
+
+	if (line1) free(line1);
+	if (line2) free(line2);
  
 	fprintf(fp2, "# trajectories finished\n");
  
@@ -289,7 +299,7 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 int vrmldetections_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int    i, anz1, j, k, dumy;
+	int    i, anz1, j, dumy;
 	FILE   *fp1, *fp2;
 	char   val[256];
 	vector *line1;
@@ -390,15 +400,20 @@ int vrmldetections_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 	fprintf(fp2, "    4, 5, 6, 7, 4, -1 ] } } }\n\n\n");
 	fprintf(fp2, "# start trajectories\n\n");
 
+	line1 = NULL;	// added, ad holten 2012
+
 	/* read trackfile from ptv and create vectorfield */
 	for (i=seq_first; i<=seq_last ;i++)
 	{
-		if      (i < 10)  sprintf (val, "res/rt_is.00%1d", i);
-		else if (i < 100) sprintf (val, "res/rt_is.0%2d",  i);
-		else              sprintf (val, "res/rt_is.%3d",  i);
-
+		// replaced next lines. ad holten 12-2012
+		//	if      (i < 10)  sprintf (val, "res/rt_is.00%1d", i);
+		//	else if (i < 100) sprintf (val, "res/rt_is.0%2d",  i);
+		//	else              sprintf (val, "res/rt_is.%3d",  i);
+		sprintf (val, "res/rt_is.%03d", i);
 		printf("Create VRML, read file: %s\n", val);         
-		fp1 = fopen (val, "r");
+		
+		fp1 = fopen_rp (val);	// replaced fopen(), ad holten 12-2-2012
+		if (!fp1) break;
 
 		color = ((double)(i-seq_first))/((double)(seq_last+1-seq_first));
       
@@ -428,8 +443,10 @@ int vrmldetections_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 		fprintf(fp2, "# end of time step %d\n\n", i);   
 		strcpy(val, "");
 		free(line1);
+		line1 = NULL;
 	}  /* end of sequence loop */
-
+	
+	if (line1) free(line1);
 	fprintf(fp2, "# detections finished\n");
 
 	fclose(fp2); 
@@ -448,12 +465,11 @@ int vrmldetections_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 
 int vrmldettracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int    i, anz1, anz2, m, j, k;
+	int    i, anz1, anz2, m, j;
 	FILE   *fp1, *fp2;
 	char    val[256];
 	vector *line1, *line2;
 	double  color, ymin=0, ymax=0, cubes;
-	double  mx, my, mz, dx, dy, dz, du, dl, rotz, rotx;
   
 	/* open file for line elements */
 	fp2 = fopen ("dt.wrl", "w");
@@ -530,13 +546,16 @@ int vrmldettracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const c
 
 	fprintf(fp2, "\n\n# start trajectories\n\n");
 	/* read trackfile from ptv and create vectorfield */
- 
+
+	line1 = line2 = NULL;					// added, ad holten 2012
+
 	for (i=seq_first; i<=seq_last;i++)
 	{
-		if      (i < 10)  sprintf (val, "res/ptv_is.00%1d", i);
-		else if (i < 100) sprintf (val, "res/ptv_is.0%2d",  i);
-		else              sprintf (val, "res/ptv_is.%3d",  i);
-
+		// replaced next lines. ad holten 12-2012
+		//	if      (i < 10)  sprintf (val, "res/ptv_is.00%1d", i);
+		//	else if (i < 100) sprintf (val, "res/ptv_is.0%2d",  i);
+		//	else              sprintf (val, "res/ptv_is.%3d",  i);
+		sprintf (val, "res/ptv_is.%03d",  i);
 		printf("Create VRML, read file: %s\n", val);     
 		fp1 = fopen (val, "r");
 
@@ -558,11 +577,15 @@ int vrmldettracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const c
 
 		if (i<seq_last) {
 			/* read next time step */     
-			if      (i+1 < 10)  sprintf (val, "res/ptv_is.00%1d", i+1);
-			else if (i+1 < 100) sprintf (val, "res/ptv_is.0%2d",  i+1);
-			else                sprintf (val, "res/ptv_is.%3d",  i+1);
+			// replaced next lines. ad holten 12-2012
+			//	if      (i+1 < 10)  sprintf (val, "res/ptv_is.00%1d", i+1);
+			//	else if (i+1 < 100) sprintf (val, "res/ptv_is.0%2d",  i+1);
+			//	else                sprintf (val, "res/ptv_is.%3d",  i+1);
+			sprintf (val, "res/ptv_is.%03d",  i+1);
 
-			fp1 = fopen (val, "r");
+			fp1 = fopen_rp (val);		// replaced fopen(), ad holten 12-2012    
+			if (!fp1) break;
+
 			fscanf (fp1,"%d\n", &anz2);
 			line2 = (vector *) malloc (anz2 * sizeof (vector));
 
@@ -649,7 +672,11 @@ int vrmldettracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const c
 		fprintf(fp2, "# end of time step %d\n\n", i);     
 		strcpy(val, "");
 		free(line1); free(line2);
+		line1 = line2 = NULL;			// added, ad holten 12-2012
 	}  /* end of sequence loop */
+
+	if (line1) free(line1);		// added, ad holten 12-2012
+	if (line1) free(line1);
 
 	fprintf(fp2, "# trajectories finished\n");
 

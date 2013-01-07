@@ -28,7 +28,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	int    zaehler1, zaehler2,philf[4][4];
 	int    count1=0, count2=0, count3=0, lost =0, zusatz=0;
 	int    intx0, intx1, inty0, inty1;
-	int    intx2, inty2,intx3, inty3;
+	int    intx2, inty2;
 	int    quali=0;
 	double x1[4], y1[4], x2[4], y2[4], angle, acc, angle0, acc0, lmax, dl;
 	double xr[4], xl[4], yd[4], yu[4], angle1, acc1;
@@ -140,7 +140,8 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			}
 
 			/* calculate searchquader and reprojection in image space */
-			searchquader(X2, Y2, Z2, &xr, &xl, &yd, &yu);
+			// stripped &'s from xr, xl, yd, yu, ad holten 12-2012
+			searchquader(X2, Y2, Z2, xr, xl, yd, yu);
 
 			/* mark search quader in image */
 			/*
@@ -165,8 +166,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			/* search in pix for candidates in next time step */
 			for (j=0;j<n_img;j++)
 			{
+				// stripped & from philf, ad holten 12-2012
 				zaehler1 = candsearch_in_pix (t4[2][j], nt4[2][j], x1[j], y1[j],
-							xl[j], xr[j], yu[j], yd[j], &philf[j]);
+							xl[j], xr[j], yu[j], yd[j], philf[j]);
 				for(k=0; k<4; k++)
 				{
 					//p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
@@ -184,7 +186,8 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			/* end of search in pix */
 
 			/* fill and sort candidate struct */
-			sortwhatfound(&p16, &zaehler1);
+			// stripped & from p16, ad holten 12-2012
+			sortwhatfound(p16, &zaehler1);
 			w = (foundpix *) calloc (zaehler1, sizeof (foundpix));
 
 			if (zaehler1 > 0) count2++;
@@ -226,7 +229,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 					Y5=2*Y3-Y1;
 					Z5=2*Z3-Z1;
 				}
-				searchquader(X5, Y5, Z5, &xr, &xl, &yd, &yu);
+
+				// stripped &'s from xr, xl, yd, yu, ad holten 12-2012
+				searchquader(X5, Y5, Z5, xr, xl, yd, yu);
  
 				for (j=0;j<n_img;j++) {
 					img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
@@ -238,8 +243,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				/* search for candidates in next time step */
 				for (j=0;j<n_img;j++)
 				{
+					// stripped & from philf, ad holten 12-2012
 					zaehler2 = candsearch_in_pix (t4[3][j], nt4[3][j], x2[j], y2[j],
-							xl[j], xr[j], yu[j], yd[j], &philf[j]);
+							xl[j], xr[j], yu[j], yd[j], philf[j]);
 
 					for(k=0; k<4; k++)
 					{
@@ -264,7 +270,8 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				/* end of search in pix */
 				/* fill and sort candidate struct */
 
-				sortwhatfound(&p16, &zaehler2);
+				// stripped & from p16, ad holten 12-2012
+				sortwhatfound(p16, &zaehler2);
 				wn = (foundpix *) calloc (zaehler2, sizeof (foundpix));
 				if (zaehler2 > 0) count3++;
 
@@ -316,7 +323,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 							if ( (acc<tpar.dacc && angle<tpar.dangle) ||  (acc<tpar.dacc/10) )
 							{
 								rr =(dl/lmax+acc/tpar.dacc + angle/tpar.dangle)/(quali);
-								mega[1][h].decis[mega[1][h].inlist]=rr;
+								mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 								mega[1][h].linkdecis[mega[1][h].inlist]=w[mm].ftnr;
 								mega[1][h].inlist++;
 							   /*
@@ -346,9 +353,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				{
 					/* use fix distance to define xl, xr, yu, yd instead of searchquader */
 					xl[j]= xr[j]= yu[j]= yd[j] = 3.0;
-
+					// stripped & from philf, ad holten 12-2012
 					zaehler2 = candsearch_in_pixrest (t4[3][j], nt4[3][j], xn[j], yn[j],
-									xl[j], xr[j], yu[j], yd[j], &philf[j]);
+									xl[j], xr[j], yu[j], yd[j], philf[j]);
 					if(zaehler2>0 ) {
 						x2[j]=t4[3][j][philf[j][0]].x; 
 						y2[j]= t4[3][j][philf[j][0]].y;
@@ -398,14 +405,14 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 								h, X4, Y4, Z4, dl, acc, angle, quali+w[mm].freq, rr);
 							   */
 
-								mega[1][h].decis[mega[1][h].inlist]=rr;
+								mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 								mega[1][h].linkdecis[mega[1][h].inlist]=w[mm].ftnr;
 								mega[1][h].inlist++;
 
 								if (tpar.add) {
-									mega[3][m[3]].x[0]=X4;
-									mega[3][m[3]].x[1]=Y4;
-									mega[3][m[3]].x[2]=Z4;
+									mega[3][m[3]].x[0]= (float)X4; 
+									mega[3][m[3]].x[1]= (float)Y4;
+									mega[3][m[3]].x[2]= (float)Z4;
 									mega[3][m[3]].prev= -1;
 									mega[3][m[3]].next= -2;
 									mega[3][m[3]].prio= 2;
@@ -453,7 +460,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 							if ( (acc<tpar.dacc && angle<tpar.dangle) ||  (acc<tpar.dacc/10) )
 							{
 								rr =(dl/lmax+acc/tpar.dacc + angle/tpar.dangle)/(quali);
-								mega[1][h].decis[mega[1][h].inlist]=rr;
+								mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 								mega[1][h].linkdecis[mega[1][h].inlist]=w[mm].ftnr;
 								mega[1][h].inlist++;
 								 /* 		   
@@ -494,8 +501,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 						/* use fix distance to define xl, xr, yu, yd instead of searchquader */
 						xl[j]= xr[j]= yu[j]= yd[j] = 3.0;
 
+						// stripped & from philf, ad holten 12-2012
 						zaehler2 = candsearch_in_pixrest (t4[2][j], nt4[2][j], xn[j], yn[j],
-									  xl[j], xr[j], yu[j], yd[j], &philf[j]);
+									  xl[j], xr[j], yu[j], yd[j], philf[j]);
 						if(zaehler2>0 ) {
 							x2[j]=t4[2][j][philf[j][0]].x; y2[j]= t4[2][j][philf[j][0]].y;
 						}
@@ -541,14 +549,14 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 								{
 									rr =(dl/lmax+acc/tpar.dacc + angle/tpar.dangle)/(quali);
 
-									mega[2][m[2]].x[0]=X3;
-									mega[2][m[2]].x[1]=Y3;
-									mega[2][m[2]].x[2]=Z3;
+									mega[2][m[2]].x[0]= (float)X3;
+									mega[2][m[2]].x[1]= (float)Y3;
+									mega[2][m[2]].x[2]= (float)Z3;
 									mega[2][m[2]].prev= -1;
 									mega[2][m[2]].next= -2;
 									mega[2][m[2]].prio= 2;
 
-									mega[1][h].decis[mega[1][h].inlist]=rr;
+									mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 									mega[1][h].linkdecis[mega[1][h].inlist]=m[2];
 									mega[1][h].inlist++;
 
@@ -580,7 +588,8 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 		for (h=0;h<m[1];h++)
 		{
 			if(mega[1][h].inlist > 0 ) {
-				sort(mega[1][h].inlist, &mega[1][h].decis, &mega[1][h].linkdecis);
+				// stripped & from last 2 args, ad holten 12-2012
+				sort(mega[1][h].inlist,	mega[1][h].decis, mega[1][h].linkdecis);
 				mega[1][h].finaldecis=mega[1][h].decis[0];
 				mega[1][h].next=mega[1][h].linkdecis[0];
 			}
@@ -822,14 +831,16 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 				} 
 
 				/* calculate searchquader and reprojection in image space */
-				searchquader(X2, Y2, Z2, &xr, &xl, &yd, &yu);
+				// stripped &'s from xr, xl, yd, yu, ad holten 12-2012
+				searchquader(X2, Y2, Z2, xr, xl, yd, yu);
 
 				/* search in pix for candidates in next time step */
 				for (j=0; j<n_img; j++)
 				{
 					/* xl[j]/=5; xr[j]/=5; yu[j]/=5; yd[j]/=5; */ /* reduced search area */
+					// stripped & from philf, ad holten 12-2012
 					zaehler1 = candsearch_in_pix (t4[2][j], nt4[2][j], xn[j], yn[j],
-									xl[j], xr[j], yu[j], yd[j], &philf[j]);
+									xl[j], xr[j], yu[j], yd[j], philf[j]);
 					for(k=0; k<4; k++)
 					{
 						if( zaehler1>0) {
@@ -848,7 +859,8 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 				}
 
 				/* fill and sort candidate struct */
-				sortwhatfound(&p16, &zaehler1);
+				// stripped & from p16, ad holten, 12-2012
+				sortwhatfound(p16, &zaehler1);
 				w = (foundpix *) calloc (zaehler1, sizeof (foundpix));
 
 				/*end of candidate struct */
@@ -885,7 +897,7 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 							{
 								rr =(dl/lmax+acc/tpar.dacc + angle/tpar.dangle)/quali;
 
-								mega[1][h].decis[mega[1][h].inlist]=rr;
+								mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 								mega[1][h].linkdecis[mega[1][h].inlist]=w[i].ftnr;
 								mega[1][h].inlist++;
 								/*
@@ -911,9 +923,9 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 						{
 							/* use fix distance to define xl, xr, yu, yd instead of searchquader */
 							xl[j]= xr[j]= yu[j]= yd[j] = 3.0;
-
+							// stripped & from philf, ad holten 12-2012
 							zaehler1 = candsearch_in_pixrest (t4[2][j], nt4[2][j], xn[j], yn[j],
-											xl[j], xr[j], yu[j], yd[j], &philf[j]);
+											xl[j], xr[j], yu[j], yd[j], philf[j]);
 							if(zaehler1>0 ) {
 								x2[j]=t4[2][j][philf[j][0]].x; 
 								y2[j]=t4[2][j][philf[j][0]].y;
@@ -959,13 +971,13 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 									{
 										rr =(dl/lmax+acc/tpar.dacc + angle/tpar.dangle)/(quali);
 
-										mega[2][m[2]].x[0]= X3;
-										mega[2][m[2]].x[1]= Y3;
-										mega[2][m[2]].x[2]= Z3;
+										mega[2][m[2]].x[0]= (float)X3;
+										mega[2][m[2]].x[1]= (float)Y3;
+										mega[2][m[2]].x[2]= (float)Z3;
 										mega[2][m[2]].prev= -1;
 										mega[2][m[2]].next= -2;
 										mega[2][m[2]].prio= 2;
-										mega[1][h].decis[mega[1][h].inlist]=rr;
+										mega[1][h].decis[mega[1][h].inlist] = (float)rr;
 										mega[1][h].linkdecis[mega[1][h].inlist]=m[2];
 
 										for (j=0;j<n_img;j++)
@@ -994,7 +1006,10 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 		/* sort decis  */
 		for (h=0;h<m[1];h++)
 		{
-			if(mega[1][h].inlist > 0 ) { sort(mega[1][h].inlist, &mega[1][h].decis, &mega[1][h].linkdecis); }
+			if (mega[1][h].inlist > 0 ) { 
+				// // stripped & from last 2 args, ad holten 12-2012
+				sort(mega[1][h].inlist, mega[1][h].decis, mega[1][h].linkdecis);
+			}
 		}
 
 		/* create links with decision check */
