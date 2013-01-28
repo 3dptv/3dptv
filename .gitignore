@@ -5,3 +5,8 @@ src_c/homemakefile
 [Rr]elease/
 ipch/
 *.sdf
+*.suo
+*.exe
+*.ilk
+*.pdb
+

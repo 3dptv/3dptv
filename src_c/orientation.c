@@ -439,11 +439,9 @@ void prepare_eval (int n_img, int *n_fix)
 
 			// read points from rt_is
 			address[0] = address[1] = address[2] = address[3] = -1;
-			fscanf(FILEIN, "%*d %lf %lf %lf %d %d",
-				&fix[count].x, &fix[count].y, &fix[count].z, &address[1], &address[1]);
-			if (n_img >= 3) fscanf(FILEIN, "%d", &address[2]);
-			if (n_img == 4) fscanf(FILEIN, "%d", &address[3]);
-			fscanf(FILEIN, "\n");
+			fscanf(FILEIN, "%*d %lf %lf %lf %d %d %d %d\n",
+				&fix[count].x, &fix[count].y, &fix[count].z, &address[0], &address[1], &address[2], &address[3]);
+			for (j=3; j>=n_img; j--) address[j] = -1;
 
 			// then fill in crd stuff
 			for (i_img=0;i_img<n_img;i_img++) {
@@ -1443,7 +1441,7 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 		/* Gauss Markoff Model */
 		numbers=16;
 		if (interfflag) {
-			numbers=18;
+			numbers=18;			// BUG??? should this not be 19?	ad holten, 01-2013
 		}
 	  
 		ata_v2 (Xh, XPX, n_obs, numbers, 19 );

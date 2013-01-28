@@ -761,7 +761,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
 		// 		else		   fprintf (fp1, " %4d\n", -1);
 
 		fprintf (fp1, "%4d %9.3f %9.3f %9.3f", i+1, X, Y, Z);
-		for (j=0; j<n_img; j++) {
+		for (j=0; j<4; j++) {
 			if (p[j] > -1) fprintf (fp1, " %4d", pix[j][p[j]].pnr);
 			else		   fprintf (fp1, " %4d", -1);
 		}
@@ -1723,12 +1723,12 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 					fscanf (fp1,"%s\n", &multi_filename[i]);
 				fclose(fp1);
 
-				for (n=0, nfix=0, dump_for_rdb=0; n<10; n++) {
+				for (n=0, nfix=0, dump_for_rdb=0; n<planes; n++) {		// replaced 10 by 'planes', ad holten, 01-2013
 					//sprintf (filename, "resect.fix%d", n);
 
 					sprintf (filename, "%s%d.tif.fix", multi_filename[n],i_img+1);
-					fp1 = fopen (filename, "r");
-					if (! fp1) continue;
+					fp1 = fopen_rp (filename);							// replaced fopen by fopen_rp, and
+					if (! fp1) break;									// continue by break, ad holten, 01-2013
 
 					printf("reading file: %s\n", filename);
 					printf("reading dumped resect data #%d\n", n);
@@ -1741,13 +1741,17 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 					//sprintf (filename, "resect_%d.crd%d", i_img, n);
 					sprintf (filename, "%s%d.tif.crd", multi_filename[n], i_img+1);
 					printf("reading file: %s\n", filename);
-					fp1 = fopen (filename, "r");
-					if (! fp1) continue;				// added, ad holten, 12-2012
+					fp1 = fopen_rp (filename);							// replaced fopen by fopen_rp and
+					if (! fp1) break;									// added this line, ad holten, 01-2013
 					for (i=nfix; i<nfix+k; i++)
 						fscanf (fp1, "%d %lf %lf", &crd[i_img][i].pnr,
 								&crd[i_img][i].x, &crd[i_img][i].y);
 					nfix += k;
 					fclose (fp1);
+				}
+				if (n<planes) {											// added, ad holten, 01-2013
+					printf("Action aborted. (Error in multi_planes.par ?)\n");
+					return TCL_OK;
 				}
 
 				/* resection */
@@ -2262,13 +2266,9 @@ case 14: puts ("Sortgrid = initial guess");
 				do {
 					/* read dataset row by row, x,y,z and correspondences */
 					a[0] = a[1] = a[2] = a[3] = -1;
-					fscanf(FILEIN, "%*d %lf %lf %lf %d %d", 
-						&fix[i].x, &fix[i].y, &fix[i].z, &a[0], &a[1]);
-					if (n_img >= 3) 
-						fscanf(FILEIN, "%d", &a[2]);
-					if (n_img == 4)	
-						fscanf(FILEIN, "%d", &a[3]);
-					fscanf(FILEIN,"\n");
+					fscanf(FILEIN, "%*d %lf %lf %lf %d %d %d %d\n", 
+						&fix[i].x, &fix[i].y, &fix[i].z, &a[0], &a[1], &a[2], &a[3]);
+					for (j=3; j>=n_img; j--) a[j] = -1;
 
 					fscanf(FILEIN_ptv, "%d %d %*lf %*lf %*lf\n", &prev, &next);
 
@@ -2516,13 +2516,9 @@ case 14: puts ("Sortgrid = initial guess");
 			do {
 				/* read dataset row by row, x,y,z and correspondences */
 				a[0] = a[1] = a[2] = a[3] = -1;
-				fscanf(FILEIN, "%*d %lf %lf %lf %d %d", 
-					&fix[i].x, &fix[i].y, &fix[i].z, &a[0], &a[1]);
-				if (n_img >= 3) 
-					fscanf(FILEIN, "%d", &a[2]);
-				if (n_img == 4)	
-					fscanf(FILEIN, "%d", &a[3]);
-				fscanf(FILEIN, "\n");
+				fscanf(FILEIN, "%*d %lf %lf %lf %d %d %d %d\n", 
+					&fix[i].x, &fix[i].y, &fix[i].z, &a[0], &a[1], &a[2], &a[3]);
+				for (j=3; j>=n_img; j--) a[j] = -1;
 
 				fscanf(FILEIN_ptv, "%d %d %*lf %*lf %*lf\n", &prev, &next);
 
@@ -2803,17 +2799,16 @@ case 14: puts ("Sortgrid = initial guess");
 					//			fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
 					//				&dumy, &fix[i+1].x, &fix[i+1].y, &fix[i+1].z,&a2[0], &a2[1]);
 					//		 }
-					a1[0] = a1[1] = a1[2] = a1[3] = -1;
-					fscanf(FILEIN, "%*d %lf %lf %lf %d %d",
-						&fix[i].x, &fix[i].y, &fix[i].z, &a1[0], &a1[1]);
-					if (n_img >= 3)	fscanf(FILEIN, "%d", &a1[2]);
-					if (n_img == 4) fscanf(FILEIN, "%d", &a1[3]);
 
+					a1[0] = a1[1] = a1[2] = a1[3] = -1;
 					a2[0] = a2[1] = a2[2] = a2[3] = -1;
-					fscanf(FILEIN, "%*d %lf %lf %lf %d %d",
-						&fix[i+1].x, &fix[i+1].y, &fix[i+1].z, &a2[0], &a2[1]);
-					if (n_img >= 3)	fscanf(FILEIN, "%d", &a2[2]);
-					if (n_img == 4) fscanf(FILEIN, "%d", &a2[3]);
+					fscanf(FILEIN, "%*d %lf %lf %lf %d %d %d %d\n",
+						&fix[i].x, &fix[i].y, &fix[i].z,&a1[0], &a1[1], &a1[2], &a1[3]);
+					fscanf(FILEIN, "%*d %lf %lf %lf %d %d %d %d\n",
+						&fix[i+1].x, &fix[i+1].y, &fix[i+1].z,&a2[0], &a2[1], &a2[2], &a2[3]);
+
+					for (j=3; j>=n_img; j--)
+						a1[j] = a2[j] = -1;
 					
 					// read pixel data according a0,a1,a2,a3 
 					pix[i_img][i].x = t4[3][i_img][a1[i_img]].x;

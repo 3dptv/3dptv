@@ -116,14 +116,10 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 					//				&geo[0][j].pnr, &geo[1][j].pnr);
 					//		}
 					// by:
-
 					for (i=0; i<4; i++)	geo[i][j].pnr = -1;
-					fscanf(fp1, "%*d %lf %lf %lf %d %d",
-						&fix[j].x, &fix[j].y, &fix[j].z, &geo[0][j].pnr, &geo[1][j].pnr);
-
-					if (n_img >= 3)	fscanf(fp1, "%d", &geo[2][j].pnr);
-					if (n_img == 4) fscanf(fp1, "%d", &geo[3][j].pnr);
-					fscanf(fp1, "\n");
+					fscanf(fp1, "%*d %lf %lf %lf %d %d %d %d\n", 
+						&fix[j].x, &fix[j].y, &fix[j].z, &geo[0][j].pnr, &geo[1][j].pnr, &geo[2][j].pnr, &geo[3][j].pnr);
+					for (j=3; j>=n_img; j--) geo[i][j].pnr = -1;
 				}
 				fclose (fp1);
 				if (display) {
