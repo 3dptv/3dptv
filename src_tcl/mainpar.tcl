@@ -134,6 +134,8 @@ pack $w.refrac -pady 2
 # Parameters for particle recognition ##################
 
 
+
+
 frame $w.particle
 frame $w.partmax
 frame $w.partmin
@@ -168,6 +170,25 @@ label $w.m.partcross.l
 
 $w.part.l config -text "Parameters for particle recognition" -font {Helvetica 13 bold}
 
+#---------------------------use relative tolerable discontinuity---------------------#
+
+frame $w.rel_disc
+checkbutton $w.rel_disc.button -text "use relative tol. discontinuity (%)?" -variable mp(rel_disc)
+
+
+#---------------------------end use relative tolerable discontinuity-----------------#
+
+#---------------------------read from target files-----------------------------------#
+
+frame $w.target
+checkbutton $w.target.button -text "use existing _target files?" -variable mp(target)
+
+
+#---------------------------end read from target files-------------------------------#
+
+
+
+
 $w.partgv.l config -text "Greyvalue threshold,"
 $w.partgv.l1 config -text " 1. Img:"
 entry $w.partgv.e1 -width 5 -relief sunken -bd 2 -textvariable mp(partgv1)
@@ -195,6 +216,8 @@ entry $w.pmaxnpy.e -width 5 -relief sunken -bd 2 -textvariable mp(pmaxnpixy)
 
 pack $w.part.l -pady 5
 pack $w.part -in $w.particle
+
+
 pack $w.partgv.l $w.partgv.l1 $w.partgv.e1 $w.partgv.l2 $w.partgv.e2 $w.partgv.l3 \
     $w.partgv.e3  $w.partgv.l4 $w.partgv.e4  -side left
 pack $w.partgv  -pady 3 -side top -in $w.particle
@@ -218,6 +241,14 @@ entry $w.m.partcross.e -width 5 -relief sunken -bd 2 -textvariable mp(pcrossize)
 pack  $w.m.psumgv.l $w.m.psumgv.e $w.m.partdisc.l $w.m.partdisc.e $w.m.partcross.l $w.m.partcross.e -side left
 pack  $w.m.psumgv $w.m.partdisc $w.m.partcross  -side left -in $w.m
 pack $w.m -pady 4
+
+pack $w.rel_disc.button  -side left
+pack $w.rel_disc -pady 3
+
+pack $w.target.button  -side left
+pack $w.target -pady 3
+
+
 
 
 #---------------------------Subtract Mask-----------------------------------#
@@ -327,18 +358,18 @@ $w.illu.xmax.lzmax config -text "   Zmax: "
 entry $w.illu.xmax.ezmax -width 6 -relief sunken -bd 2 \
     -textvariable mp(xmaxzmax)
 $w.illu.crit.lt config -text "Criteria for correspondences" -font {Helvetica 13 bold}
-$w.illu.crit.lnx config -text "             min corr for ratio nx: "
+$w.illu.crit.lnx config -text       "                           min ratio nx: "
 entry $w.illu.crit.enx -width 6 -relief sunken -bd 2 -textvariable mp(nx)
-$w.illu.crit.lny config -text "                           min corr for ratio ny: "
+$w.illu.crit.lny config -text       "                                      min ratio ny: "
 entry $w.illu.crit.eny -width 6 -relief sunken -bd 2 -textvariable mp(ny)
-$w.illu.crit.lnpix config -text "          min corr for ratio npix: "
+$w.illu.crit.lnpix config -text   "                         min ratio npix: "
 entry $w.illu.crit.enpix -width 6 -relief sunken -bd 2 -textvariable mp(npix)
-$w.illu.crit.lsumgv config -text "                                         sum of gv: "
+$w.illu.crit.lsumgv config -text "                         min ratio grayvalues: "
 entry $w.illu.crit.esumgv -width 6 -relief sunken -bd 2 -textvariable mp(sgv)
-$w.illu.crit.lminwcorr config -text "min for weighted correlation: "
+$w.illu.crit.lminwcorr config -text "min for we. corr (depreciated): "
 entry $w.illu.crit.eminwcorr -width 6 -relief sunken -bd 2 \
     -textvariable mp(mincorr)
-$w.illu.crit.ltolepi config -text "      Tolerance to epipolar band (mm): "
+$w.illu.crit.ltolepi config -text "Tol. to epipolar (frac. of particle size): "
 entry $w.illu.crit.etolepi -width 6 -relief sunken -bd 2 \
     -textvariable mp(tolepi)
 
