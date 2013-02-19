@@ -1,1 +1,2 @@
 * text=auto
+*.c     filter=indent
