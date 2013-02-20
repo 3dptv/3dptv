@@ -183,8 +183,6 @@ void targ_rec (Tcl_Interp* interp, unsigned char *img0, unsigned char *img, char
                         // && xn>=xmin && xn<xmax && yn>=ymin && yn<ymax
                         && xn>xmin && xn<xmax-1 && yn>ymin && yn<ymax-1		// bug repaired, ad holten 02-2013
                         && gv <= gvref+disco
-
-                        && gv <= gvref+disco
                         && gvref + disco >= *(img0 + imx*(yn-1) + xn)
                         && gvref + disco >= *(img0 + imx*(yn+1) + xn)
                         && gvref + disco >= *(img0 + imx*yn     + xn-1)
