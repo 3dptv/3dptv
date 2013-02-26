@@ -1,0 +1,10 @@
+#!/home/logvert/s_bin/wish8.0
+#
+# index script (jw 21.11.97)
+#
+puts ""
+puts "Creating tclIndex for PTV ..."
+puts ""
+auto_mkindex . ./src_tcl/*.tcl
+puts "... done !"
+exit
