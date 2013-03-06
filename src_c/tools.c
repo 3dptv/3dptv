@@ -66,7 +66,7 @@ FILE *fopen_rp (char *filename)
 	return (fp);
 }
 
-FILE *fopen_r (CHAR filename[256])
+FILE *fopen_r (char filename[256])
 /*	tries to open a file;
 	gives a message, if it cannot open it
 	and waits until it has been created   */
