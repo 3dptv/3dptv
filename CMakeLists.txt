@@ -17,7 +17,7 @@ else()
 endif()
 
 # Find TCL/TK
-find_package( TCL REQUIRED 8.4)
+find_package( TCL REQUIRED 8.6)
 
 if (TCLTK_FOUND )
 	message(STATUS "TCL INCLUDE: " ${TCL_INCLUDE_PATH})

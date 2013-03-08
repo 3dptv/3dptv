@@ -321,7 +321,7 @@ int FileReadTIF(Tcl_Interp *interp,
     printf("\nFileReadTIF: block.pixelSize = %d", block.pixelSize);
     printf("\nFileReadTIF: scanline size   = %d", TIFFScanlineSize(tif));
     */
-    Tk_PhotoExpand(imageHandle, destX + width, destY + height);
+    Tk_PhotoExpand(interp,imageHandle, destX + width, destY + height);
 
     /*
     if (srcY > 0) {
@@ -365,7 +365,7 @@ int FileReadTIF(Tcl_Interp *interp,
         }
 	block.height = nLines;
 
-	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, nLines, TK_PHOTO_COMPOSITE_SET);
+	Tk_PhotoPutBlock(interp,imageHandle, &block, destX, destY, width, nLines, TK_PHOTO_COMPOSITE_SET);
 	destY += nLines;
     }
 

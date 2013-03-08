@@ -1,6 +1,3 @@
-
-src_c/homemakefile
-
 [Dd]ebug/
 [Rr]elease/
 ipch/
@@ -9,4 +6,4 @@ ipch/
 *.exe
 *.ilk
 *.pdb
-
+build/
