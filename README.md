@@ -14,7 +14,7 @@
 
 2. Download and install ActiveTCL 8.6 for the desired platform
 	
-		http://www.activestate.com/activetcl/downloads
+	http://www.activestate.com/activetcl/downloads
 
 3. (Linux systems) Download and install gcc and libtiff 
 
