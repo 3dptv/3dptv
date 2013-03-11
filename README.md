@@ -16,40 +16,44 @@
 	
 	http://www.activestate.com/activetcl/downloads
 
-3. (Linux systems) Download and install gcc and libtiff 
+3. Download and install libtiff (*nix and OSX systems) 
 
- 	-- for Ubuntu run the following in a bash shell
+ 	-- on Ubuntu run the following in a terminal:
  	
-		sudo apt-get install build-essential
-		sudo apt-get install libtiff-dev
+		```sudo apt-get install build-essential```
+		```sudo apt-get install libtiff-dev```
 	
-on Mac OS X is recommended to install libtiff using Homebrew:
-		brew install libtiff
+	-- on Mac OS X is recommended to install libtiff using Homebrew:
+		```brew install libtiff```
 
-4. create a build directory inside the main 3dptv directory (```3dptv/build```)
+4. Create a build directory inside the main 3dptv directory (```3dptv/build```)
 
 
 5. Run CMake and generate the project or make files 
 
 	a. start the ```cmake-gui``` from the desktop shortcut or program list
-	   - alternatively run the following in a bash shell  
-			```cd```
+		-- alternatively run the following from command line  
+			```cd 3dptv/build```
+			```cmake-gui ../```			
 	b. browse for the source directory: ```3dptv/```
 
 	c. browse for the build directory just created: ```3dptv/build/```
 
-	d. click ```configure``` (on Mac OS X choose the following options: UNIX makefiles, native compilers)
+	d. click ```configure``` and select the build type and compiler 
+		--on Mac OS X choose the following options: UNIX makefiles, native compilers
+		--on Windows choose Visual Studio 2010 or 2008 (32-bit supported currently)
+		--on *nix systems choose Unix make files or alternatively use Eclipse CTD and unix make files
 	
 	Note: if an error occurs saying that libtiff or ActiveTCL cannot be found
-              click on the entry in the "value" column and browse for the libraries' "include" and "lib" directories
-              Click ```configure``` again to locate the libraries. If any rows appear red, click configure once more. 
+              click on the entry in the "value" column and browse for the libraries' "include" directories and ".lib" files
+              click ```configure``` again to locate the libraries. If any rows appear red, click configure until no rows are highlighted.
 	
 	e. click generate to create the project files (Visual studio) or make files (linux)
 
-6. Run Visual Studio and open the solution file in 3dptv/build/ or run make from within the build directory to compile the code.  
-	--The executable will be generated and placed inside 3dptv/build/bin/
+6. Run Visual Studio and open the solution file in ```3dptv/build/``` or run make from within the build directory to compile the code.  
+	--The executable will be generated and placed inside ```3dptv/build/bin/```
 	
 7. Run the software from the ```test``` folder with a link to ```ptv.tcl``` as an input:
 
-		cd 3dptv/test
-		../build/bin/3dptv ../ptv.tcl
+		```cd 3dptv/test```
+		```../build/bin/3dptv ../ptv.tcl```
