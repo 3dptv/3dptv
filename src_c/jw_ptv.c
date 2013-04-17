@@ -22,8 +22,10 @@ Copyright (c) 1990-2011 ETH Zurich
 See the file license.txt for copying permission.
 */
 
-
 #include "ptv.h"
+#if (_MSC_VER >= 1500 && _DEBUG)
+    #include <crtdbg.h>				// only for vc2010
+#endif
 
 #define nmax 20240
 
@@ -126,6 +128,9 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	int  i;
 	const char *valp;
 
+#if (_MSC_VER >= 1500 && _DEBUG)
+	_CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);		// only for debuggibg with vc2010
+#endif
 	puts ("\n Multimedia Particle Positioning and Tracking Software \n");
 
 	valp = Tcl_GetVar(interp, "examine",  TCL_GLOBAL_ONLY);
@@ -197,7 +202,8 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 
 	/* initialize zoom parameters and image positions */
 	for (i=0; i<n_img; i++) {
-		num[i] = 0;
+		num[i] = 0;					// ie. no targets loaded
+		mmLUT[i].data = NULL;		// ie. if not NULL memory needs to be deallocated
 		zoom_x[i] = imx/2; zoom_y[i] = imy/2; zoom_f[i] = 1;
 	}
 	imgsize = imx*imy;
@@ -2936,16 +2942,34 @@ case 14: puts ("Sortgrid = initial guess");
 
 int quit_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int i, k;
-
+	int i, k;						// added lines with //, ad holten, 04-2013
 	for (i=0; i<n_img; i++) {
 		free (img[i]);
 		free (img0[i]);
+		free (img_mask[i]);			//
+		free (img_new[i]);			//
 	}
 	free (zoomimg);
+
+	if (trackallocflag) {			//
+		for (i=0; i<4; i++) {		//
+			free (mega[i]);			//
+			free (c4[i]);			//
+			for (k=0; k<4; k++)		//
+				free (t4[i][k]);	//
+		}
+	}
+
+	// clear the mmLUT structure	//
+	for (i=0; i<n_img; i++)			//
+		if (mmLUT[i].data != NULL) free(mmLUT[i].data);		//
 
 	/* delete unneeded files */
 	for (i=0; i<n_img; i++)
 		k = remove (img_lp_name[i]);
+
+#if (_MSC_VER >= 1500 && _DEBUG)
+	_CrtDumpMemoryLeaks();			// if using vc2010, lists detected memory leaks
+#endif
 	return TCL_OK;
 }

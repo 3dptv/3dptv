@@ -817,6 +817,8 @@ void init_mmLUT (int i_cam)
 	mmLUT[i_cam].nr = nr;
 	mmLUT[i_cam].nz = nz;
 	mmLUT[i_cam].rw = rw;
+	if (mmLUT[i_cam].data != NULL)			// preventing memory leaks, ad holten, 04-2013
+		free (mmLUT[i_cam].data);
 	mmLUT[i_cam].data = (double *) malloc (nr*nz * sizeof (double));
 
 	/* fill mmLUT structure */
@@ -839,6 +841,8 @@ void init_mmLUT (int i_cam)
 			multimed_r_nlay_v2 (Ex_t[i_cam], Ex[i_cam], mmp, 
 								Ri[i]+Ex_t[i_cam].x0, Ex_t[i_cam].y0, Zi[j]);
 	}
+	free (Ri);	// preventing memory leaks, ad holten, 04-2013
+	free (Zi);
 }
 
 double get_mmf_from_mmLUT (int i_cam, double X, double Y, double Z)
