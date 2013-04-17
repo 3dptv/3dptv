@@ -209,14 +209,14 @@ int kill_in_list (Tcl_Interp* interp, int nr, int num, int ms_x, int ms_y)
 	int 	i, imin = 9999, intx, inty;
 	double	x, y, d, dmin = 9999;
 
-	if (zoom_f[nr] > 1)
-	{
-		sprintf (buf, "cannot delete point from zoomed image");
-		Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
-		Tcl_Eval(interp, ".text delete 3");
-		Tcl_Eval(interp, ".text insert 3 $tbuf");
-		return (0);
-	}
+	//if (zoom_f[nr] > 1)	// commented out, ad holten 04-2014
+	//{
+	//	sprintf (buf, "cannot delete point from zoomed image");
+	//	Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
+	//	Tcl_Eval(interp, ".text delete 3");
+	//	Tcl_Eval(interp, ".text insert 3 $tbuf");
+	//	return (0);
+	//}
 
 	for (i=0; i<num; i++)
 	{
@@ -229,9 +229,10 @@ int kill_in_list (Tcl_Interp* interp, int nr, int num, int ms_x, int ms_y)
 		}
 	}
 	if (dmin > 10)	  return (-1);				 /*  limit: 10 pixel  */
-	intx = (int) pix[nr][imin].x;
-	inty = (int) pix[nr][imin].y;
 
+	// intx = (int) pix[nr][imin].x;			// changed, ad holten
+	// inty = (int) pix[nr][imin].y;
+	img_to_view_coordinates(&intx, &inty, pix[nr][imin].x, pix[nr][imin].y, nr);
 	drawcross (interp, intx, inty, cr_sz+1, nr, "magenta");
 	for (i=imin; i<num; i++)  
 		pix[nr][i] = pix[nr][i+1];
@@ -511,4 +512,14 @@ void tclimg2cimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *
 	}
 }
 
-
+void cimg2tclimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *tcl_img, int alpha)
+{
+	int i, j;
+	for (j=0; j<imgsize; j++) {
+		i = j*4;
+		*(tcl_img->pixelPtr +i)   = *(c_img +j);
+		*(tcl_img->pixelPtr +i+1) = *(c_img +j);
+		*(tcl_img->pixelPtr +i+2) = *(c_img +j);
+		*(tcl_img->pixelPtr +i+3) = alpha;
+	}
+}

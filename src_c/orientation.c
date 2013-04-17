@@ -64,7 +64,7 @@ void orient (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 ap0,
 			Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
 	FILE	*fp1;
 	int 	dummy, multi;
-
+	Zoompar zoompar;
 
 	/* read, which parameters shall be used */
 	fp1 = fopen_r ("parameters/orient.par");
@@ -337,7 +337,10 @@ void orient (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 ap0,
 
 	//if(multi==0){
 	read_image (interp, img_name[nr], img[nr]);
-	sprintf(val, "newimage %d", nr+1);
+	// sprintf(val, "newimage %d", nr+1);			// replaced, ad holten 04-2013
+	get_tclzoomparms(interp, &zoompar, nr+1);
+	sprintf(val, "newimage %d %f %f %d %d", nr+1,
+		zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 	Tcl_Eval(interp, val);
 	//}
 
@@ -1190,7 +1193,7 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 	FILE	*fp1;
 	int 	dummy, multi,numbers;
 	double	al,be,ga,nGl,e1_x,e1_y,e1_z,e2_x,e2_y,e2_z,n1,n2,safety_x,safety_y,safety_z;
-
+	Zoompar zoompar;
 
 	/* read, which parameters shall be used */
 	fp1 = fopen_rp ("parameters/orient.par");		// replaced fopen_r(), ad holten 12-2012
@@ -1554,7 +1557,11 @@ void orient_v3 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 
 	//if(multi==0){
 	read_image (interp, img_name[nr], img[nr]);
-	sprintf(val, "newimage %d", nr+1);
+	// sprintf(val, "newimage %d", nr+1);			// replaced, ad holten 04-2013
+	get_tclzoomparms(interp, &zoompar, nr+1);
+	sprintf(val, "newimage %d %f %f %d %d", nr+1,
+		zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
+
 	Tcl_Eval(interp, val);
 	//}
 
@@ -1615,7 +1622,7 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 	FILE	*fp1;
 	int 	dummy, multi,numbers;
 	double	al,be,ga,nGl,e1_x,e1_y,e1_z,e2_x,e2_y,e2_z,n1,n2,safety_x,safety_y,safety_z;
-
+	Zoompar	zoompar;
 
 	/* read, which parameters shall be used */
 	fp1 = fopen_rp ("parameters/orient.par");		// replaced fopen_r(), ad holten, 12-2012
@@ -1985,7 +1992,10 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 
 	//if(multi==0){
 	read_image (interp, img_name[nr], img[nr]);
-	sprintf(val, "newimage %d", nr+1);
+	// sprintf(val, "newimage %d", nr+1);			// replaced, ad holten 04-2013
+	get_tclzoomparms(interp, &zoompar, nr);
+	sprintf(val, "newimage %d %f %f %d %d", nr+1,
+		zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 	Tcl_Eval(interp, val);
 	//}
 

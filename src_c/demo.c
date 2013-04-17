@@ -67,7 +67,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 		img_handle = Tk_FindPhoto( interp, "temp");
 		Tk_PhotoGetImage (img_handle, &img_block);
 
-		sprintf(buf, "newimage %d", nr+1);
+		sprintf(buf, "newimage %d", nr+1, 0.5, 0.5, 1, 0);
 		Tcl_Eval(interp, buf);
 
 		if(pft_version==4) {

@@ -2,6 +2,12 @@
 
 #define nmax 20240
 
+// zooming
+enum MARKTYPES  {OBJ_MARK, OBJ_CROSS, OBJ_VECTOR, OBJ_PNR, OBJ_VALUE, OBJ_OVAL};
+
+extern  Marker  *markers[4];
+extern  int     nmarkers[4];
+
 extern  int     n_img;                          /* no of images */
 extern  int     hp_flag;                        /* flag for highpass */
 extern  int     allCam_flag;                    /* flag for using all cams for points */
@@ -106,6 +112,18 @@ void mark_correspondences (Tcl_Interp* interp, int nr);
 void mark_corr (Tcl_Interp* interp, int nr);
 int  mark_track_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
 int  trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+void add_mark(int x0, int y0, int imgnr);
+void clear_drawnobjectslist();
+int  clearmarkers_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+void clicked_to_imgcoordinates(int *px, int *py, double x, double y, int n);
+void draw_objects(Tcl_Interp* interp, int imgnr);
+int  drawmarker(Tcl_Interp* interp, Marker mark, int imgnr);
+int  drawoval (Tcl_Interp* interp, int x0, int y0, int size, int imgnr, char color[]);
+int  draw_pnr_autohide (Tcl_Interp* interp, int x, int y, int pnr, int imgnr, char color[], int minzoomlevel, int zoomlevel);
+int  draw_value_autohide (Tcl_Interp* interp, int x, int y, double pnr,	int imgnr, char color[], int minzoomlevel, int zoomlevel);
+BOOL get_tclzoomparms(Tcl_Interp* interp, Zoompar *zoompar, int i_img);
+void img_to_view_coordinates(int *px, int *py, double x, double y, int n);
+BOOL isinview(double x, double y, int i_img);
 
 // --- epi.c ---
 int  epi_mm (double x1, double y1, Exterior Ex1, Interior I1, Glass G1, Exterior Ex2, Interior I2, Glass G2, mm_np mmp,
@@ -266,6 +284,7 @@ void  qs_coord2d_x (coord_2d *crd, int left, int right);
 void  quicksort_target_y (target *pix, int num);
 void  quicksort_con (n_tupel *con, int num);
 void  tclimg2cimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *tcl_img);
+void  cimg2tclimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *tcl_img, int alpha);
 
 
 // --- track.c ---

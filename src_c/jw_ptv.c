@@ -48,7 +48,7 @@ int		match=0; 					/* no. of matches */
 int		match2=0;					/* no. of matches in 2nd pass */
 int		nr[4][4];					/* point numbers for man. ori */
 int		imx, imy, imgsize;			   /* image size */
-int		zoom_x[4],zoom_y[4],zoom_f[4];  /* zoom parameters */
+// int		zoom_x[4],zoom_y[4],zoom_f[4];  /* zoom parameters */	// ad holten, 04-2013
 int		pp1=0, pp2=0, pp3=0, pp4=0,pp5=0;  /* for man. orientation */
 int		seq_first, seq_last; 			  /* 1. and last img of seq */
 int		max_shake_points, max_shake_frames, step_shake;
@@ -96,7 +96,7 @@ unsigned char *img[4];				/* image data */
 unsigned char *img_mask[4]; 		/* mask data */
 unsigned char *img_new[4];			/* image data for reducing mask */
 unsigned char *img0[4]; 			/* image data for filtering etc */
-unsigned char *zoomimg; 			/* zoom image data */
+// unsigned char *zoomimg; 			/* zoom image data */		// ad holten, 04-2012
 
 Exterior Ex[4],sEx[4];				/* exterior orientation */
 Interior I[4],sI[4];				/* interior orientation */
@@ -200,11 +200,10 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fscanf (fpp,"%d\n", &seq_last);
 	fclose (fpp);
 
-	/* initialize zoom parameters and image positions */
 	for (i=0; i<n_img; i++) {
 		num[i] = 0;					// ie. no targets loaded
 		mmLUT[i].data = NULL;		// ie. if not NULL memory needs to be deallocated
-		zoom_x[i] = imx/2; zoom_y[i] = imy/2; zoom_f[i] = 1;
+		// zoom_x[i] = imx/2; zoom_y[i] = imy/2; zoom_f[i] = 1;
 	}
 	imgsize = imx*imy;
 
@@ -240,12 +239,12 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 			exit (1);
 		}
 	}
-
-	zoomimg = (unsigned char*) calloc(imgsize, 1);
-	if (! zoomimg) {
-		printf ("calloc for zoomimg --> error\n");
-		return TCL_ERROR;
-	}
+	// commented out, ad holten 04-2013
+	// zoomimg = (unsigned char*) calloc(imgsize, 1);
+	// if (! zoomimg) {
+	//	 printf ("calloc for zoomimg --> error\n");
+	//	 return TCL_ERROR;
+	// }
 
 	parameter_panel_init(interp);
 	cr_sz = atoi(Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY));
@@ -343,6 +342,7 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	}
 
 	/* read and display original images */
+	clear_drawnobjectslist();					// added, ad holten, 04-2013
 	for (i=0; i<n_img; i++) {
 		/* reading */
 		sprintf(val, "camcanvas %d", i+1);
@@ -350,9 +350,10 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 		if (!read_image (interp, img_name[i], img[i]))
 			return TCL_OK;							// added, ad holten, 12-2012
-		sprintf(val, "newimage %d", i+1);
-
+		// sprintf(val, "newimage %d", i+1);
+		sprintf(val, "newimage %d %f %f %d %d", i+1, 0.5, 0.5, 1, 0);
 		Tcl_Eval(interp, val);
+
 		sprintf(val, "keepori %d", i+1);
 		Tcl_Eval(interp, val);
 	}
@@ -372,6 +373,7 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
 	int i_img, sup, i;
+	Zoompar zoompar;
 
 	Tk_PhotoHandle img_handle;
 	Tk_PhotoImageBlock img_block;
@@ -412,6 +414,9 @@ int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const
 	// - highpass original image
 	// - subtract mask from original image
 	// - copy subtracted imgage on the original image
+	if (display)
+		clear_drawnobjectslist();				// added, ad holten 04-2013
+
 	if (mask == 1) {	// read mask image
 		for (i_img=0; i_img<n_img; i_img++) {
 			read_image (interp, img_mask_name[i_img], img_mask[i_img]); 				
@@ -424,7 +429,17 @@ int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const
 				Tk_PhotoGetImage (img_handle, &img_block);
 				tclimg2cimg (interp, img[i_img], &img_block);
 
-				sprintf(val, "newimage %d", i_img+1);
+				// replaced, ad holten, 04-2013 
+				// sprintf(val, "newimage %d", i_img+1);
+
+				// newimage index clicked_x clicked_y zoomfactor lockframesize
+				// - index      = image index
+				// - cx, cy     = normalized view centre position (ie values between 0 and 1
+				// - zoomfactor = >1 : zoomed in, <-1 : zoomed out (subsampled)
+				// - fixed      = size of the frame will not be addapted to the zoomed image size
+				get_tclzoomparms(interp, &zoompar, i_img);
+				sprintf(val, "newimage %d %f %f %d %d", 
+					i_img+1, zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 				Tcl_GlobalEval(interp, val);
 			}
 		}
@@ -440,7 +455,10 @@ int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const
 				Tk_PhotoGetImage (img_handle, &img_block);
 				tclimg2cimg (interp, img[i_img], &img_block);
 
-				sprintf(val, "newimage %d", i_img+1);
+				// changed, see mask == 1,  ad holten, 04-2013 
+				get_tclzoomparms(interp, &zoompar, i_img);
+				sprintf(val, "newimage %d %f %f %d %d",
+					i_img+1, zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 				Tcl_GlobalEval(interp, val);
 			}
 		}
@@ -463,6 +481,7 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 	char val[256];
 	char filename[256];
 	FILE *FILEIN;
+	Zoompar zoompar;
 
 	Tk_PhotoHandle img_handle;
 	Tk_PhotoImageBlock img_block;
@@ -474,11 +493,15 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 	Tcl_Eval(interp, ".text insert 2 $tbuf");
 
 	if (display) {
+		clear_drawnobjectslist();							// added, ad holten, 04-2013
 		for (i_img=0; i_img<n_img; i_img++) {
 			img_handle = Tk_FindPhoto( interp, "temp");
 			Tk_PhotoGetImage (img_handle, &img_block);
 			tclimg2cimg (interp, img[i_img], &img_block);
-			sprintf(val, "newimage %d", i_img+1);
+			// sprintf(val, "newimage %d", i_img+1);		// ad holten, 04-2013
+			get_tclzoomparms(interp, &zoompar, i_img);
+			sprintf(val, "newimage %d %f %f %d %d", 
+				i_img+1, zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 			Tcl_Eval(interp, val);
 		}
 	}
@@ -499,10 +522,11 @@ int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 		fclose(fpp);
 	}
 
-	/* reset zoom values */
-	for (i_img=0; i_img<n_img; i_img++) {
-		zoom_x[i_img] = imx/2; zoom_y[i_img] = imy/2;  zoom_f[i_img] = 1;
-	}
+	// commented out, ad holten, 04-2013
+	///* reset zoom values */
+	//for (i_img=0; i_img<n_img; i_img++) {
+	//	zoom_x[i_img] = imx/2; zoom_y[i_img] = imy/2;  zoom_f[i_img] = 1;
+	//}
 
 	/* copy images because the target recognition will set greyvalues to 0 */
 	for (i_img=0; i_img<n_img; i_img++)
@@ -627,6 +651,7 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
 		mmp.lut = 1;
 	}
 
+	clear_drawnobjectslist();					// added, ad holten 04-2013
 	correspondences_4 (interp, argv);
 
 	/* ------ save pixel coords for tracking  ------- */
@@ -893,6 +918,7 @@ int sequence_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const 
 	double zdim;						// z_cen_slice[19], removed ad holten, 12-2012
 	int dumbbell=0,step_shake=1;
 	double dummy;
+	Zoompar zoompar;
 
 	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten, 12-2012
 	if (!fpp) return TCL_OK;
@@ -1023,7 +1049,12 @@ int sequence_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const 
 				img_handle = Tk_FindPhoto( interp, "temp");
 				Tk_PhotoGetImage (img_handle, &img_block);
 				tclimg2cimg (interp, img[k], &img_block);
-				sprintf(buf, "newimage %d", k+1);
+
+				// sprintf(buf, "newimage %d",	k+1);		replaced, ad holten, 04-2013
+				clear_drawnobjectslist();
+				get_tclzoomparms(interp, &zoompar, k);
+				sprintf(buf, "newimage %d %f %f %d %d",
+					k+1, zoompar.xc, zoompar.yc, zoompar.fac, zoompar.fixed);
 				Tcl_Eval(interp, buf);
 			}
 		}
@@ -1200,8 +1231,8 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	// removed unreferenced variables, ad holten, 12-2012
 	// Y2, Y1, residual, Z1, temp, xb, xa, X2, dist_error, ya, X1, Z2, dummy_float, yb
 
-	Tk_PhotoHandle img_handle;
-	Tk_PhotoImageBlock img_block;
+	// Tk_PhotoHandle img_handle;
+	// Tk_PhotoImageBlock img_block;
 
 	/* read support of unsharp mask */
 	fp1 = fopen ("parameters/unsharp_mask.par", "r");
@@ -1250,6 +1281,10 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	//}
 
 	///////////////////////////////////////////////////////////////////////////////
+
+	// clearing all objects in the objects list
+	if (sel == 1 || sel == 2 || sel == 6)
+		clear_drawnobjectslist();
 
 	switch (sel)
 	{
@@ -1305,18 +1340,18 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 		}
 
 		for (i=0; i<n_img; i++) {
-			zoom_x[i] = imx/2, zoom_y[i] = imy/2, zoom_f[i] = 1;
-
+			// zoom_x[i] = imx/2, zoom_y[i] = imy/2, zoom_f[i] = 1;
 			read_image (interp, img_name[i], img[i]);
 
 			sprintf(val, "camcanvas %d", i+1);
 			Tcl_Eval(interp, val);
 
-			img_handle = Tk_FindPhoto( interp, "temp");
-			Tk_PhotoGetImage (img_handle, &img_block);
-			tclimg2cimg (interp, img[i], &img_block);
-
-			sprintf(val, "newimage %d", i+1);
+			// Why calling tclimg2cimg()? Thsi will change alpha values from 255 to 40
+			// Not clear to me (ad holten), so skipped this, March 2013
+			//    img_handle = Tk_FindPhoto( interp, "temp");
+			//    Tk_PhotoGetImage (img_handle, &img_block);
+			//    tclimg2cimg (interp, img[i], &img_block);	
+			sprintf(val, "newimage %d %f %f %d %d", i+1, 0.5, 0.5, 1, 0);
 			Tcl_Eval(interp, val);
 		}
 		break;
@@ -1327,10 +1362,10 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 		/* Highpass Filtering */
 		pre_processing_c (clientData, interp, argc, argv);
 
-		/* reset zoom values */
-		for (i=0; i<n_img; i++) {
-			zoom_x[i] = imx/2; zoom_y[i] = imy/2; zoom_f[i] = 1;
-		}
+		///* reset zoom values */
+		//for (i=0; i<n_img; i++) {
+		//	zoom_x[i] = imx/2; zoom_y[i] = imy/2; zoom_f[i] = 1;
+		//}
 
 		/* copy images because the target recognition will set greyvalues to zero */
 		for (i=0; i<n_img; i++)
@@ -1374,7 +1409,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 
 
 	case 3:    pp1=0;	 pp2=0;    pp3=0;	 pp4=0;
-
+		
 		for (i=0; i<n_img; i++) {
 			sprintf (buf, "%d targets remain", num[i]);
 			puts (buf);
@@ -1955,7 +1990,8 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 				drawvector (interp, intx1, inty1, intx2, inty2, 3, i_img, "magenta");
 			}
 		}
-		// case 8: no break needed ???? adh, 10-12-2012
+		break;	// >>> BREAK ADDED, was missing in the original code, adh, 03-2013
+
 	case 9: puts ("Plot initial guess");
 		
 		for (i=0; i<n_img; i++) {
@@ -2948,8 +2984,10 @@ int quit_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 		free (img0[i]);
 		free (img_mask[i]);			//
 		free (img_new[i]);			//
+		if (markers[i] != NULL)
+			free (markers[i]);
 	}
-	free (zoomimg);
+	// free (zoomimg);				// not used, ad holten, 04-2013
 
 	if (trackallocflag) {			//
 		for (i=0; i<4; i++) {		//

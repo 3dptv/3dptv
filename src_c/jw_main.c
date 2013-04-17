@@ -178,5 +178,8 @@ int jw_Init(Tcl_Interp *interp)
   Tcl_CreateCommand(interp, "ptv_cmd",	seq_track_proc_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
+  Tcl_CreateCommand(interp, "clear_cmd", clearmarkers_c,
+	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
   return TCL_OK;
 }

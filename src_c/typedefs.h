@@ -193,6 +193,29 @@ typedef struct Pstruct
   int inlist; /* Counter of number of possible links to next data set*/
 } P;
 
+typedef struct
+{
+	int type;
+	int x;
+	int y;
+	int x1;
+	int y1;
+	int size;
+	int minzoom;
+	double value;
+	char color[32];
+} Marker;
+
+typedef struct
+{
+	double xc;			// normalized position of the view
+	double yc;
+	int fac;
+	int vwx;
+	int vwy;
+	int fixed;
+	int alpha;
+} Zoompar;
 
 #define MAX_FILENAME_LEN 1024
 #define FILENAME_IN "res/rt_is"

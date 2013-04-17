@@ -37,10 +37,15 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	double xp[4], yp[4], xc[4], yc[4], xn[4], yn[4];
 	double rr, Ymin=0, Ymax=0;
 	double npart=0, nlinks=0;
+	Zoompar zoompar[4];
 
 	foundpix *w, *wn, p16[16];
 
 	display = atoi(argv[1]);
+	if (display) {						// added, ad holten, 04-2013
+		for (i=0; i<n_img; i++)		
+			get_tclzoomparms(interp, &zoompar[i], i);	
+	}
 
 	Tcl_Eval(interp, ".text delete 2");
 	Tcl_Eval(interp, ".text insert 2 \"Track established correspondences\"");
@@ -629,8 +634,8 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				else {
 					/*
 						printf("h ist schlechter, h: %4d jetzt: %5.3f vorher: %d %5.3f\n",
-							h, mega[1][h].finaldecis, mega[1][mega[2][mega[1][h].next].prev].next,
-							mega[1][mega[2][mega[1][h].next].prev].finaldecis);
+								h, mega[1][h].finaldecis, mega[1][mega[2][mega[1][h].next].prev].next,
+								mega[1][mega[2][mega[1][h].next].prev].finaldecis);
 					*/
 					if (mega[1][h].inlist>1) {
 						/*
@@ -663,18 +668,24 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 						yc[j]=t4[2][j][c4[2][mega[1][h].next].p[j]].y;
 						predict (xp[j], yp[j], xc[j], yc[j], &xn[j], &yn[j]);
 
-						if ( ( fabs(xp[j]-zoom_x[j]) < imx/(2*zoom_f[j]))
-							&& (fabs(yp[j]-zoom_y[j]) < imy/(2*zoom_f[j])))
+						// replaced next isinview(), ad holten 04-2103
+						//if ( ( fabs(xp[j]-zoom_x[j]) < imx/(2*zoom_f[j]))
+						//	&& (fabs(yp[j]-zoom_y[j]) < imy/(2*zoom_f[j])))
+						if (isinview(xp[j], yp[j], j))
 						{
 							strcpy(val,"");
 							sprintf(val ,"orange");
 
-							intx0 = (int)(imx/2+zoom_f[j]*(xp[j]-zoom_x[j]));
-							inty0 = (int)(imy/2+zoom_f[j]*(yp[j]-zoom_y[j]));
-							intx1 = (int)(imx/2+zoom_f[j]*(xc[j]-zoom_x[j]));
-							inty1 = (int)(imy/2+zoom_f[j]*(yc[j]-zoom_y[j]));
-							intx2 = (int)(imx/2+zoom_f[j]*(xn[j]-zoom_x[j]));
-							inty2 = (int)(imy/2+zoom_f[j]*(yn[j]-zoom_y[j]));
+							// replaced next by img_to_view_coordinates(), ad holten 04-2103
+							//intx0 = (int)(imx/2+zoom_f[j]*(xp[j]-zoom_x[j]));
+							//inty0 = (int)(imy/2+zoom_f[j]*(yp[j]-zoom_y[j]));
+							//intx1 = (int)(imx/2+zoom_f[j]*(xc[j]-zoom_x[j]));
+							//inty1 = (int)(imy/2+zoom_f[j]*(yc[j]-zoom_y[j]));
+							//intx2 = (int)(imx/2+zoom_f[j]*(xn[j]-zoom_x[j]));
+							//inty2 = (int)(imy/2+zoom_f[j]*(yn[j]-zoom_y[j]));
+							img_to_view_coordinates(&intx0, &inty0, xp[j], yp[j], j);
+							img_to_view_coordinates(&intx1, &inty1, xc[j], yc[j], j);
+							img_to_view_coordinates(&intx2, &inty2, xn[j], yn[j], j);
 
 							drawcross(interp,intx0,inty0,cr_sz,j,"green");
 							drawcross(interp,intx1,inty1,cr_sz+1,j,"yellow");
@@ -683,9 +694,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 							drawvector (interp, intx1, inty1, intx2, inty2, 1, j, "white");
 
 							if (mega[1][h].finaldecis> 0.2) {
-								draw_pnr ( interp, intx0, inty0, h, j, "white");
-								draw_pnr ( interp, intx0, inty0+10, mega[1][h].next, j, val);
-								draw_value (interp, intx0, inty0 + 20,mega[1][h].finaldecis, j, val);
+								draw_pnr_autohide (interp, intx0, inty0, 
+									h, j, "white", 2, zoompar[i].fac);
+								draw_pnr_autohide (interp, intx0, inty0+10, 
+									mega[1][h].next, j, val, 2, zoompar[i].fac);
+								draw_value_autohide (interp, intx0, inty0 + 20,
+									mega[1][h].finaldecis, j, val, 2, zoompar[i].fac);
 							}
 						}
 					}
