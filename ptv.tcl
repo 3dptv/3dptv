@@ -12,7 +12,7 @@ wm iconname . "PTV"
 wm geometry . +200+50
 
 # Global tclvariables 
-global cp mp tp sel clicki fy fx examine tbuf zoomfactor
+global cp mp tp sel clicki fy fx examine tbuf zoomfactor zoompar
 set fx {}
 set fy {}
 
@@ -127,9 +127,6 @@ menu .mbar.track.menu
 .mbar.track.menu add command -label "Tracking (just) in 3d" -command "ptv_cmd"
 
 menu .mbar.calib.menu
-
-
-
 .mbar.calib.menu add command -label "Show Calib. Image" -command "set sel 1;calib_cmd;bindings1;" 
 .mbar.calib.menu add command -label "Detection" -command " set sel 2;bindings0;calib_cmd"
 .mbar.calib.menu add command -label "Manual orientation" -command " set sel 3;calib_cmd"
@@ -165,24 +162,43 @@ menu .mbar.change.menu
 .mbar.change.menu add command -label "Change Calibration Parameters" -command calpar
 .mbar.change.menu add command -label "Change Tracking Parameters" -command trackpar
 
-
 menu .mbar.options.menu
 .mbar.options.menu add command -label "Refresh Images" -command "refresh"
 .mbar.options.menu add command -label "Show original" -command "showori"
 .mbar.options.menu add command -label "Clear Canvas" -command clearcam
-.mbar.options.menu add command -label "Zoom  8x" -command "set zoomfactor 8;bindings4"
-.mbar.options.menu add command -label "Zoom 16x" -command "set zoomfactor 16;bindings4"
-.mbar.options.menu add command -label "Zoom 32x" -command "set zoomfactor 32;bindings4"
-.mbar.options.menu add command -label "Zoom 64x" -command "set zoomfactor 64;bindings4"
-.mbar.options.menu add command -label "Zoom 128x" -command "set zoomfactor 128;bindings4"
-.mbar.options.menu add command -label "Zoom 256x" -command "set zoomfactor 256;bindings4"
-.mbar.options.menu add command -label "Zoom corr  2x" -command "set zoomfactor 2;bindings3"
-.mbar.options.menu add command -label "Zoom corr  4x" -command "set zoomfactor 4;bindings3"
-.mbar.options.menu add command -label "Zoom corr  6x" -command "set zoomfactor 6;bindings3"
-.mbar.options.menu add command -label "Zoom corr  8x" -command "set zoomfactor 8;bindings3"
-.mbar.options.menu add command -label "Zoom corr 16x" -command "set zoomfactor 16;bindings3"
-.mbar.options.menu add command -label "Zoom corr 32x" -command "set zoomfactor 32;bindings3"
-.mbar.options.menu add command -label "Zoom corr 64x" -command "set zoomfactor 64;bindings3"
+.mbar.options.menu add sep
+.mbar.options.menu add cascade -label "Zoom"        -menu .mbar.options.menu.zoommenu -underline 0
+.mbar.options.menu add cascade -label "Frame sizes" -menu .mbar.options.menu.framesize -underline 0
+
+proc add_zoomentries {mnu zoomfacname cmdstr} {
+	$mnu add radio -label "zoom   25 %" -command $cmdstr -variable $zoomfacname -value -4
+	$mnu add radio -label "zoom   33 %" -command $cmdstr -variable $zoomfacname -value -3
+	$mnu add radio -label "zoom   50 %" -command $cmdstr -variable $zoomfacname -value -2
+	$mnu add radio -label "zoom 100 %"  -command $cmdstr -variable $zoomfacname -value 1
+	$mnu add radio -label "zoom 200 %"  -command $cmdstr -variable $zoomfacname -value 2
+	$mnu add radio -label "zoom 300 %"  -command $cmdstr -variable $zoomfacname -value 3
+	$mnu add radio -label "zoom 400 %"  -command $cmdstr -variable $zoomfacname -value 4
+	$mnu add radio -label "zoom 600 %"  -command $cmdstr -variable $zoomfacname -value 6
+	$mnu add radio -label "zoom 800 %"  -command $cmdstr -variable $zoomfacname -value 8
+}
+
+# All views are zoomed immediately to the clicked value, so no bindings here. ad holten, 04-2013
+menu .mbar.options.menu.zoommenu -tearoff 0
+add_zoomentries .mbar.options.menu.zoommenu zoomfactor "mouse_cmd 10 \$zoomfactor \$zoompar\(fixed\)"
+
+proc add_framesizes {mnu cmdstr} {
+    $mnu add checkbutton -label "size fixed" -onvalue 1 -offvalue 0 -variable zoompar(fixed)
+	$mnu add sep
+	$mnu add radio -label "frame   25 %" -command $cmdstr -variable framefactor -value -4
+	$mnu add radio -label "frame   33 %" -command $cmdstr -variable framefactor -value -3
+	$mnu add radio -label "frame   50 %" -command $cmdstr -variable framefactor -value -2
+	$mnu add radio -label "frame 100 %"  -command $cmdstr -variable framefactor -value 1
+}
+
+menu .mbar.options.menu.framesize -tearoff 0
+add_framesizes .mbar.options.menu.framesize "new_framesizes \$framefactor"
+
+
 ##################################################################
 pack .mbar.start .mbar.pre \
         .mbar.3d .mbar.seq .mbar.track .mbar.calib .mbar.demo .mbar.change \
