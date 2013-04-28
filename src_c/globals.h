@@ -1,12 +1,18 @@
 /*  global declarations for ptv  */
 
 #define nmax 20240
+#define MaxOri 6
 
+enum MAPMETHODS {NONE, ETHZ, POLYN};	// mapping method in use
 // zooming
 enum MARKTYPES  {OBJ_MARK, OBJ_CROSS, OBJ_VECTOR, OBJ_PNR, OBJ_VALUE, OBJ_OVAL};
 
 extern  Marker  *markers[4];
 extern  int     nmarkers[4];
+extern  int     nori;
+extern  int     map_method;
+extern  int     usingZplanes;
+extern  int     examine3;
 
 extern  int     n_img;                          /* no of images */
 extern  int     hp_flag;                        /* flag for highpass */
@@ -25,7 +31,7 @@ extern  int     corp, corc, corn;               /* no. of correspondences in p,c
 
 extern  int     nr[4][4];                       /* point numbers for man. ori */
 extern  int     imx, imy, imgsize;              /* image size */
-extern  int     zoom_x[], zoom_y[], zoom_f[];   /* zoom parameters */
+// extern  int     zoom_x[], zoom_y[], zoom_f[];   /* zoom parameters */
 extern  int     pp1, pp2, pp3, pp4,pp5;         /* for man. orientation */
 extern  int     seq_first, seq_last;            /* 1. and last img of seq */
 extern  int     demo_nr;                        /* for demo purposes */
@@ -40,7 +46,7 @@ extern  double  pix_x, pix_y;                   /* pixel size */
 extern  double  pi, ro;                         /* pi, ro */
 extern  double  cn, cnx, cny, csumg, eps0, corrmin; /* correspond. par */
 extern  double  rmsX, rmsY, rmsZ, mean_sigma0;      /* a priori rms */
-extern  double  X_lay[], Zmin_lay[], Zmax_lay[];    /* illu. layer current slice */
+extern  double  X_lay[], Y_lay[], Zmin_lay[], Zmax_lay[];    /* illu. layer current slice */
 extern  double  db_scale;                       /*dumbbell length, Beat Mai 2010*/ 
 
 extern  FILE    *fp1, *fp2, *fp3, *fp4, *fpp;   /* file pointers */
@@ -95,9 +101,14 @@ extern  double    multimed_r ();
 // --- change_parameter.c ---
 int  parameter_panel_init(Tcl_Interp* interp);
 int  done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+void save_method(Tcl_Interp* interp, int method, int usingplanes);
 
 // --- checkpoints.c ---
 void checkpoint_proc (Tcl_Interp* interp);
+
+// --- checkpoints_poly.c ---
+void checkpoint_poly (Tcl_Interp* interp);
+
 
 // --- correspondences.c ---
 void correspondences_4 (Tcl_Interp* interp, const char** argv);
@@ -155,6 +166,8 @@ void intersect_rt (double X1, double Y1, double Z1, double a1, double b1, double
 int  main(int argc, char **argv);
 int  Tcl_AppInit(Tcl_Interp *interp);
 int  jw_Init(Tcl_Interp *interp);
+int  change_method_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+
 
 // --- lsqadj.c ---
 void  ata (void *a, void *ata, int m, int n);
@@ -197,6 +210,33 @@ void orient_v6 (Tcl_Interp* interp, Exterior Ex0, Interior I0, Glass G0, ap_52 a
 void raw_orient_v3 (Exterior Ex0, Interior I, Glass G0, ap_52 ap, mm_np mm, int nfix,
 					coord_3d fix[], coord_2d crd[], Exterior *Ex, Glass *G, int only_show);
 
+// --- parse.c ---
+int read_strings(char* fname, int nparms, char val[][256]);
+int read_allstrings(char* fname, char val[][256], int maxcnt);
+BOOL parse_ptv_par(char* fname);			// x
+BOOL parse_polyptv_par(char* fname);		// x
+BOOL parse_criteria_par(char* fname);		// x
+BOOL parse_polycriteria_par(char* fname);	// x
+BOOL parse_polycriteria_par2(char* fname, critparameters *cpar);
+BOOL parse_sequence_par(char* fname, char seq_name[][128], int *pseq_first, int *pseq_last);	// x
+BOOL parse_shaking_par(char* fname, int *seq_first, int *seq_last, int *max_points, int *max_frames);
+BOOL parse_rt_is(char* pathname, rt_is **plist, int *pcount);
+BOOL parse_targetfile(char* pathname, target **tlist, int *pcount);
+BOOL createfolder(char* pathname);
+
+BOOL parse_body_calori_par(char* fname, char imgname[][256], char* fixpname, int deg3d2d[2], int deg2depi[2]);
+BOOL parse_mult_calori_par(char* fname, int iplane, int *pncam, int *pnplanes, char imgname[][256], char* fixpname, int deg3d2d[2], int deg2depi[2]);
+
+BOOL parse_body_manori_par(char* fname, int list[][MaxOri], int* pncam, int* pnori);
+
+BOOL parse_multi_manori_par(char* fname, int iplane,  int list[][MaxOri], int *pncam, int *pnori);
+BOOL read_2Dcoordinates(char *pixp_name, coord_2d **plist, int *pcount);
+BOOL read_3Dcoordinates(char *fixp_name, coord_3d **plist, int *pcount);
+BOOL read_target_crds(char *pathname, coord_3d **pfixp, int *pcount);
+double get_sortradius(char *pathname, double defaultR);
+void get_processingmethod(int* pMapping, int* pUsingplanes);
+BOOL parse_track_par(char* fname, trackparameters *tpar);
+
 // --- peakfitting.c ---
 int  peak_fit_new (Tcl_Interp* interp, unsigned char *img, char par_file[], 
 				  int xmin, int xmax, int ymin, int ymax, target pix[], int nr);
@@ -220,6 +260,58 @@ void  det_lsq_4 (Exterior Ex[4], Interior I[4], Glass G[4], ap_52 ap[4], mm_np m
 void  det_lsq_2 (Exterior Ex[2], Interior I[2], Glass G[2], ap_52 ap[2], mm_np mm, double x1, double y1, 
 				double x2, double y2, double *Xp, double *Yp, double *Zp);
 
+// --- poly_fit.c ---
+void    boundingrect(Rect* prect, coord_2d* points, int npoints, int flag);
+int     calibration_poly_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+void    CreateZplaneFitdata(coord_2d *pixcrd, coord_2d *planecrd, FitInfo *pfit, double z, double x1, double x2, int nx, double y1, double y2, int ny);
+void    destroy_POLYFIT_list(POLYFIT *fitlist);
+void    det_lsq_3d_poly(double xp[], double yp[], int np, double *pX, double *pY, double *pZ);
+void    draw_fitted_fixpoints2d(Tcl_Interp* interp, int iimg, FitInfo fit, sort_point* fix, int nfix);
+int     epi_mm_poly(double xp1, double yp1, int ic1, int ic2, double* pxmin, double* pymin, double* pxmax, double* pymax);
+BOOL    Fit2D_to_2D(FitInfo* pfi, int degree[2], coord_2d* Pin, coord_2d* Pout, int ndata);
+void    Fit3D_to_2D(FitInfo* pfi, int degree[2], coord_3d *pnt3, coord_2d *pnt2, int ndata);
+void    Fit3D_to_2D_body(FitInfo* pfi, coord_3d *pnt3, coord_2d *pnt2, int ndata);
+void    find_candidate_poly_epiline(coord_2d crd[], target pix[], int num, double xa, double ya, double xb, double yb, 
+                         double eps, target pt1, candidate cand[], int* pcount, const char** argv);
+double  fitdata_Map2D_x(double X, double Y, FitInfo* pfit);
+double  fitdata_Map2D_y(double X, double Y, FitInfo* pfit);
+double  fitdata_Map3D_x(double X, double Y, double Z, FitInfo* pfit);
+double  fitdata_Map3D_y(double X, double Y, double Z, FitInfo* pfit);
+void    freefitparms(FitInfo* pfi);
+void    GetFit_Pixels_Lines(FitInfo* pxFitinfo, FitInfo* pyFitinfo, FitInfo* fit, double* Zlev, int nz, Rect* prect);
+void    GetFitPixels_Planes(FitInfo* fit, double* Zlev, int nz, Rect* prect, FitInfo* pfit3d2d);
+void    getIOdata2D(double* iodata, double x, double y, int order, int crossorder);
+void    getIOdata3D(double* iodata, double x, double y, double z, int order, int crossorder);
+void    Line3D_mindist(Line3D line1, Line3D line2, Waist *pwaist);
+double  Map2D_X(double x, double y, FitInfo* pfit);
+double  Map2D_Y(double x, double y, FitInfo* pfit);
+double  Map3D_x(double X, double Y, double Z, POLYFIT* pfit);
+double  Map3D_y(double X, double Y, double Z, POLYFIT* pfit);
+double  Mapper2D(double x, double y, int order, int crossorder, double* parms, int nparms);
+void    parsepolycalibfile(char* fname, POLYFIT *pfit3dpix, POLYFIT *pfitpixepi);
+void    saveparms_3D_to_pix(char* pathname, char* mode, FitInfo *pfit);
+int     volumedimension_poly(double* xmax, double* xmin, double* ymax, double* ymin, double* zmax, double* zmin);
+
+
+// --- poly_ptv.c ---
+void ray_tracing_poly(double x, double y, int icam, Line3D* pline);
+
+
+// --- poly_correspondences.c ---
+void correspondences_poly(Tcl_Interp* interp, const char** argv);
+
+// --- poly_shaking1.c ---
+int poly_shaking_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+
+// --- fit2D.c ---
+int getNumParms2D(int order, int crossorder);
+int getNumParms3D(int order, int crossorder);
+void InvFitFunction3D(double index, double *iodata, int iosize);
+void saveparms_2D_to_rays(char* pathname, char* mode, FitInfo *pXfit, FitInfo *pYfit);
+double dotmult(double* v1, double *v2, int nelem);
+void FitFunction2D(double index, double *iodata, int iosize);
+
+
 // --- ptv.c ---
 void  read_ascii_data(int filenumber);
 void  read_targets(int i_img, int filenumber,  int *num);
@@ -235,6 +327,9 @@ void  sort(int n, float a[], int b[]);
 void  rotate_dataset(void);
 void  neighbours(float seekx[], float radi[], int nliste[], int *innliste, int set);
 
+// --- nruril.c ---
+void lfit(double x[], double y[], double sig[], int ndat, double a[], int ia[], int ma, double **covar, 
+	double *chisq, void (__cdecl *funcs)(double index, double *iodata, int iosize) );
 
 // --- ray_tracing.c ---
 void  ray_tracing (double x, double y, Exterior Ex, Interior I, mm_np mm,
@@ -272,6 +367,7 @@ void  write_ori (Exterior Ex, Interior I, Glass G, char filename[64]);
 int   read_ori (Exterior *Ex, Interior *I, Glass *G, char filename[64]);
 FILE  *fopen_r (CHAR filename[256]);
 FILE  *fopen_rp (char *filename);
+FILE *fopen_wp (char *filename);
 int   read_image (Tcl_Interp* interp, char path[128], unsigned char *img);
 int   write_tiff (const char path[256], unsigned char *data, int nx, int ny);
 void  compose_name_plus_nr (char basename[256], char str[256], int nr, char filename[256]);
@@ -285,11 +381,13 @@ void  quicksort_target_y (target *pix, int num);
 void  quicksort_con (n_tupel *con, int num);
 void  tclimg2cimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *tcl_img);
 void  cimg2tclimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *tcl_img, int alpha);
+double distance(double x1, double y1, double x2, double y2);
 
 
 // --- track.c ---
 int  trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
 int  trackback_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv);
+void pixelcoord_from_3Dpnt(double *px, double *py, int ic, double X, double Y, double Z);
 
 // --- trafo.c ---
 void  pixel_to_metric(double xp, double yp, int imx, int imy, 
@@ -308,7 +406,7 @@ int  candsearch_in_pix (target next[], int num, double x, double y,
 int  candsearch_in_pixrest (target  next[], int num, double x, double y, 
 						   double dl, double dr, double du, double dd, int p[4]);
 void  predict (double x1, double y1, double x2, double y2, double *x3, double *y3);
-void  readseqtrackcrit ();
+int   readseqtrackcrit();
 void  searchquader(double X, double Y, double Z, 
 				  double xr[4], double xl[4], double yd[4], double yu[4]);
 void  sortwhatfound (foundpix item[16], int *zaehler);
