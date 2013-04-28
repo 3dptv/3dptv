@@ -21,6 +21,18 @@ Routines contained: trackcorr_c
 void write_added();
 void write_addedback();
 
+void pixelcoord_from_3Dpnt(double *px, double *py, int ic, double X, double Y, double Z)
+{
+    if (map_method == ETHZ) {
+        img_coord (X, Y, Z, Ex[ic],I[ic], G[ic], ap[ic], mmp, px, py);
+        metric_to_pixel (*px, *py, imx,imy, pix_x,pix_y, px, py, chfield);
+    }
+    else {
+        *px = Map3D_x(X, Y, Z, &fit3dpix[ic]);
+        *py = Map3D_y(X, Y, Z, &fit3dpix[ic]);
+    }
+}
+
 int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
 	char   val[256], buf[256];
@@ -81,7 +93,6 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	volumedimension (&X_lay[1], &X_lay[0], &Ymax, &Ymin, &Zmax_lay[1], &Zmin_lay[0]);
 
-
 	/* sequence loop */
 	for (step = seq_first; step < seq_last; step=step++)
 	{
@@ -121,10 +132,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 				for (j=0; j<n_img; j++)
 				{
-					img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-					metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
-					x1[j]=xn[j];
-					y1[j]=yn[j];
+					// code replaced, ad holten, 04-2013
+					//  img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+					//  metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+					//  x1[j]=xn[j];
+					//  y1[j]=yn[j];
+                    pixelcoord_from_3Dpnt(&x1[j], &y1[j], j, X2,Y2,Z2);
 				}
 			}
 			else {
@@ -132,10 +145,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				for (j=0;j<n_img;j++)
 				{
 					if (c4[1][h].p[j] == -1) {
-						img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-						metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
-						x1[j]=xn[j];
-						y1[j]=yn[j];
+						// code replaced, ad holten, 04-2013
+						//  img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+						//  metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+						//  x1[j]=xn[j];
+						//  y1[j]=yn[j];
+                        pixelcoord_from_3Dpnt(&x1[j], &y1[j], j, X2,Y2,Z2);
 					}
 					else {
 						x1[j]=t4[1][j][c4[1][h].p[j]].x; 
@@ -196,6 +211,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 			w = (foundpix *) calloc (zaehler1, sizeof (foundpix));
 
 			if (zaehler1 > 0) count2++;
+
 			for (i=0; i<zaehler1;i++)
 			{
 				w[i].ftnr = p16[i].ftnr;
@@ -239,10 +255,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				searchquader(X5, Y5, Z5, xr, xl, yd, yu);
  
 				for (j=0;j<n_img;j++) {
-					img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-					metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
-					x2[j]=xn[j];
-					y2[j]=yn[j];
+					// code replaced, ad holten 04-2013
+					//  img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+					//  metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+					//  x2[j]=xn[j];
+					//  y2[j]=yn[j];
+                    pixelcoord_from_3Dpnt(&x2[j], &y2[j], j, X5,Y5,Z5);
 				}
 
 				/* search for candidates in next time step */
@@ -346,8 +364,10 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				/* *************************************************************** */
 
 				for (j=0;j<n_img;j++) {
-					img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-					metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+					// code replaced, ad holten 04-2013
+					//   img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+					//	 metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+					pixelcoord_from_3Dpnt(&xn[j], &yn[j], j, X5,Y5,Z5);
 				}
 
 				/* reset img coord because of n_img smaller 4 */
@@ -367,21 +387,25 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 					}
 				}
 				quali=0;
-
+				
 				for (j=0;j<n_img;j++)
 				{
 					if (x2[j] !=-1e10 && y2[j] != -1e10) {
-						pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield); quali++;
+						if (map_method == ETHZ)
+							pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield);
+						quali++;
 					}
 				}
-
 				if ( quali >= 2) {
 
 					X4 = X5; Y4 =Y5; Z4 = Z5;
 					invol=0; okay=0;
 
-					det_lsq_3d (Ex, I, G, ap, mmp,
-						x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X4, &Y4, &Z4);
+					if (map_method == ETHZ)
+						det_lsq_3d (Ex, I, G, ap, mmp,
+							x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X4, &Y4, &Z4);
+					else 
+						det_lsq_3d_poly(x2, y2, 4, &X4, &Y4, &Z4);
 
 					/* volume check */
 					if ( X_lay[0] < X4 && X4 < X_lay[1] &&
@@ -476,6 +500,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 						}
 					}
 				}
+
 				okay=0;
 				free(wn);
 			} /* end of zaehler1-loop */
@@ -493,8 +518,10 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 					  printf("X3: %6.3f  %6.3f	%6.3f, ftnr: %d\n", X3, Y3, Z3, w[mm].ftnr);
 					*/
 					for (j=0;j<n_img;j++) {
-						img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-						metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+						// code replaced, ad holten 04-2013
+						//	img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+						//	metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+						pixelcoord_from_3Dpnt(&xn[j], &yn[j], j, X2,Y2,Z2);
 					}
 
 					/* reset img coord because of n_img smaller 4 */
@@ -515,10 +542,11 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 					}
 					quali=0;
 
-					for (j=0;j<n_img;j++)
-					{
+					for (j=0;j<n_img;j++) {
 						if (x2[j] !=-1e10 && y2[j] != -1e10) {
-							pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield); quali++;
+							if (map_method == ETHZ)
+								pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield);
+							quali++;
 						}
 					}
 
@@ -526,8 +554,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 						X3 = X2; Y3 =Y2; Z3 = Z2;
 						invol=0; okay=0;
 
-						det_lsq_3d (Ex, I, G, ap, mmp,
-							x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
+						if (map_method == ETHZ)
+							det_lsq_3d (Ex, I, G, ap, mmp,
+								x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
+						else
+							det_lsq_3d_poly(x2, y2, 4, &X3, &Y3, &Z3);
+
 
 						/* in volume check */
 						if ( X_lay[0] < X3 && X3 < X_lay[1] &&
@@ -599,7 +631,6 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 				mega[1][h].next=mega[1][h].linkdecis[0];
 			}
 		}
-
 		/* create links with decision check */
 		for (h=0;h<m[1];h++)
 		{
@@ -744,7 +775,6 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	/* reset of display flag */
 	display = 1;
-
 	return TCL_OK;
 }
 
@@ -838,11 +868,12 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 				Y2=2*Y1-Y0;
 				Z2=2*Z1-Z0;
 
-				for (j=0; j<n_img; j++)
-				{
-					img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
-					metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
-				} 
+				if (map_method == ETHZ)
+					for (j=0; j<n_img; j++)
+					{
+						img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+						metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
+					} 
 
 				/* calculate searchquader and reprojection in image space */
 				// stripped &'s from xr, xl, yd, yu, ad holten 12-2012
@@ -945,21 +976,24 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 								y2[j]=t4[2][j][philf[j][0]].y;
 							}
 						}
-
-						for (j=0;j<n_img;j++)
-						{
-							if (x2[j] !=-1e10 && y2[j] != -1e10) {
-								pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield);
-								quali++;
+						if (map_method == ETHZ)
+							for (j=0;j<n_img;j++)
+							{
+								if (x2[j] !=-1e10 && y2[j] != -1e10) {
+									pixel_to_metric (x2[j],y2[j], imx,imy, pix_x,pix_y, &x2[j],&y2[j], chfield);
+									quali++;
+								}
 							}
-						}
 
 						if (quali>=2) {
 							X3 = X2; Y3 =Y2; Z3 = Z2;
 							invol=0; okay=0;
 
-							det_lsq_3d (Ex, I, G, ap, mmp,
-								x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
+							if (map_method == ETHZ)
+								det_lsq_3d (Ex, I, G, ap, mmp,
+									x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
+							else
+								det_lsq_3d_poly(x2, y2, 4, &X3, &Y3, &Z3);
 
 							/* volume check */
 							if ( X_lay[0] < X3 && X3 < X_lay[1] &&
