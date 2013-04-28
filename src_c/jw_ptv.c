@@ -22,6 +22,11 @@ Copyright (c) 1990-2011 ETH Zurich
 See the file license.txt for copying permission.
 */
 
+/* -------------------------------------------------------------------------
+	Added code for using polynomials for position mapping
+	Ad Holten, 04-2013
+-------------------------------------------------------------------------- */
+
 #include "ptv.h"
 #if (_MSC_VER >= 1500 && _DEBUG)
     #include <crtdbg.h>				// only for vc2010
@@ -31,7 +36,9 @@ See the file license.txt for copying permission.
 
 /*	global declarations for ptv  */
 /*-------------------------------------------------------------------------*/
-
+int		map_method;
+int     usingZplanes;
+int		examine3;
 int		n_img;						/* no of images */
 int		hp_flag=0;					/* flag for highpass */
 int		allCam_flag=0;				/* flag for using all cams for points */
@@ -48,7 +55,7 @@ int		match=0; 					/* no. of matches */
 int		match2=0;					/* no. of matches in 2nd pass */
 int		nr[4][4];					/* point numbers for man. ori */
 int		imx, imy, imgsize;			   /* image size */
-// int		zoom_x[4],zoom_y[4],zoom_f[4];  /* zoom parameters */	// ad holten, 04-2013
+// int		zoom_x[4],zoom_y[4],zoom_f[4];  /* zoom parameters */	// ad holten, 04-2013	EVEN NIET
 int		pp1=0, pp2=0, pp3=0, pp4=0,pp5=0;  /* for man. orientation */
 int		seq_first, seq_last; 			  /* 1. and last img of seq */
 int		max_shake_points, max_shake_frames, step_shake;
@@ -66,7 +73,7 @@ double	pix_x, pix_y;							/* pixel size */
 double	ro;										/* 200/pi */
 double	cn, cnx, cny, csumg, eps0, corrmin;		/* correspondences par */
 double	rmsX, rmsY, rmsZ, mean_sigma0;			/* a priori rms */
-double	X_lay[2], Zmin_lay[2], Zmax_lay[2];		/* illu. layer data */
+double	X_lay[2], Y_lay[2], Zmin_lay[2], Zmax_lay[2];		/* illu. layer data */
 double	db_scale;								/*dumbbell length, Beat Mai 2010*/	
 
 FILE	*fp1, *fp2, *fp3, *fp4, *fpp;
@@ -121,11 +128,14 @@ mm_LUT	 mmLUT[4];					/* LUT for multimedia radial displacement */
 coord_3d *p_c3d;
 P		 *mega[4];
 
+POLYFIT *fitpixepi, *fit3dpix;
+int      nori;
+
 /***************************************************************************/
 
 int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int  i;
+	int  i, rv;
 	const char *valp;
 
 #if (_MSC_VER >= 1500 && _DEBUG)
@@ -146,59 +156,88 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	}
 
 	/*	read from main parameter file  */
-	fpp = fopen_rp ("parameters/ptv.par");			// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
+	//fpp = fopen_rp ("parameters/ptv.par");			// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
 
-	fscanf (fpp, "%d\n", &n_img);
+	//fscanf (fpp, "%d\n", &n_img);
 
-	for (i=0; i<4; i++) {
-		fscanf (fpp, "%s\n", img_name[i]);
-		fscanf (fpp, "%s\n", img_cal[i]);
+	//for (i=0; i<4; i++) {
+	//	fscanf (fpp, "%s\n", img_name[i]);
+	//	fscanf (fpp, "%s\n", img_cal[i]);
+	//}
+	//fscanf (fpp, "%d\n",  &hp_flag);
+	//fscanf (fpp, "%d\n",  &allCam_flag);
+	//fscanf (fpp, "%d\n",  &tiff_flag);
+	//fscanf (fpp, "%d\n",  &imx);
+	//fscanf (fpp, "%d\n",  &imy);
+	//fscanf (fpp, "%lf\n", &pix_x);
+	//fscanf (fpp, "%lf\n", &pix_y);
+	//fscanf (fpp, "%d\n",  &chfield);
+	//fscanf (fpp, "%lf\n", &mmp.n1);
+	//fscanf (fpp, "%lf\n", &mmp.n2[0]);
+	//fscanf (fpp, "%lf\n", &mmp.n3);
+	//fscanf (fpp, "%lf\n", &mmp.d[0]);
+	//fclose (fpp);
+
+	///* read illuminated layer data */
+	//fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
+
+	//fscanf (fpp, "%lf\n", &X_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+	//fscanf (fpp, "%lf\n", &X_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+	//fscanf (fpp, "%lf", &cnx);
+	//fscanf (fpp, "%lf", &cny);
+	//fscanf (fpp, "%lf", &cn);
+	//fscanf (fpp, "%lf", &csumg);
+	//fscanf (fpp, "%lf", &corrmin);
+	//fscanf (fpp, "%lf", &eps0);
+	//fclose (fpp);
+
+	//mmp.nlay = 1;
+
+	///* read sequence parameters (needed for some demos) */
+
+	//fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
+
+	//for (i=0; i<4; i++) 
+	//	fscanf (fpp, "%s\n", seq_name[i]);
+	//fscanf (fpp,"%d\n", &seq_first);
+	//fscanf (fpp,"%d\n", &seq_last);
+	//fclose (fpp);
+
+
+	/*	Parse a few parameter files, the selection depends on the processing method used */
+    get_processingmethod(&map_method, &usingZplanes);			// ETHZ = 1, POLYN = 2
+    if (map_method == ETHZ) {
+        printf(" - Particle mapping  : ETHZ method\n\n");
+        usingZplanes = 0;       // The ETHZ code uses another flag for this
+
+		rv =  parse_ptv_par("parameters/ptv.par");				// read from main parameter file
+		rv &= parse_criteria_par("parameters/criteria.par");	// read illuminated layer data
+		rv &= parse_sequence_par("parameters/sequence.par", 	// read sequence parameters (needed for some demos)
+				seq_name, &seq_first, &seq_last);
+    }
+    else {
+        printf(" - Particle mapping  : using polynomials\n");
+        printf(" - Calibration object: %s\n\n", !usingZplanes ? "3D-body" : "multi planes");
+
+		rv  = parse_polyptv_par("parameters/poly_ptv.par");
+		rv &= parse_polycriteria_par("parameters/poly_criteria.par");	// read illuminated volume data
+		rv &= parse_sequence_par("parameters/sequence.par", 	// read sequence parameters (needed for some demos)
+				seq_name, &seq_first, &seq_last);
+    }
+	if (rv)
+		rv = parameter_panel_init(interp);
+
+	if (!rv) {
+		printf("Error(s) occured during initialization.\n");
+		return TCL_ERROR;	//Tcl_Exit(0);
 	}
-	fscanf (fpp, "%d\n",  &hp_flag);
-	fscanf (fpp, "%d\n",  &allCam_flag);
-	fscanf (fpp, "%d\n",  &tiff_flag);
-	fscanf (fpp, "%d\n",  &imx);
-	fscanf (fpp, "%d\n",  &imy);
-	fscanf (fpp, "%lf\n", &pix_x);
-	fscanf (fpp, "%lf\n", &pix_y);
-	fscanf (fpp, "%d\n",  &chfield);
-	fscanf (fpp, "%lf\n", &mmp.n1);
-	fscanf (fpp, "%lf\n", &mmp.n2[0]);
-	fscanf (fpp, "%lf\n", &mmp.n3);
-	fscanf (fpp, "%lf\n", &mmp.d[0]);
-	fclose (fpp);
-
-	/* read illuminated layer data */
-	fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
-
-	fscanf (fpp, "%lf\n", &X_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-	fscanf (fpp, "%lf\n", &X_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-	fscanf (fpp, "%lf", &cnx);
-	fscanf (fpp, "%lf", &cny);
-	fscanf (fpp, "%lf", &cn);
-	fscanf (fpp, "%lf", &csumg);
-	fscanf (fpp, "%lf", &corrmin);
-	fscanf (fpp, "%lf", &eps0);
-	fclose (fpp);
-
-	mmp.nlay = 1;
-
-	/* read sequence parameters (needed for some demos) */
-
-	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
-
-	for (i=0; i<4; i++) 
-		fscanf (fpp, "%s\n", seq_name[i]);
-	fscanf (fpp,"%d\n", &seq_first);
-	fscanf (fpp,"%d\n", &seq_last);
-	fclose (fpp);
 
 	for (i=0; i<n_img; i++) {
 		num[i] = 0;					// ie. no targets loaded
@@ -207,38 +246,51 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	}
 	imgsize = imx*imy;
 
+	// replacesd code, ad holten 04-2013
 	/* allocate memory for images */
-	for (i=0; i<n_img; i++) {
-		img[i] = (unsigned char*) calloc(imgsize, 1);
-		if (! img[i]) {
-			printf ("calloc for img%d --> error\n", i);
-			exit (1);
-		}
-	}
+	//for (i=0; i<n_img; i++) {
+	//	img[i] = (unsigned char*) calloc(imgsize, 1);
+	//	if (! img[i]) {
+	//		printf ("calloc for img%d --> error\n", i);
+	//		exit (1);
+	//	}
+	//}
 
-	for (i=0; i<n_img; i++) {
-		img_mask[i] = (unsigned char*) calloc(imgsize, 1);
-		if (! img_mask[i]) {
-			printf ("calloc for img_mask%d --> error\n", i);
-			exit (1);
-		}
-	}
+	//for (i=0; i<n_img; i++) {
+	//	img_mask[i] = (unsigned char*) calloc(imgsize, 1);
+	//	if (! img_mask[i]) {
+	//		printf ("calloc for img_mask%d --> error\n", i);
+	//		exit (1);
+	//	}
+	//}
 
-	for (i=0; i<n_img; i++) {
-		img0[i] = (unsigned char*) calloc(imgsize, 1);
-		if (! img0[i]) {
-			printf ("calloc for img0%d --> error\n", i);
-			exit (1);
-		}
-	}
+	//for (i=0; i<n_img; i++) {
+	//	img0[i] = (unsigned char*) calloc(imgsize, 1);
+	//	if (! img0[i]) {
+	//		printf ("calloc for img0%d --> error\n", i);
+	//		exit (1);
+	//	}
+	//}
 
-	for (i=0; i<n_img; i++) {
-		img_new[i] = (unsigned char*) calloc(imgsize, 1);
-		if (! img_new[i]) {
-			printf ("calloc for img_new%d --> error\n", i);
-			exit (1);
-		}
-	}
+	//for (i=0; i<n_img; i++) {
+	//	img_new[i] = (unsigned char*) calloc(imgsize, 1);
+	//	if (! img_new[i]) {
+	//		printf ("calloc for img_new%d --> error\n", i);
+	//		exit (1);
+	//	}
+	//}
+
+	/* allocate memory for images */
+    for (i=0; i<4; i++) {
+        img[i]      = (unsigned char*) calloc(imgsize, 1);
+        img_mask[i] = (unsigned char*) calloc(imgsize, 1);
+        img0[i]     = (unsigned char*) calloc(imgsize, 1);
+        img_new[i]  = (unsigned char*) calloc(imgsize, 1);
+        if (!img[i] || !img_mask[i] || !img0[i] || !img_new[i]) {
+            printf ("allocating memory for image %d failed\n", i);
+            exit(1);
+        }
+    }
 	// commented out, ad holten 04-2013
 	// zoomimg = (unsigned char*) calloc(imgsize, 1);
 	// if (! zoomimg) {
@@ -246,8 +298,11 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	//	 return TCL_ERROR;
 	// }
 
-	parameter_panel_init(interp);
+	// parameter_panel_init(interp);	// moved up
 	cr_sz = atoi(Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY));
+
+	fit3dpix  = NULL;
+	fitpixepi = NULL;
 
 	display = 1;
 	return TCL_OK;
@@ -258,66 +313,83 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 {
 	int  i, k;
 
-	/*	read from main parameter file  */
-	fpp = fopen_rp ("parameters/ptv.par");		// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
+    // Determine the last calibration method used
+    get_processingmethod(&map_method, &usingZplanes);        // ETHZ = 1, POLYN = 2
 
-	fscanf (fpp, "%d\n", &n_img);
-	for (i=0; i<4; i++) {
-		fscanf (fpp, "%s\n", img_name[i]);
-		fscanf (fpp, "%s\n", img_cal[i]);
-	}
-	fscanf (fpp, "%d\n",  &hp_flag);
-	fscanf (fpp, "%d\n",  &allCam_flag);  
-	fscanf (fpp, "%d\n",  &tiff_flag);
-	fscanf (fpp, "%d\n",  &imx);
-	fscanf (fpp, "%d\n",  &imy);
-	fscanf (fpp, "%lf\n", &pix_x);
-	fscanf (fpp, "%lf\n", &pix_y);
-	fscanf (fpp, "%d\n",  &chfield);
-	fscanf (fpp, "%lf\n", &mmp.n1);
-	fscanf (fpp, "%lf\n", &mmp.n2[0]);
-	fscanf (fpp, "%lf\n", &mmp.n3);
-	fscanf (fpp, "%lf\n", &mmp.d[0]);
-	fclose (fpp);
+	///*	read from main parameter file  */
+	//fpp = fopen_rp ("parameters/ptv.par");		// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
 
-	if (imgsize < imx*imy) {	// added, ad holten 12-2012
-		printf("The allocated image buffers are to small for the\n"
-			   "image size, defined in the calibration parameters dialog.\n."
-			   "Please restart the program.\n");
-		return TCL_ERROR;
-	}
+	//fscanf (fpp, "%d\n", &n_img);
+	//for (i=0; i<4; i++) {
+	//	fscanf (fpp, "%s\n", img_name[i]);
+	//	fscanf (fpp, "%s\n", img_cal[i]);
+	//}
+	//fscanf (fpp, "%d\n",  &hp_flag);
+	//fscanf (fpp, "%d\n",  &allCam_flag);  
+	//fscanf (fpp, "%d\n",  &tiff_flag);
+	//fscanf (fpp, "%d\n",  &imx);
+	//fscanf (fpp, "%d\n",  &imy);
+	//fscanf (fpp, "%lf\n", &pix_x);
+	//fscanf (fpp, "%lf\n", &pix_y);
+	//fscanf (fpp, "%d\n",  &chfield);
+	//fscanf (fpp, "%lf\n", &mmp.n1);
+	//fscanf (fpp, "%lf\n", &mmp.n2[0]);
+	//fscanf (fpp, "%lf\n", &mmp.n3);
+	//fscanf (fpp, "%lf\n", &mmp.d[0]);
+	//fclose (fpp);
 
-	/* read illuminated layer data */
-	fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
+	//if (imgsize < imx*imy) {	// added, ad holten 12-2012
+	//	printf("The allocated image buffers are to small for the\n"
+	//		   "image size, defined in the calibration parameters dialog.\n."
+	//		   "Please restart the program.\n");
+	//	return TCL_ERROR;
+	//}
 
-	fscanf (fpp, "%lf\n", &X_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-	fscanf (fpp, "%lf\n", &X_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-	fscanf (fpp, "%lf", &cnx);
-	fscanf (fpp, "%lf", &cny);
-	fscanf (fpp, "%lf", &cn);
-	fscanf (fpp, "%lf", &csumg);
-	fscanf (fpp, "%lf", &corrmin);
-	fscanf (fpp, "%lf", &eps0);
-	fclose (fpp);
+	///* read illuminated layer data */
+	//fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
 
-	mmp.nlay = 1;
+	//fscanf (fpp, "%lf\n", &X_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+	//fscanf (fpp, "%lf\n", &X_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+	//fscanf (fpp, "%lf", &cnx);
+	//fscanf (fpp, "%lf", &cny);
+	//fscanf (fpp, "%lf", &cn);
+	//fscanf (fpp, "%lf", &csumg);
+	//fscanf (fpp, "%lf", &corrmin);
+	//fscanf (fpp, "%lf", &eps0);
+	//fclose (fpp);
 
-	/* read sequence parameters (needed for some demos) */
+	//mmp.nlay = 1;
 
-	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return TCL_OK;
+	///* read sequence parameters (needed for some demos) */
 
-	for (i=0; i<4; i++)
-		fscanf (fpp, "%s\n", seq_name[i]);
-	fscanf (fpp,"%d\n", &seq_first);
-	fscanf (fpp,"%d\n", &seq_last);
-	fclose (fpp);
+	//fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten 12-2012
+	//if (!fpp) return TCL_OK;
+
+	//for (i=0; i<4; i++)
+	//	fscanf (fpp, "%s\n", seq_name[i]);
+	//fscanf (fpp,"%d\n", &seq_first);
+	//fscanf (fpp,"%d\n", &seq_last);
+	//fclose (fpp);
+
+	/*	Parse parameter files, the selection depends on the method used */
+	if (map_method == ETHZ) {
+		parse_ptv_par("parameters/ptv.par");			// read from main parameter file
+		parse_criteria_par("parameters/criteria.par");	// read illuminated layer data
+		parse_sequence_par("parameters/sequence.par", 	// read sequence parameters (needed for some demos)
+				seq_name, &seq_first, &seq_last);
+    }
+    else {
+		parse_polyptv_par("parameters/poly_ptv.par");
+		parse_polycriteria_par("parameters/poly_criteria.par");	// read illuminated volume data
+		parse_sequence_par("parameters/sequence.par", 	// read sequence parameters (needed for some demos)
+				seq_name, &seq_first, &seq_last);
+    }
 
 	/*	create file names  */
 	for (i=0; i<n_img; i++) {
@@ -327,19 +399,37 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 		strcpy (img_addpar[i],	img_cal[i]);  strcat (img_addpar[i],".addpar");
 	}
 
-	/*	read orientation and additional parameters	*/
-	for (i=0; i<n_img; i++) {
-		if (!read_ori (&Ex[i], &I[i], &G[i], img_ori[i]))
-			return TCL_OK;						// added, ad holten, 12-2012
-		rotation_matrix (Ex[i], Ex[i].dm);
+    if (map_method == ETHZ) {        // ad holten, 04-2013
+		/*	read orientation and additional parameters	*/
+		for (i=0; i<n_img; i++) {
+			if (!read_ori (&Ex[i], &I[i], &G[i], img_ori[i]))
+				return TCL_OK;						// added, ad holten, 12-2012
+			rotation_matrix (Ex[i], Ex[i].dm);
 
-		fp1 = fopen_rp (img_addpar[i]);			// replaced fopen_r, ad holten 12-2012
-		if (!fp1) return TCL_OK;
-		fscanf (fp1,"%lf %lf %lf %lf %lf %lf %lf",
-			&ap[i].k1, &ap[i].k2, &ap[i].k3, &ap[i].p1, &ap[i].p2,
-			&ap[i].scx, &ap[i].she);
-		fclose (fp1);
+			fp1 = fopen_rp (img_addpar[i]);			// replaced fopen_r, ad holten 12-2012
+			if (!fp1) return TCL_OK;
+			fscanf (fp1,"%lf %lf %lf %lf %lf %lf %lf",
+				&ap[i].k1, &ap[i].k2, &ap[i].k3, &ap[i].p1, &ap[i].p2,
+				&ap[i].scx, &ap[i].she);
+			fclose (fp1);
+		}
 	}
+    else {
+        // The next function fills the POLYFIT-structures fitpixepi[][] and fit3dpix[][]
+        // with all the fitting coefficients from the calibration files.
+        if (fit3dpix != NULL) {
+			destroy_POLYFIT_list(fit3dpix);
+			free (fit3dpix);
+		}
+		if (fitpixepi != NULL) {
+			destroy_POLYFIT_list(fitpixepi);
+			free (fitpixepi);
+		}
+        fit3dpix  = (POLYFIT*) malloc(sizeof(POLYFIT) * n_img);
+        fitpixepi = (POLYFIT*) malloc(sizeof(POLYFIT) * n_img);
+        for (i=0; i<n_img; i++)
+            parsepolycalibfile(img_cal[i], &fit3dpix[i], &fitpixepi[i]);
+    }
 
 	/* read and display original images */
 	clear_drawnobjectslist();					// added, ad holten, 04-2013
@@ -349,7 +439,7 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 		Tcl_Eval(interp, val);
 
 		if (!read_image (interp, img_name[i], img[i]))
-			return TCL_OK;							// added, ad holten, 12-2012
+			return TCL_ERROR;						// added, ad holten, 12-2012
 		// sprintf(val, "newimage %d", i+1);
 		sprintf(val, "newimage %d %f %f %d %d", i+1, 0.5, 0.5, 1, 0);
 		Tcl_Eval(interp, val);
@@ -476,10 +566,8 @@ int pre_processing_c (ClientData clientData, Tcl_Interp* interp, int argc, const
 
 int detection_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv) 
 {
-	int  i, i_img, j;
-	int  xmin, pft_version=3;
-	char val[256];
-	char filename[256];
+	int  i, i_img, j, xmin, pft_version=3;
+	char val[256], filename[256];
 	FILE *FILEIN;
 	Zoompar zoompar;
 
@@ -615,29 +703,41 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
 	int    i, i_img;
 	double x,y;
 
-	puts ("\nTransformation to metric coordinates\n");
+    if (map_method == ETHZ) {        // ad holten, 04-2013
+		puts ("\nTransformation to metric coordinates\n");
 
-	/* rearrange point numbers after manual deletion of points */
-	for (i_img=0; i_img<n_img; i_img++)
-		for (i=0; i<num[i_img]; i++)
-			pix[i_img][i].pnr = i;
-	/* transformations pixel coordinates -> metric coordinates */
-	/* transformations metric coordinates -> corrected metric coordinates */
-	for (i_img=0; i_img<n_img; i_img++) {
-		for (i=0; i<num[i_img]; i++) {
-			pixel_to_metric (pix[i_img][i].x, pix[i_img][i].y,
-							 imx,imy, pix_x, pix_y,
-							 &crd[i_img][i].x, &crd[i_img][i].y, chfield);
-			crd[i_img][i].pnr = pix[i_img][i].pnr;
+		/* rearrange point numbers after manual deletion of points */
+		for (i_img=0; i_img<n_img; i_img++)
+			for (i=0; i<num[i_img]; i++)
+				pix[i_img][i].pnr = i;
+		/* transformations pixel coordinates -> metric coordinates */
+		/* transformations metric coordinates -> corrected metric coordinates */
+		for (i_img=0; i_img<n_img; i_img++) {
+			for (i=0; i<num[i_img]; i++) {
+				pixel_to_metric (pix[i_img][i].x, pix[i_img][i].y,
+								 imx,imy, pix_x, pix_y,
+								 &crd[i_img][i].x, &crd[i_img][i].y, chfield);
+				crd[i_img][i].pnr = pix[i_img][i].pnr;
 
-			x = crd[i_img][i].x - I[i_img].xh;
-			y = crd[i_img][i].y - I[i_img].yh;
-			correct_brown_affin (x, y, ap[i_img], &geo[i_img][i].x, &geo[i_img][i].y);
+				x = crd[i_img][i].x - I[i_img].xh;
+				y = crd[i_img][i].y - I[i_img].yh;
+				correct_brown_affin (x, y, ap[i_img], &geo[i_img][i].x, &geo[i_img][i].y);
 
-			geo[i_img][i].pnr = crd[i_img][i].pnr;
+				geo[i_img][i].pnr = crd[i_img][i].pnr;
+			}
 		}
 	}
-
+	else {
+        // Keep using pixel coordinates,  ad holten, 04-2013
+        // geo will be used as a container for the x-sorted target list 
+        for (i_img=0; i_img<n_img; i_img++) {
+            for (i=0; i<num[i_img]; i++) {
+                geo[i_img][i].x   = crd[i_img][i].x   = pix[i_img][i].x;
+                geo[i_img][i].y   = crd[i_img][i].y   = pix[i_img][i].y,
+                geo[i_img][i].pnr = crd[i_img][i].pnr = pix[i_img][i].pnr;
+            }
+        }
+	}
 	/* sort coordinates for binary search in correspondences_proc */
 	for (i_img=0; i_img<n_img; i_img++)
 		quicksort_coord2d_x (geo[i_img], num[i_img]);
@@ -651,8 +751,8 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
 		mmp.lut = 1;
 	}
 
-	clear_drawnobjectslist();					// added, ad holten 04-2013
-	correspondences_4 (interp, argv);
+	clear_drawnobjectslist();				// added, ad holten 04-2013
+    correspondences_4(interp,argv);
 
 	/* ------ save pixel coords for tracking  ------- */
 	for (i_img=0; i_img<n_img; i_img++) {
@@ -699,6 +799,9 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
 		examine=4;
 	else
 		examine=0;
+	
+	if (!createfolder("res"))
+		printf ("cannot create the folder 'res' to save the results to.\n");
 
 	fp1 = fopen (res_name, "w");
 	if (! fp1) {
@@ -751,19 +854,24 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
 		if ((n_img > 2 && num[0]>64 && num[1]>64 && num[2]>64 && num[3]>64)
 			&&	n < 3) continue;
 
-		/* hack due to problems with approx in det_lsq: */
-		X = 0.0; Y = 0.0; Z = (Zmin_lay[0]+Zmax_lay[0])/2.0;
-		for (j=0; j<n_img; j++) {
-			X += Ex[j].x0;
-			Y += Ex[j].y0;
-		}
-		X /= n_img; Y /= n_img;
+		if (map_method == ETHZ) {
+			/* hack due to problems with approx in det_lsq: */
+			X = 0.0; Y = 0.0; Z = (Zmin_lay[0]+Zmax_lay[0])/2.0;
+			for (j=0; j<n_img; j++) {
+				X += Ex[j].x0;
+				Y += Ex[j].y0;
+			}
+			X /= n_img; Y /= n_img;
 	  
-		// det_lsq_old (Ex, I, ap, mmp,
-		//	   x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
+			// det_lsq_old (Ex, I, ap, mmp,
+			//	   x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
 
-		det_lsq_3d (Ex, I, G, ap, mmp,
-			x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
+			det_lsq_3d (Ex, I, G, ap, mmp,
+				x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], &X, &Y, &Z);
+		}
+		else		// ad holten, 04-2012
+			det_lsq_3d_poly(x, y, 4, &X, &Y, &Z);
+
 
 		/* write a sequential point number,
 		   sumg, if the point was used, and the 3D coordinates */
@@ -909,7 +1017,7 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
 
 int sequence_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-	int    i, j, ok, k, nslices=19, slicepos=0, pft_version = 3;
+	int    rv, i, j, ok, k, nslices=19, slicepos=0, pft_version = 3;
 	char   seq_ch[128], seq_name[4][128];
 	Tk_PhotoHandle img_handle;
 	Tk_PhotoImageBlock img_block;
@@ -920,14 +1028,17 @@ int sequence_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const 
 	double dummy;
 	Zoompar zoompar;
 
-	fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten, 12-2012
-	if (!fpp) return TCL_OK;
+	// code replaced, ad holten, 04-2013
+	//fpp = fopen_rp ("parameters/sequence.par");		// replaced fopen_r, ad holten, 12-2012
+	//if (!fpp) return TCL_OK;
 
-	for (i=0; i<4; i++)
-		fscanf (fpp, "%s\n", seq_name[i]);	   /* name of sequence */
-	fscanf (fpp,"%d\n", &seq_first);
-	fscanf (fpp,"%d\n", &seq_last);
-	fclose (fpp);
+	//for (i=0; i<4; i++)
+	//	fscanf (fpp, "%s\n", seq_name[i]);	   /* name of sequence */
+	//fscanf (fpp,"%d\n", &seq_first);
+	//fscanf (fpp,"%d\n", &seq_last);
+	//fclose (fpp);
+	if (! parse_sequence_par("parameters/sequence.par", 
+			seq_name, &seq_first, &seq_last) ) return FALSE;
 
 	display = atoi(argv[1]); 
 	// Beat Mai 2010 for dumbbell
@@ -939,23 +1050,32 @@ int sequence_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const 
 	/* scanning ptv ************** */
 	printf("\nObject volume is scanned in %d slices!\n", nslices);
 	slicepos=0;
-	/* read illuminated Volume */
-	fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten, 12-2012
-	if (!fpp) return TCL_OK;
 
-	fscanf (fpp, "%lf\n", &X_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-	fscanf (fpp, "%lf\n", &X_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-	fscanf (fpp, "%lf", &cnx);
-	fscanf (fpp, "%lf", &cny);
-	fscanf (fpp, "%lf", &cn);
-	fscanf (fpp, "%lf", &csumg);
-	fscanf (fpp, "%lf", &corrmin);
-	fscanf (fpp, "%lf", &eps0);
-	fclose (fpp);
+	/* read illuminated Volume */
+	// code replaced, ad holten, 04-2013
+	//fpp = fopen_rp ("parameters/criteria.par");		// replaced fopen_r, ad holten, 12-2012
+	//if (!fpp) return TCL_OK;
+
+	//fscanf (fpp, "%lf\n", &X_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+	//fscanf (fpp, "%lf\n", &X_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+	//fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+	//fscanf (fpp, "%lf", &cnx);
+	//fscanf (fpp, "%lf", &cny);
+	//fscanf (fpp, "%lf", &cn);
+	//fscanf (fpp, "%lf", &csumg);
+	//fscanf (fpp, "%lf", &corrmin);
+	//fscanf (fpp, "%lf", &eps0);
+	//fclose (fpp);
+
+	/* read illuminated Volume */
+    if (map_method == ETHZ)
+		rv = parse_criteria_par("parameters/criteria.par");
+	else
+		rv = parse_polycriteria_par("parameters/poly_criteria.par");
+	if (!rv) return FALSE;
 
 	/* read illuminated layer data */
 	if (dumbbell==1) {
@@ -1475,10 +1595,8 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 			for (i=0; i<4; i++)
 		{
 			fscanf (fp1, "%lf %lf\n", &pix0[i_img][i].x, &pix0[i_img][i].y);
-			drawcross (interp,	(int) pix0[i_img][i].x,
-				(int) pix0[i_img][i].y, cr_sz+2, i_img, "red");
-			draw_pnr (interp, (int) pix0[i_img][i].x, (int) pix0[i_img][i].y,
-				nr[i_img][i], i_img, "red");
+			drawcross(interp, (int) pix0[i_img][i].x, (int) pix0[i_img][i].y, cr_sz+2, i_img, "red");
+			draw_pnr (interp, (int) pix0[i_img][i].x, (int) pix0[i_img][i].y, nr[i_img][i], i_img, "red");
 		}
 		fclose (fp1);
 
@@ -2178,7 +2296,7 @@ case 14: puts ("Sortgrid = initial guess");
 		break;
 
 
-	case 15: puts ("Show numbe on detected points");
+	case 15: puts ("Show number on detected points");
 		for (i=0; i<n_img; i++) {
 			for (j=0; j<num[i]; j++) { 
 				draw_pnr (interp, (int)pix[i][j].x, (int)pix[i][j].y, j, i, "blue");
@@ -3005,6 +3123,16 @@ int quit_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	/* delete unneeded files */
 	for (i=0; i<n_img; i++)
 		k = remove (img_lp_name[i]);
+
+	/* if allocated, remove the fit structures from memory */		// polynomials, ad holten, 04-2013
+	if (fit3dpix != NULL) {
+		destroy_POLYFIT_list(fit3dpix);
+		free (fit3dpix);
+	}
+	if (fitpixepi != NULL) {
+		destroy_POLYFIT_list(fitpixepi);
+		free (fitpixepi);
+	}
 
 #if (_MSC_VER >= 1500 && _DEBUG)
 	_CrtDumpMemoryLeaks();			// if using vc2010, lists detected memory leaks
