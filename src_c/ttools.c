@@ -192,51 +192,64 @@ void predict (double x1, double y1, double x2, double y2, double *x3, double *y3
 }
 
 
-void readseqtrackcrit ()
-{
-	int i_img;
-	/* reads pixfiles and try to track particles in imagespace
-	 over the sequence */
-	fpp = fopen_rp ("parameters/sequence.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
-	for (i_img=0; i_img<4; i_img++) {
-		fscanf (fpp, "%s\n", seq_name[i_img]);
-	}
-	/* name of sequence */
-	fscanf (fpp,"%d\n", &seq_first);
-	fscanf (fpp,"%d\n", &seq_last);
-	fclose (fpp);
-
-	fpp = fopen_rp ("parameters/track.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
-	fscanf (fpp, "%lf\n", &tpar.dvxmin);
-	fscanf (fpp, "%lf\n", &tpar.dvxmax);
-	fscanf (fpp, "%lf\n", &tpar.dvymin);
-	fscanf (fpp, "%lf\n", &tpar.dvymax);
-	fscanf (fpp, "%lf\n", &tpar.dvzmin);
-	fscanf (fpp, "%lf\n", &tpar.dvzmax);
-	fscanf (fpp, "%lf\n", &tpar.dangle);
-	fscanf (fpp, "%lf\n", &tpar.dacc);
-	fscanf (fpp,"%d\n", &tpar.add);
-	/*
-	fscanf (fpp,"%d\n", &tpar.dsumg);
-	fscanf (fpp,"%d\n", &tpar.dn);
-	fscanf (fpp,"%d\n", &tpar.dnx);
-	fscanf (fpp,"%d\n", &tpar.dny);
-	*/
-	fclose (fpp);
-
-	/* read illuminated layer data */
-	fpp = fopen_rp ("parameters/criteria.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
-	fscanf (fpp, "%lf\n", &X_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-	fscanf (fpp, "%lf\n", &X_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-	fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-	fclose (fpp);
+int readseqtrackcrit()
+{	// replaces the old readseqtrackcrit(), ad holten 04-2013
+	int rv;
+	rv  = parse_sequence_par("parameters/sequence.par", 
+							 seq_name, &seq_first, &seq_last);
+	rv &= parse_track_par("parameters/track.par", &tpar);
+	if (map_method == ETHZ)
+		rv &= parse_criteria_par("parameters/criteria.par");
+	else
+		rv &= parse_polycriteria_par("parameters/poly_criteria.par");
+	return rv;
 }
+
+//void readseqtrackcrit ()
+//{
+//	int i_img;
+//	/* reads pixfiles and try to track particles in imagespace
+//	 over the sequence */
+//	fpp = fopen_rp ("parameters/sequence.par");	// replaced fopen_r, ad holten 12-2012
+//	if (!fpp) return;
+//	for (i_img=0; i_img<4; i_img++) {
+//		fscanf (fpp, "%s\n", seq_name[i_img]);
+//	}
+//	/* name of sequence */
+//	fscanf (fpp,"%d\n", &seq_first);
+//	fscanf (fpp,"%d\n", &seq_last);
+//	fclose (fpp);
+//
+//	fpp = fopen_rp ("parameters/track.par");	// replaced fopen_r, ad holten 12-2012
+//	if (!fpp) return;
+//	fscanf (fpp, "%lf\n", &tpar.dvxmin);
+//	fscanf (fpp, "%lf\n", &tpar.dvxmax);
+//	fscanf (fpp, "%lf\n", &tpar.dvymin);
+//	fscanf (fpp, "%lf\n", &tpar.dvymax);
+//	fscanf (fpp, "%lf\n", &tpar.dvzmin);
+//	fscanf (fpp, "%lf\n", &tpar.dvzmax);
+//	fscanf (fpp, "%lf\n", &tpar.dangle);
+//	fscanf (fpp, "%lf\n", &tpar.dacc);
+//	fscanf (fpp,"%d\n", &tpar.add);
+//	/*
+//	fscanf (fpp,"%d\n", &tpar.dsumg);
+//	fscanf (fpp,"%d\n", &tpar.dn);
+//	fscanf (fpp,"%d\n", &tpar.dnx);
+//	fscanf (fpp,"%d\n", &tpar.dny);
+//	*/
+//	fclose (fpp);
+//
+//	/* read illuminated layer data */
+//	fpp = fopen_rp ("parameters/criteria.par");	// replaced fopen_r, ad holten 12-2012
+//	if (!fpp) return;
+//	fscanf (fpp, "%lf\n", &X_lay[0]);
+//	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+//	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+//	fscanf (fpp, "%lf\n", &X_lay[1]);
+//	fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+//	fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+//	fclose (fpp);
+//}
 
 
 
@@ -271,13 +284,25 @@ void searchquader(double X, double Y, double Z,
 		xl[i]=imx;
 		yd[i]=0;
 		yu[i]=imy;
-		img_coord (point.x, point.y, point.z, Ex[i], I[i], G[i], ap[i], mmp, &xz,&yz);
-		metric_to_pixel (xz,yz, imx,imy, pix_x,pix_y, &xz,&yz, chfield);
+        if (map_method == ETHZ) {
+			img_coord (point.x, point.y, point.z, Ex[i], I[i], G[i], ap[i], mmp, &xz,&yz);
+			metric_to_pixel (xz,yz, imx,imy, pix_x,pix_y, &xz,&yz, chfield);
+		}
+		else {
+            xz = Map3D_x(point.x, point.y, point.z, &fit3dpix[i]);
+            yz = Map3D_y(point.x, point.y, point.z, &fit3dpix[i]);
+		}
 
 		for (k=0; k<8; k++)
 		{
-			img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], G[i], ap[i], mmp, &x,&y);
-			metric_to_pixel (x,y, imx,imy, pix_x,pix_y, &x,&y, chfield);
+			if (map_method == ETHZ) {
+				img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], G[i], ap[i], mmp, &x,&y);
+				metric_to_pixel (x,y, imx,imy, pix_x,pix_y, &x,&y, chfield);
+			}
+			else {
+				x = Map3D_x(quader[k].x, quader[k].y, quader[k].z, &fit3dpix[i]);
+				y = Map3D_y(quader[k].x, quader[k].y, quader[k].z, &fit3dpix[i]);
+			}
 
 			if (x <xl[i] ) xl[i]=x;
 			if (y <yu[i] ) yu[i]=y;
@@ -294,7 +319,6 @@ void searchquader(double X, double Y, double Z,
 		yd[i]=yd[i]-yz;
 		yu[i]=yz-yu[i];
 	}
-	return;
 }
 
 

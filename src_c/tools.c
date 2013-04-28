@@ -66,6 +66,17 @@ FILE *fopen_rp (char *filename)
 	return (fp);
 }
 
+FILE *fopen_wp (char *filename)
+/*	tries to open 'filename' for writing text;
+	prints a message, if the file can't be opened. */
+{
+	FILE *fp = fopen(filename, "w");
+	if (!fp)
+		printf ("Can't open this file for writing: %s\n", filename);
+	return (fp);
+}
+
+
 FILE *fopen_r (CHAR filename[256])
 /*	tries to open a file;
 	gives a message, if it cannot open it
@@ -96,6 +107,10 @@ int read_image (Tcl_Interp* interp, char path[128], unsigned char *img)
 	if (tiff_flag) {
 		sprintf(val, "temp read %s", path);
 		Tcl_Eval(interp, val);
+		if (interp->result[0] != 0) {			// added, ad holten 04-2013
+			printf("%s\n", interp->result);
+			return 0;
+		}
 
 		img_handle = Tk_FindPhoto( interp, "temp");
 		Tk_PhotoGetImage (img_handle, &img_block);
@@ -522,4 +537,21 @@ void cimg2tclimg (Tcl_Interp* interp, unsigned char *c_img, Tk_PhotoImageBlock *
 		*(tcl_img->pixelPtr +i+2) = *(c_img +j);
 		*(tcl_img->pixelPtr +i+3) = alpha;
 	}
+}
+
+double distance(double x1, double y1, double x2, double y2)
+{
+	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+}
+
+int cmp_dist(const void *arg1, const void *arg2)
+{
+    int rv = 0;
+    sort_point* p1 = (sort_point*)arg1;
+    sort_point* p2 = (sort_point*)arg2;
+    if (p1->r > p2->r)
+        rv = 1;
+    else if (p1->r < p2->r)
+        rv = -1;
+    return rv;
 }

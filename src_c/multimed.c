@@ -898,6 +898,11 @@ void volumedimension (double *xmax, double *xmin, double *ymax, double *ymin,
 	/* find extrema of imaged object volume */
 	/* ==================================== */
 
+	if (map_method != ETHZ) {
+		volumedimension_poly(xmax, xmin, ymax, ymin, zmax, zmin);
+		return;
+	}
+
 	fpp = fopen_rp("parameters/criteria.par");	// replaced fopen, ad holten, 12-2012
 	if (!fpp) return;
 	fscanf (fpp, "%lf\n", &X);
