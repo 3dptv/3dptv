@@ -76,28 +76,30 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		for (j=0; j<4; j++) tim[j][i] = 0;
 	}
 
-	/* ------- if only one cam and 2D ------- */ //by Beat Lüthi June 2007
-	if (n_img==1) {
-		if (res_name[0]==0)
-			sprintf (res_name, "rt_is");
-		fp1 = fopen (res_name, "w");
-		fprintf (fp1, "%4d\n", num[0]);
-		for (i=0; i<num[0]; i++) {
-			o = epi_mm_2D (geo[0][i].x, geo[0][i].y,
-						   Ex[0], I[0], G[0], mmp,
-						   &X,&Y,&Z);
-			pix[0][geo[0][i].pnr].tnr=i;
-			fprintf (fp1, "%4d", i+1);
-			fprintf (fp1, " %9.3f %9.3f %9.3f", X, Y, Z);
-			fprintf (fp1, " %4d", geo[0][i].pnr);
-			fprintf (fp1, " %4d", -1);
-			fprintf (fp1, " %4d", -1);
-			fprintf (fp1, " %4d\n", -1);
+	if (map_method == ETHZ) {	// for polynomials, not implemented yet, ad holten 04-2013
+		/* ------- if only one cam and 2D ------- */ //by Beat Lüthi June 2007
+		if (n_img==1) {
+			if (res_name[0]==0)
+				sprintf (res_name, "rt_is");
+			fp1 = fopen (res_name, "w");
+			fprintf (fp1, "%4d\n", num[0]);
+			for (i=0; i<num[0]; i++) {
+				o = epi_mm_2D (geo[0][i].x, geo[0][i].y,
+							   Ex[0], I[0], G[0], mmp,
+							   &X,&Y,&Z);
+				pix[0][geo[0][i].pnr].tnr=i;
+				fprintf (fp1, "%4d", i+1);
+				fprintf (fp1, " %9.3f %9.3f %9.3f", X, Y, Z);
+				fprintf (fp1, " %4d", geo[0][i].pnr);
+				fprintf (fp1, " %4d", -1);
+				fprintf (fp1, " %4d", -1);
+				fprintf (fp1, " %4d\n", -1);
+			}
+			fclose (fp1);
+			match1 = num[0];
 		}
-		fclose (fp1);
-		match1 = num[0];
+		/* -------------end of only one cam and 2D ------------ */
 	}
-	/* -------------end of only one cam and 2D ------------ */
 
 	/* matching  1 -> 2,3,4  +	2 -> 3,4  +  3 -> 4 */
   
@@ -111,19 +113,32 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		for (i=0; i<num[i1]; i++)
 			if (geo[i1][i].x != -999)
 		{
-			o = epi_mm (geo[i1][i].x, geo[i1][i].y,
-						Ex[i1], I[i1], G[i1], Ex[i2], I[i2], G[i2], mmp,
-						&xa12, &ya12, &xb12, &yb12);
-	  
-			/* origin point in the list */
-			p1 = i;  list[i1][i2][p1].p1 = p1;	pt1 = geo[i1][p1].pnr;
+			if (map_method == ETHZ) {					// added, ad holten 04-2013
+				o = epi_mm (geo[i1][i].x, geo[i1][i].y,
+							Ex[i1], I[i1], G[i1], Ex[i2], I[i2], G[i2], mmp,
+							&xa12, &ya12, &xb12, &yb12);
 
-			/* search for a conjugate point in geo[i2] */
-			find_candidate_plus (geo[i2], pix[i2], num[i2],
-					   xa12, ya12, xb12, yb12, eps0,
-					   pix[i1][pt1].n,pix[i1][pt1].nx,pix[i1][pt1].ny,
-					   pix[i1][pt1].sumg, cand, &count, i2, argv);
+				/* origin point in the list */
+				p1 = i;  list[i1][i2][p1].p1 = p1;	pt1 = geo[i1][p1].pnr;
 
+				/* search for a conjugate point in geo[i2] */
+				find_candidate_plus (geo[i2], pix[i2], num[i2],
+						   xa12, ya12, xb12, yb12, eps0,
+						   pix[i1][pt1].n,pix[i1][pt1].nx,pix[i1][pt1].ny,
+						   pix[i1][pt1].sumg, cand, &count, i2, argv);
+			}
+			else {	
+				if (! epi_mm_poly (geo[i1][i].x, geo[i1][i].y, i1, i2, &xa12, &ya12, &xb12, &yb12) )
+					continue;	// no intersection
+
+				/* Get an origin point from the list i1 */
+				p1 = i;  list[i1][i2][p1].p1 = p1;  pt1 = geo[i1][p1].pnr;
+			
+				/* search for conjugate points in geo[i2] */
+				find_candidate_poly_epiline(geo[i2], pix[i2], num[i2],
+					xa12, ya12, xb12, yb12, eps0,
+					pix[i1][pt1], cand, &count, argv);
+			}
 			/* write all corresponding candidates to the preliminary list */
 			/* of correspondences */
 			if (count > maxcand) count = maxcand;
@@ -140,7 +155,7 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 	// for (j=0; j<4; j++) for (i=0; i<nmax; i++) tim[j][i] = 0;
 	
 	// but tested, to be sure that everything is alright. WILL BE REMOVED LATER
-	for (j=0; j<4; j++) for (i=0; i<nmax; i++) 
+	for (j=0; j<n_img; j++) for (i=0; i<nmax; i++)		
 		if (tim[j][i] != 0) {
 			printf(">>>>>>>>>> correspondences_4: ERROR on line 144, CHECK CODE <<<<<<<<<<<<<<<< \n");
 			i = nmax; j = 4;
@@ -301,7 +316,7 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
 		if (n_img == 3) {	// added for a test (WILL BE REMOVED LATER)
 			for (i=0; i<match; i++) 
 				if (con[i].p[3] != -1) {
-					printf(">>>>>>>>>>>>>> correspondences_4: ERROR on line 144, CHECK CODE <<<<<<<<<<<<<<<<< \n");
+					// printf(">>>>>>>>>>>>>> correspondences_4: ERROR on line 144, CHECK CODE <<<<<<<<<<<<<<<<< \n");
 					con[i].p[3] = -1;
 				}
 		}

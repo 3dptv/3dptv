@@ -145,6 +145,9 @@ int jw_Init(Tcl_Interp *interp)
   Tcl_CreateCommand(interp, "calib_cmd", calibration_proc_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
+  Tcl_CreateCommand(interp, "calpoly_cmd", calibration_poly_c,
+	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
   Tcl_CreateCommand(interp, "restore_cmd", restore_proc_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
@@ -181,5 +184,27 @@ int jw_Init(Tcl_Interp *interp)
   Tcl_CreateCommand(interp, "clear_cmd", clearmarkers_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
+  // command to toggle the mapping method, adh 2011
+  Tcl_CreateCommand(interp, "change_method_cmd", change_method_c,
+	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
+  return TCL_OK;
+}
+
+int change_method_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
+{
+  printf("Changing ....\n");
+  if (argc >= 3) {
+	// update the variables: map_method and usingZplanes
+	map_method   = *argv[1] == 'P' ? POLYN : ETHZ;          // the cp(method) value
+	usingZplanes = *argv[2] == '1';                         // the cp(multi) value
+	save_method(interp, map_method, usingZplanes);          // save the new values to disk
+
+	init_proc_c(clientData, interp, argc, argv);            // re-initializes the program 
+  }
+  else {
+	printf("change_method_c() called with too few parameters!\n");
+	return TCL_ERROR;
+  }
   return TCL_OK;
 }
