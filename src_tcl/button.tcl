@@ -148,7 +148,7 @@ proc bindings2 { } {
     .text insert 3 " " 
 }
 
-# -- Binding function is not used anymore, ad holten, 04-2013 --
+# -- This binding function is not used anymore, ad holten, 04-2013 --
 # proc bindings3 { } {
 # #Bindings for tracking middle > zoom case 4
 #     global mp zoomfactor
@@ -171,7 +171,7 @@ proc bindings2 { } {
 #     .text insert 3 " " 
 # }
 
-# -- Binding function is not used anymore, ad holten, 04-2013 --
+# -- This binding function is not used anymore, ad holten, 04-2013 --
 # proc bindings4 { } {
 # #Bindings for tracking middle > zoom case 4
 #     
@@ -194,7 +194,7 @@ proc bindings2 { } {
 #     .text insert 3 " " 
 # }
 
-# -- Binding function is not used anymore, ad holten, 04-2013 --
+# -- This binding function is not used anymore, ad holten, 04-2013 --
 # proc bindings5 { } {
 # # Bindings for manual detection: left > measure case 5, middle > zoom normal case1, right > delete measeured point case 7
 # 

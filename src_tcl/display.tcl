@@ -74,7 +74,7 @@ proc newimage {i xpos ypos zfac lockframesize} {
     # zfac < -1 = zoom in   (subsample)
     # xpos and ypos are the new centre position of the view in fractions of the image
     global zoom_f zoompar zoom
-
+	
     set w .cam$i.pic
     set p image$i
     set zoom_f($i) $zfac
@@ -115,8 +115,8 @@ proc newimage {i xpos ypos zfac lockframesize} {
     set frame_width  [winfo width .cam$i]		;# also scan [wm geometry .cam$i] ... will work
     set frame_height [winfo height .cam$i]
     if {$displ_width > $frame_width || $displ_height > $frame_height} {
-        set dx [expr double($frame_width)/$displ_width]
-        set dy [expr double($frame_height)/$displ_height]
+        set dx [expr double($frame_width-25)/$displ_width]
+        set dy [expr double($frame_height-25)/$displ_height]
         $w xview moveto [expr $xpos - $dx/2]
         $w yview moveto [expr $ypos - $dy/2]
     }
@@ -125,13 +125,13 @@ proc newimage {i xpos ypos zfac lockframesize} {
 proc panimage {i xpos ypos} {
     # move the centre of the image to the position xpos, ypos
     set w .cam$i.pic
-
 	set x1 [lindex [$w xview] 0]	; # left side position (fraction) of the view
 	set x2 [lindex [$w xview] 1]	; # right side position (fraction) of the view
 	set y1 [lindex [$w yview] 0]	; # bottom side position (fraction) of the view
 	set y2 [lindex [$w yview] 1]	; # top side position (fraction) of the view
     $w xview moveto [expr $xpos - ($x2 - $x1)/2]
     $w yview moveto [expr $ypos - ($y2 - $y1)/2]
+	
 }
 
 proc new_framesizes {fac} {
