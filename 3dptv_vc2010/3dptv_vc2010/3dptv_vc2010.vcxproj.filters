@@ -13,11 +13,38 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Tcl files">
+      <UniqueIdentifier>{c351d0fd-f9fe-4e3e-b22f-694de0a5b64f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
     <None Include="..\..\src_c\license.txt">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\ptv.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\tclIndex">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\button.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\calpar.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\display.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\draw.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\mainpar.tcl">
+      <Filter>Tcl files</Filter>
+    </None>
+    <None Include="..\..\src_tcl\trackpar.tcl">
+      <Filter>Tcl files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -105,15 +132,30 @@
     <ClCompile Include="..\..\src_c\ttools.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src_c\parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_c\poly\nrutil.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_c\poly\poly_fit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_c\poly\poly_ptv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_c\poly\poly_shaking.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src_c\poly\checkpoints_poly.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src_c\resource1.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src_c\resource2.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src_c\typedefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src_c\ptv.h">
@@ -137,10 +179,19 @@
     <ClInclude Include="..\..\src_c\tiffio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src_c\typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src_c\poly\nrutil.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Tcl\lib\tcl84.lib" />
-    <Library Include="..\..\..\Tcl\lib\tk84.lib" />
     <Library Include="..\..\src_c\libtiff.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\index">
+      <Filter>Tcl files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

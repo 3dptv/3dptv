@@ -113,10 +113,18 @@ typedef struct
 }
 conjugate;
 
+typedef struct WAIST {	// added, ad holten 04-2013
+    double x;
+    double y;
+    double z;
+    double dist;
+} Waist;
+
 typedef struct
 {
   int  	pnr;
   double  tol, corr;
+  Waist  waist;	/* distance perpendicular to epipolar line and coordiantes midpoint, ad holten 04-2013 */
 }
 candidate;
 
@@ -141,6 +149,7 @@ typedef struct
   int    	p2[maxcand];	/* point numbers of candidates */
   double	corr[maxcand];	/* feature based correlation coefficient */
   double	dist[maxcand];	/* distance perpendicular to epipolar line */
+  Waist     waist[maxcand];	/* distance perpendicular to epipolar line and coordiantes midpoint, ad holten 04-2013 */
 }
 correspond;	       	/* correspondence candidates */
 
@@ -193,6 +202,138 @@ typedef struct Pstruct
   int inlist; /* Counter of number of possible links to next data set*/
 } P;
 
+typedef struct
+{
+	int type;
+	int x;
+	int y;
+	int x1;
+	int y1;
+	int size;
+	int minzoom;
+	double value;
+	char color[32];
+} Marker;
+
+typedef struct
+{
+	double xc;			// normalized position of the view
+	double yc;
+	int fac;
+	int vwx;
+	int vwy;
+	int fixed;
+	int alpha;
+} Zoompar;
+
+typedef struct PTV_IS {    // point in the ptv_is files
+    int prev;
+    int next;
+    double X;
+    double Y;
+    double Z;
+} ptv_is;
+
+typedef struct RT_IS {    // not existing in the ETH-code
+    int    id;
+    double X;
+    double Y;
+    double Z;
+    int    tnr[4];
+} rt_is;
+
+typedef struct
+{
+  int pnr;
+  double x, y, z;
+  double r;
+} sort_point;
+
+typedef struct
+{
+	double xlay[2], ylay[2], zminlay[2], zmaxlay[2];
+	double xmin, xmax, ymin, ymax, zmin, zmax;
+	double cnx, cny, cn, csumg, corrmin, eps0;
+} critparameters;
+
+/* ==== new typedefs needed for the polynomial mapping method === */
+
+typedef struct {
+	double pixx; 
+	double pixy;
+	double geox;
+	double geoy;
+} PNT;
+
+typedef struct CORR {
+    double X;
+    double Y;
+    double Z;
+    int    pnr[4];
+} CorrP;
+
+typedef struct FITDATA {
+    double x, y, z, u, v, w;
+    int    pnr;
+    double xp[4];
+    double yp[4];
+} FitData;
+
+typedef struct FITGLOB {
+    int order;
+    int crossorder;
+    int ndata;
+    FitData  *data;
+    coord_3d *pnt3;    
+    coord_2d *pnt2;    
+    coord_2d *in2D;
+    coord_2d *out2D;
+} FITGLOB;
+
+typedef struct POLYFIT {
+	int     order;
+	int     crossorder;
+	int     ncameras;
+	int     nxparms1;
+	int     nxparms2;
+	int     nyparms1;
+	int     nyparms2;
+	double* Xparms1;
+	double* Xparms2;
+	double* Yparms1;
+	double* Yparms2;
+} POLYFIT;
+
+typedef struct {
+	double left;
+	double right;
+	double top;
+	double bottom;
+} Rect;
+
+typedef struct Line3D {
+	double xoff;
+	double yoff;
+	double zoff;
+	double xrc;
+	double yrc;
+	// int    pnr;
+} Line3D;
+
+// --- types used in the shaking algorithm ---
+typedef struct FITINFO {
+	int     order;
+	int     crossorder;
+	int     nparms1;
+	int     nparms2;
+	double* parms1;
+	double* parms2;
+	double  result;
+}	FitInfo;
+
+
+POLYFIT* fitpixepi;
+POLYFIT* fit3dpix;
 
 #define MAX_FILENAME_LEN 1024
 #define FILENAME_IN "res/rt_is"

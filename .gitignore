@@ -1,2 +1,13 @@
 
 src_c/homemakefile
+
+[Dd]ebug/
+[Rr]elease/
+ipch/
+*.opensdf
+*.sdf
+*.suo
+*.exe
+*.ilk
+*.pdb
+

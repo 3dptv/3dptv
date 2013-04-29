@@ -123,9 +123,6 @@ pack $w.dn.label $w.dn.entry -pady 2 -side left
 pack $w.dnx.label $w.dnx.entry -pady 2 -side left  
 pack $w.dny.label $w.dny.entry -pady 2 -side left
   
-#pack $w.dsumg $w.dn $w.dnx $w.dny -in $w.df -side top
-
-#pack $w.dv $w.feature $w.df -pady 5 -side top
 pack $w.dv -padx 10 -pady 5 -side top
 pack $w.add -pady 5
 

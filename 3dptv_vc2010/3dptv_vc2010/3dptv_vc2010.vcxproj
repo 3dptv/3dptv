@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..</OutDir>
+    <OutDir>$(SolutionDir)../</OutDir>
     <IncludePath>C:\Tcl\include\tcl8.4;$(IncludePath)</IncludePath>
     <LibraryPath>C:\tiff\tiff-4.0.1\libtiff;C:\Tcl\lib;$(LibraryPath)</LibraryPath>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
@@ -49,7 +49,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..</OutDir>
+    <OutDir>$(SolutionDir)../</OutDir>
     <TargetName>3dptv</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -58,17 +58,19 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\tiff\tiff-4.0.1\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>c:\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC</IgnoreSpecificDefaultLibraries>
-      <AdditionalLibraryDirectories>C:\PTV\src_c;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libtiff.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;C:\PTV\src_c</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tcl84.lib;tk84.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -85,21 +87,44 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>c:\tcl\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>tcl84.lib;tk84.lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>"C:\Tcl\lib"</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib</IgnoreSpecificDefaultLibraries>
       <LinkStatus>true</LinkStatus>
+      <AdditionalDependencies>tcl84.lib;tk84.lib</AdditionalDependencies>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
+      <AssemblyDebug>false</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CustomBuild Include="..\..\index">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd $(SolutionDir)..
+wish84 index
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../tclindex</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd $(SolutionDir)..
+wish84 index
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../tclindex</Outputs>
+    </CustomBuild>
+    <None Include="..\..\ptv.tcl" />
     <None Include="..\..\src_c\license.txt" />
+    <None Include="..\..\src_tcl\button.tcl" />
+    <None Include="..\..\src_tcl\calpar.tcl" />
+    <None Include="..\..\src_tcl\display.tcl" />
+    <None Include="..\..\src_tcl\draw.tcl" />
+    <None Include="..\..\src_tcl\mainpar.tcl" />
+    <None Include="..\..\src_tcl\trackpar.tcl" />
+    <None Include="..\..\tclIndex" />
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -119,8 +144,14 @@
     <ClCompile Include="..\..\src_c\mousefunction.c" />
     <ClCompile Include="..\..\src_c\multimed.c" />
     <ClCompile Include="..\..\src_c\orientation.c" />
+    <ClCompile Include="..\..\src_c\parse.c" />
     <ClCompile Include="..\..\src_c\peakfitting.c" />
     <ClCompile Include="..\..\src_c\pointpos.c" />
+    <ClCompile Include="..\..\src_c\poly\checkpoints_poly.c" />
+    <ClCompile Include="..\..\src_c\poly\nrutil.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_fit.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_ptv.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_shaking.c" />
     <ClCompile Include="..\..\src_c\ptv.c" />
     <ClCompile Include="..\..\src_c\ray_tracing.c" />
     <ClCompile Include="..\..\src_c\rotation.c" />
@@ -136,6 +167,7 @@
     <ClInclude Include="..\..\..\Tcl\include\tcl.h" />
     <ClInclude Include="..\..\..\Tcl\include\tk.h" />
     <ClInclude Include="..\..\src_c\globals.h" />
+    <ClInclude Include="..\..\src_c\poly\nrutil.h" />
     <ClInclude Include="..\..\src_c\ptv.h" />
     <ClInclude Include="..\..\src_c\resource1.h" />
     <ClInclude Include="..\..\src_c\resource2.h" />
@@ -145,8 +177,6 @@
     <ClInclude Include="..\..\src_c\typedefs.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Tcl\lib\tcl84.lib" />
-    <Library Include="..\..\..\Tcl\lib\tk84.lib" />
     <Library Include="..\..\src_c\libtiff.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
