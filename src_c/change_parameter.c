@@ -106,7 +106,7 @@ int init_ethz_panelparms(Tcl_Interp* interp)
 		ic = i/4 + 1;
 		ip = i%4 + 1;
 		sprintf(varname, "p%d%d", ic, ip);		// ie p11, p12, ..
-		Tcl_SetVar2(interp, "cp", varname, val[i++], TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp, "cp", varname, val[i], TCL_GLOBAL_ONLY);
 	}
 
     /* read 12 parameters from orient.par */
@@ -194,7 +194,7 @@ int init_polycalib_panelparms(Tcl_Interp* interp)
 	nplanes = atoi(val[1]);
 
 	// count per plane: 1+ncam names, i.e.: file with coordinates plus the image files
-	if (nplanes<1 || ne < 2 + nplanes*(1+ncam) + 4) {
+	if (nplanes<1 || ne < 6 + nplanes*(1+ncam)) {
 		printf("Not enough parameters in %s\n", fname);
 		if (nplanes == 0) nplanes = 1;	// define at least Tcl-globals for one plane.
 	}
@@ -280,6 +280,7 @@ int init_polymanori_panelparms(Tcl_Interp* interp)
 int init_common_panelparms(Tcl_Interp* interp)
 {
 	/* set the rest of the Tcl panel variables */
+	int ne;
     char val[50][256];
 
 	/* read 15 parameters from targ_rec.par */
@@ -346,12 +347,16 @@ int init_common_panelparms(Tcl_Interp* interp)
     Tcl_SetVar2(interp, "cp", "maxFrames_shake", val[3], TCL_GLOBAL_ONLY);
 
     /* read 3 parameters from examine.par */
-	if (!read_strings("parameters/examine.par", 3, val))
+	ne = read_allstrings("parameters/examine.par", val, 3);
+	if (ne>=2) {
+		Tcl_SetVar2(interp, "cp", "examineFlag", val[0], TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp, "cp", "combineFlag", val[1], TCL_GLOBAL_ONLY);
+		if (ne>2 )Tcl_SetVar2(interp, "mp", "examine3", val[2], TCL_GLOBAL_ONLY);
+	}
+	else {
+		printf("parameters/examine.par is missing parameters, must be >=2\n");
 		return FALSE;
-
-    Tcl_SetVar2(interp, "cp", "examineFlag", val[0], TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp, "cp", "combineFlag", val[1], TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp, "mp", "examine3",    val[2], TCL_GLOBAL_ONLY);
+	}
 
     /* read 22 parameters from track.par */
 	if (!read_strings("parameters/track.par", 22, val))
