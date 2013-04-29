@@ -144,8 +144,14 @@ wish84 index
     <ClCompile Include="..\..\src_c\mousefunction.c" />
     <ClCompile Include="..\..\src_c\multimed.c" />
     <ClCompile Include="..\..\src_c\orientation.c" />
+    <ClCompile Include="..\..\src_c\parse.c" />
     <ClCompile Include="..\..\src_c\peakfitting.c" />
     <ClCompile Include="..\..\src_c\pointpos.c" />
+    <ClCompile Include="..\..\src_c\poly\checkpoints_poly.c" />
+    <ClCompile Include="..\..\src_c\poly\nrutil.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_fit.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_ptv.c" />
+    <ClCompile Include="..\..\src_c\poly\poly_shaking.c" />
     <ClCompile Include="..\..\src_c\ptv.c" />
     <ClCompile Include="..\..\src_c\ray_tracing.c" />
     <ClCompile Include="..\..\src_c\rotation.c" />
@@ -161,6 +167,7 @@ wish84 index
     <ClInclude Include="..\..\..\Tcl\include\tcl.h" />
     <ClInclude Include="..\..\..\Tcl\include\tk.h" />
     <ClInclude Include="..\..\src_c\globals.h" />
+    <ClInclude Include="..\..\src_c\poly\nrutil.h" />
     <ClInclude Include="..\..\src_c\ptv.h" />
     <ClInclude Include="..\..\src_c\resource1.h" />
     <ClInclude Include="..\..\src_c\resource2.h" />
