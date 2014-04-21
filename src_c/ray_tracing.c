@@ -79,7 +79,7 @@ void point_line_line(Exterior Ex0, Interior I0, Glass G0, mm_np mm,
 					 Exterior Ex1, Interior I1, Glass G1,
 					 double gX1, double gY1, double gZ1, double a1, double b1, double c1,
 					 double *x, double *y, double *z)
-//Beat Lüthi Nov 2008
+//Beat LÂ¸thi Nov 2008
 {
 	double a[3], b[3], A[3], B[3], n[3], AB[3], dist, Bp[3], c,ABp[3], mABp, d,Ae1[3],
 		   e1[3], mb,nb[3], cosb, f, Ap[3], App[3], BpAe1[3], mBpAe1;
@@ -134,7 +134,7 @@ void point_line_line(Exterior Ex0, Interior I0, Glass G0, mm_np mm,
 }
 
 void norm_cross(double a[3], double b[3], double *n1, double *n2, double *n3)
-//Beat Lüthi Nov 2008
+//Beat LÂ¸thi Nov 2008
 {
 	double	res[3],dummy;
 
@@ -149,13 +149,13 @@ void norm_cross(double a[3], double b[3], double *n1, double *n2, double *n3)
 }
 
 void dot(double a[3], double b[3], double *d)
-//Beat Lüthi Nov 2008
+//Beat LÂ¸thi Nov 2008
 {
 	*d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 }
 
 void modu(double a[3], double *m)
-//Beat Lüthi Nov 2008
+//Beat LÂ¸thi Nov 2008
 {
 	*m=sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
 }
@@ -232,6 +232,7 @@ void ray_tracing_v2 (double x, double y, Exterior Ex, Interior I, Glass G, mm_np
 	n=(b[0]*bn[0]+b[1]*bn[1]+b[2]*bn[2]);
 	bp[0]=b[0]-bn[0]*n;bp[1]=b[1]-bn[1]*n;bp[2]=b[2]-bn[2]*n;
 	dummy=sqrt(bp[0]*bp[0]+bp[1]*bp[1]+bp[2]*bp[2]);
+	if (dummy == 0) dummy = 1.0;
 	bp[0]=bp[0]/dummy;bp[1]=bp[1]/dummy;bp[2]=bp[2]/dummy;
 
 	p=sqrt(1-n*n);
@@ -261,6 +262,7 @@ void ray_tracing_v2 (double x, double y, Exterior Ex, Interior I, Glass G, mm_np
 	n=(a2*bn[0]+b2*bn[1]+c2*bn[2]);
 	bp[0]=a2-bn[0]*n;bp[1]=b2-bn[1]*n;bp[2]=c2-bn[2]*n;
 	dummy=sqrt(bp[0]*bp[0]+bp[1]*bp[1]+bp[2]*bp[2]);
+	if (dummy == 0) dummy = 1.0;
 	bp[0]=bp[0]/dummy;bp[1]=bp[1]/dummy;bp[2]=bp[2]/dummy;
 
 	p=sqrt(1-n*n);
