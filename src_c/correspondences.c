@@ -25,12 +25,12 @@ Description:	       	establishment of correspondences for 2/3/4 cameras
 void correspondences_4 (Tcl_Interp* interp)
 {
   int 	i,j,k,l,m,n,o,  i1,i2,i3;
-  int   count, match0=0, match4=0, match3=0, match2=0;
+  int   count, match0=0, match4=0, match3=0, match2=0, match1=0;
   int 	p1,p2,p3,p4, p31, p41, p42;
   int  	pt1;
   int 	tim[4][nmax];
   int  	intx, inty;
-  double       	xa12, xb12, ya12, yb12;
+  double       	xa12,ya12,xb12,yb12,X,Y,Z;
   double       	corr;
   candidate   	cand[maxcand];
   n_tupel     	*con0;
@@ -72,8 +72,26 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmax_lay[0],Zmin_lay[0] );
     }
 
 
-  /* ------------------------------------------------------------------ */
-  /* ------------------------------------------------------------------ */
+  /* -------------if only one cam and 2D--------- */ //by Beat Lüthi June 2007
+  if(n_img==1){
+	  fp1 = fopen (res_name, "w");
+	  fprintf (fp1, "%4d\n", num[0]);
+	  for (i=0; i<num[0]; i++){
+          o = epi_mm_2D (geo[0][i].x,geo[0][i].y,
+		      Ex[0], I[0],  mmp,
+		      &X,&Y,&Z);
+          pix[0][geo[0][i].pnr].tnr=i;
+		  fprintf (fp1, "%4d", i+1);
+		  fprintf (fp1, " %9.3f %9.3f %9.3f", X, Y, Z);
+          fprintf (fp1, " %4d", geo[0][i].pnr);
+          fprintf (fp1, " %4d", -1);
+          fprintf (fp1, " %4d", -1);
+          fprintf (fp1, " %4d\n", -1);
+	  }
+	  fclose (fp1);
+	  match1=num[0];
+  }
+  /* -------------end of only one cam and 2D ------------ */
 
   /* matching  1 -> 2,3,4  +  2 -> 3,4  +  3 -> 4 */
 
@@ -279,7 +297,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmax_lay[0],Zmin_lay[0] );
 
   /* search consistent pairs :  12, 13, 14, 23, 24, 34 */
   /* only if an object model is available or if only 2 images are used */
-  puts ("Search pairs");
+  if(n_img>1){puts ("Search pairs");}
 
 
   match0 = 0;
@@ -331,9 +349,15 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmax_lay[0],Zmin_lay[0] );
     }
 
   match2 = match-match4-match3;
-  sprintf (buf, "%d consistent quadruplets, %d triplets and %d unambigous pairs",
-	   match4, match3, match2);
-  puts (buf);
+  if(n_img==1){
+     sprintf (buf, "determined %d points from 2D", match1);
+     puts (buf);
+  }
+  else{
+     sprintf (buf, "%d consistent quadruplets, %d triplets and %d unambigous pairs",
+	      match4, match3, match2);
+     puts (buf);
+  }
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 3");
   Tcl_Eval(interp, ".text insert 3 $tbuf");

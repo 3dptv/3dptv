@@ -20,6 +20,55 @@ Description:	       	reads objects, detected by detection etc.,
 
 #include "ptv.h"
 
+void just_plot (interp, Ex, I, ap, mm, imx,imy, pix_x,pix_y,
+				   nfix,fix, field, n_img)
+
+Tcl_Interp* interp;
+Exterior	Ex;
+Interior	I;
+ap_52		ap;
+mm_np		mm;
+int			nfix, imx, imy, field, n_img;
+double		pix_x, pix_y;
+coord_3d	fix[];
+
+
+{
+  int	       	i, j;
+  int	       	intx, inty;
+  double       	xp, yp, eps=10.0;
+  target       	old[512];
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  /* reproject all calibration plate points into pixel space
+     and search a detected target nearby */
+  
+  for (i=0; i<nfix; i++)
+    {
+      img_coord (fix[i].x, fix[i].y, fix[i].z,  Ex, I, ap, mm, &xp,&yp);
+      metric_to_pixel (xp, yp, imx,imy, pix_x,pix_y, &xp, &yp, field);
+      
+      /* draw projected points for check purpuses */
+      
+      intx = (int) xp;
+      inty = (int) yp;
+
+	  printf ("coord of point %d: %d, %d\n", i,intx,inty);
+      
+      drawcross (interp, intx, inty, cr_sz+1, n_img, "yellow");
+      
+      
+    }
+}
+
+
 
 void sortgrid_man (interp, Ex, I, ap, mm, imx,imy, pix_x,pix_y,
 				   nfix,fix, num,pix, field, n_img)
@@ -76,6 +125,8 @@ target		pix[];
       
       intx = (int) xp;
       inty = (int) yp;
+
+	  printf ("coord of point %d: %d, %d\n", i,intx,inty);
       
       drawcross (interp, intx, inty, cr_sz+1, n_img, "cyan");
       

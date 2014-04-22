@@ -86,6 +86,45 @@ double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
   return (0);
 }
 
+int epi_mm_2D (x1, y1, Ex1, I1, mmp, xp,yp,zp)
+
+double     x1, y1;	  	/* input coord */
+Exterior   Ex1;           	/* orientation data */
+Interior   I1;	      	/* orientation data */
+mm_np	   mmp;		        /* multimed param. (layers) */
+double *xp, *yp, *zp;
+//double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
+
+{
+  /*  ray tracing gives the point of exit and the direction
+      cosines at the waterside of the glass;
+      min. and max. depth give window in object space,
+      which can be transformed into _2 image
+      (use img_xy_mm because of comparison with img_geo)  */
+
+  double a, b, c, xa,ya,xb,yb;
+  double X1,Y1,Z1,X,Y,Z;
+  
+  double Zmin, Zmax;
+
+  ray_tracing (x1,y1, Ex1, I1, mmp, &X1, &Y1, &Z1, &a, &b, &c);
+
+  /* calculate min and max depth for position (valid only for one setup) */
+  Zmin = Zmin_lay[0]
+    + (X1-X_lay[0]) * (Zmin_lay[1]-Zmin_lay[0]) / (X_lay[1]-X_lay[0]);
+  Zmax = Zmax_lay[0]
+    + (X1-X_lay[0]) * (Zmax_lay[1]-Zmax_lay[0]) / (X_lay[1]-X_lay[0]);
+
+
+  Z = 0.5*(Zmin+Zmax);   
+  X = X1 + (Z-Z1) * a/c;   
+  Y = Y1 + (Z-Z1) * b/c;
+  
+  *xp=X; *yp=Y; *zp=Z;
+
+  return (0);
+}
+
 
 
 void find_candidate (crd, pix, num, xa,ya,xb,yb,eps, n, nx, ny, sumg,

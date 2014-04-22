@@ -282,6 +282,16 @@ int parameter_panel_init(Tcl_Interp* interp)
 
 	fclose (fp1);
 
+
+   
+	fp1 = fopen_r ("parameters/examine.par");
+	fscanf (fp1, "%s", val);
+	Tcl_SetVar2(interp, "cp", "examineFlag", val, TCL_GLOBAL_ONLY);
+	fscanf (fp1, "%s", val);
+	Tcl_SetVar2(interp, "cp", "combineFlag", val, TCL_GLOBAL_ONLY);
+	fclose (fp1);
+
+
 	/* read 5 parameters from track.par */
 
 	fp1 = fopen_r ("parameters/track.par");
@@ -589,6 +599,13 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	valp = Tcl_GetVar2(interp, "cp", "she", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 
+	fclose (fp1);
+
+	fp1 = fopen ("parameters/examine.par", "w");
+	valp = Tcl_GetVar2(interp, "cp", "examineFlag", TCL_GLOBAL_ONLY);
+	fprintf (fp1, "%s\n", valp);
+	valp = Tcl_GetVar2(interp, "cp", "combineFlag", TCL_GLOBAL_ONLY);
+	fprintf (fp1, "%s\n", valp);
 	fclose (fp1);
 
 

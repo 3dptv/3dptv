@@ -531,7 +531,7 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
 
 int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int  	i, j, n;
+  int  	i, j, n,dummy;
   int  	p[4];
   double  x[4], y[4], X,Y,Z;
   double  Zlo = 1e20, Zhi = -1e20;
@@ -542,6 +542,20 @@ int determination_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, c
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 2");
   Tcl_Eval(interp, ".text insert 2 $tbuf");
+
+
+  /* Beat Mai 2007 to set the variable examine for mulit-plane calibration*/
+  fp1 = fopen_r ("parameters/examine.par");
+  fscanf (fp1,"%d\n", &dummy);
+  fclose (fp1);
+  if (dummy==1){
+      examine=4;
+  }
+  else{
+      examine=0;
+  }
+  //////////////////////////////////
+
 
   fp1 = fopen (res_name, "w");
 
@@ -797,7 +811,8 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
       if (display) {Tcl_Eval(interp, "update idletasks");}
       correspondences_proc_c (clientData, interp, argc, argv);
       if (display) {Tcl_Eval(interp, "update idletasks");}
-      determination_proc_c (clientData, interp, argc, argv);
+	  if(n_img>1){
+		  determination_proc_c (clientData, interp, argc, argv);}
 
 
       /* delete unneeded files */
@@ -817,14 +832,22 @@ printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
 
 int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int i, j, sel, i_img, k, n, sup;
+  int i, j, sel, i_img, k, n, sup,dummy,multi,planes;
   int intx1, inty1, intx2, inty2;
   coord_2d    	apfig1[11][11];	/* regular grid for ap figures */
   coord_2d     	apfig2[11][11];	/* ap figures */
   coord_3d     	fix4[4];       	/* object points for preorientation */
   coord_2d     	crd0[4][4];    	/* image points for preorientation */
-  char	       	filename[256], val[256];
+  char	       	multi_filename[10][256],filename[256], val[256];
   const char *valp;
+
+  FILE	*FILEIN;
+  char	filein[256];
+  FILE	*FILEIN_T;
+  char	filein_T[256];
+  int filenumber;
+  int dumy;
+  int a[4];
 
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
@@ -838,6 +861,19 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 
   valp = Tcl_GetVar(interp, "sel",  TCL_GLOBAL_ONLY);
   sel = atoi (valp);
+
+  /* Beat Mai 2007 to set the variable examine for mulit-plane calibration*/
+  fp1 = fopen_r ("parameters/examine.par");
+  fscanf (fp1,"%d\n", &dummy);
+  fscanf (fp1,"%d\n", &multi);
+  fclose (fp1);
+  if (dummy==1){
+      examine=4;
+  }
+  else{
+      examine=0;
+  }
+  ///////////////////////////////////////////////////////////////////////////////
 
   switch (sel)
     {
@@ -1062,7 +1098,7 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	    }
 
 	  /* raw orientation with 4 points */
-	  raw_orient (Ex[i], I[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i]);
+	  raw_orient (Ex[i], I[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],0);
 	  sprintf (filename, "raw%d.ori", i);
 	  write_ori (Ex[i], I[i], filename);
 	 
@@ -1143,11 +1179,12 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	    }
 
 	  /* save data for special use of resection routine */
-	  if (examine == 4)
+	  if (examine == 4 && multi==0)
 	    {
 	      printf ("try write resection data to disk\n");
 	      /* point coordinates */
-	      sprintf (filename, "resect_%s.fix", img_name[i_img]);
+	      //sprintf (filename, "resect_%s.fix", img_name[i_img]);
+		  sprintf (filename, "%s.fix", img_name[i_img]);
 	      write_ori (Ex[i_img], I[i_img], img_ori[i_img]);
 	      fp1 = fopen (filename, "w");
 	      for (i=0; i<nfix; i++)
@@ -1156,7 +1193,8 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	      fclose (fp1);
 
 	      /* metric image coordinates */
-	      sprintf (filename, "resect_%s.crd", img_name[i_img]);
+	      //sprintf (filename, "resect_%s.crd", img_name[i_img]);
+		  sprintf (filename, "%s.crd", img_name[i_img]);
 	      fp1 = fopen (filename, "w");
 	      for (i=0; i<nfix; i++)
 		fprintf (fp1,
@@ -1191,16 +1229,28 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	  if (examine == 4)
 	    {
 
-	      printf("Resection with dumped datasets? (y/n)");
-	      scanf("%s",buf);
-	      if (buf[0] != 'y')	continue;
-	      strcpy (buf, "");
+	      //printf("Resection with dumped datasets? (y/n)");
+	      //scanf("%s",buf);
+	      //if (buf[0] != 'y')	continue;
+	      //strcpy (buf, "");
+          if (multi==0)	continue;
 
 	      /* read calibration frame datasets */
-	      for (n=0, nfix=0, dump_for_rdb=0; n<100; n++)
+		  //sprintf (multi_filename[0],"img/calib_a_cam");
+		  //sprintf (multi_filename[1],"img/calib_b_cam");
+
+          fp1 = fopen_r ("parameters/multi_planes.par");
+		  fscanf (fp1,"%d\n", &planes);
+		  for(i=0;i<planes;i++) 
+		     fscanf (fp1,"%s\n", &multi_filename[i]);
+          fclose(fp1);
+
+	      for (n=0, nfix=0, dump_for_rdb=0; n<10; n++)
 		{
-		  sprintf (filename, "resect.fix%d", n);
-		  fp1 = fopen (filename, "r");
+		  //sprintf (filename, "resect.fix%d", n);
+		  
+		  sprintf (filename, "%s%d.tif.fix", multi_filename[n],i_img+1);
+          fp1 = fopen (filename, "r");
 		  if (! fp1)	continue;
 
 		  printf("reading file: %s\n", filename);
@@ -1212,7 +1262,8 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 			  != EOF) k++;
 		  fclose (fp1);
 		  /* read metric image coordinates */
-		  sprintf (filename, "resect_%d.crd%d", i_img, n);
+		  //sprintf (filename, "resect_%d.crd%d", i_img, n);
+		  sprintf (filename, "%s%d.tif.crd", multi_filename[n],i_img+1);
 		  printf("reading file: %s\n", filename);
 		  fp1 = fopen (filename, "r");
 		  for (i=nfix; i<nfix+k; i++)
@@ -1220,13 +1271,61 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 			    &crd[i_img][i].pnr,
 			    &crd[i_img][i].x, &crd[i_img][i].y);
 		  nfix += k;
+		  fclose (fp1);
 		}
 
 	      /* resection */
-	      orient (interp, Ex[i_img], I[i_img], ap[i_img], mmp,
+		  /*Beat Mai 2007*/
+		  sprintf (filename, "raw%d.ori", i_img);
+	      read_ori (&Ex[i_img], &I[i_img], filename);
+		  fp1 = fopen ("addpar.raw", "r");
+
+	      if (fp1) {
+	        fscanf (fp1, "%lf %lf %lf %lf %lf %lf %lf",
+		        &ap[i_img].k1,&ap[i_img].k2,&ap[i_img].k3,
+		        &ap[i_img].p1,&ap[i_img].p2,
+		        &ap[i_img].scx,&ap[i_img].she);
+	        fclose (fp1);} else {
+	           printf("no addpar.raw\n");
+	           ap[i].k1=ap[i].k2=ap[i].k3=ap[i].p1=ap[i].p2=ap[i].she=0.0;
+	           ap[i].scx=1.0;
+	      }
+	      ////////////////////////////////////////
+		  
+
+
+		  /* markus 14.05.2007 show coordinates combined */
+    
+
+	          
+		   for (i=0; i<nfix ; i++)			  
+		   {
+			    /* first crd->pix */
+	          metric_to_pixel (crd[i_img][i].x, crd[i_img][i].y, imx,imy, pix_x,pix_y, &pix[i_img][i].x, &pix[i_img][i].y, chfield);
+			    /*then draw crosses*/
+		 	  //intx1 = (int) pix[i_img][i].x;
+              //inty1 = (int) pix[i_img][i].y;
+
+
+              //drawcross (interp, intx1, inty1, 3, i_img, "orange");
+  		  
+			  
+		   }
+
+
+			orient (interp, Ex[i_img], I[i_img], ap[i_img], mmp,
 		      nfix, fix, crd[i_img],
 		      &Ex[i_img], &I[i_img], &ap[i_img], i_img);
-	    }
+			  
+			  
+	 
+
+
+
+		  ///////////////////////////////////////////
+	    
+		
+		}
 
 
 	  /* save orientation and additional parameters */
@@ -1238,12 +1337,14 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 		   ap[i_img].scx, ap[i_img].she);
 	  fclose (fp1);
 	}
-
       Tcl_Eval(interp, ".text delete 3");
       Tcl_Eval(interp, ".text delete 1");
       Tcl_Eval(interp, ".text insert 1 \"Orientation and self calibration \"");
       Tcl_Eval(interp, ".text delete 2");
-      Tcl_Eval(interp, ".text insert 2 \"...done, sigma0 for each image -> \"");
+	  if (examine != 4)
+         Tcl_Eval(interp, ".text insert 2 \"...done, sigma0 for each image -> \"");
+	  if (examine == 4 && multi==0)
+		 Tcl_Eval(interp, ".text insert 2 \"resection data written to disk \"");
       Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
       Tcl_Eval(interp, ".text insert 3 $tbuf");
 
@@ -1352,8 +1453,188 @@ int calibration_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, con
 	      drawvector (interp, intx1, inty1, intx2, inty2, 3, i_img, "magenta");
 	    }
 	}
+	  case 9: puts ("Sort grid points");
+      for (i=0; i<n_img; i++)
+	{
+	  /* read control point coordinates for man_ori points */
+	  fp1 = fopen_r (fixp_name);
+	  k = 0;
+	  while ( fscanf (fp1, "%d %lf %lf %lf", &fix[k].pnr,
+			  &fix[k].x, &fix[k].y, &fix[k].z) != EOF) k++;
+	  fclose (fp1);
+	  nfix = k;
+
+	  /* take clicked points from control point data set */
+	  for (j=0; j<4; j++)	for (k=0; k<nfix; k++)
+	    {
+	      if (fix[k].pnr == nr[i][j])	fix4[j] = fix[k];
+	    }
+
+	  /* get approx for orientation and ap */
+	  read_ori (&Ex[i], &I[i], img_ori0[i]);
+	  fp1 = fopen (img_addpar0[i], "r");
+	  if (! fp1)  fp1 = fopen ("addpar.raw", "r");
+
+	  if (fp1) {
+	    fscanf (fp1, "%lf %lf %lf %lf %lf %lf %lf",
+		    &ap[i].k1,&ap[i].k2,&ap[i].k3,
+		    &ap[i].p1,&ap[i].p2,
+		    &ap[i].scx,&ap[i].she);
+	    fclose (fp1);} else {
+	      printf("no addpar.raw\n");
+	      ap[i].k1=ap[i].k2=ap[i].k3=ap[i].p1=ap[i].p2=ap[i].she=0.0;
+	      ap[i].scx=1.0;
+	    }
+
+
+	  /* transform clicked points */
+	  for (j=0; j<4; j++)
+	    {
+	      pixel_to_metric (pix0[i][j].x, pix0[i][j].y,
+			       imx,imy, pix_x, pix_y,
+			       &crd0[i][j].x, &crd0[i][j].y,
+			       chfield);
+	      correct_brown_affin (crd0[i][j].x, crd0[i][j].y, ap[i],
+				   &crd0[i][j].x, &crd0[i][j].y);
+	    }
+
+	  /* raw orientation with 4 points */
+	  raw_orient (Ex[i], I[i], ap[i], mmp, 4, fix4, crd0[i], &Ex[i],1);
+	  
+	 
+	  /* sorting of detected points by back-projection */
+	  just_plot (interp, Ex[i], I[i], ap[i], mmp,
+			imx,imy, pix_x,pix_y,
+			nfix, fix,  chfield, i);
+
+	}
+    
+      break;
+
+    case 10: puts ("Orientation from particles"); strcpy(buf, "");
+
+      for (i_img=0; i_img<n_img; i_img++)
+	{
+
+		/* read control point coordinates for man_ori points */
+	 
+
+  fpp = fopen_r ("parameters/sequence.par");
+  for (i=0; i<4; i++){
+     fscanf (fpp, "%s\n", seq_name[i]);     /* name of sequence */
+     fscanf (fpp,"%d\n", &seq_first);
+     fscanf (fpp,"%d\n", &seq_last);
+  }
+  fclose (fpp);
+
+  /*  read from main parameter file  */
+  fpp = fopen_r ("parameters/ptv.par");
+  fscanf (fpp, "%d\n", &n_img);
+  fclose (fpp);
+
+  i=0;
+  for (filenumber=seq_first; filenumber<seq_last+1; filenumber++){
+
+	  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+      else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
+      else       sprintf (filein, "res/rt_is.%3d", filenumber);
+
+      FILEIN = fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+	  /////////open target file(s)!
+	  /* read targets of each camera */
+
+      nt4[3][i]=0;
+      compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein_T);
+
+      FILEIN_T= fopen (filein_T, "r");
+      if (! FILEIN_T) printf("Can't open ascii file: %s\n", filein_T);
+
+      fscanf (FILEIN_T, "%d\n", &nt4[3][i_img]);
+      for (j=0; j<nt4[3][i_img]; j++){
+	     fscanf (FILEIN_T, "%4d %lf %lf %d %d %d %d %d\n",
+		      &t4[3][i_img][j].pnr, &t4[3][i_img][j].x,
+		      &t4[3][i_img][j].y, &t4[3][i_img][j].n ,
+		      &t4[3][i_img][j].nx ,&t4[3][i_img][j].ny,
+		      &t4[3][i_img][j].sumg, &t4[3][i_img][j].tnr);
+	  }
+      fclose (FILEIN_T);
+	  ////////done reading target files
+
+      fscanf(FILEIN, "%d\n", &dumy); /* read # of 3D points on dumy */
+      do{
+          /*read dataset row by row, x,y,z and correspondences */
+		  a[0]=-1;a[1]=-1;a[2]=-1;a[3]=-1;
+		  if (n_img==4){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1], &a[2], &a[3]);
+		  }
+		  if (n_img==3){
+		        fscanf(FILEIN, "%d %lf %lf %lf %d %d %d\n",
+	            &dumy, &fix[i].x, &fix[i].y, &fix[i].z,
+	            &a[0], &a[1], &a[2]);
+		  }
+          ////////////auch pix lesen according a0,a1,a2,a3!!! 
+		  if(a[0]>-1 && a[1]>-1 && a[2]>-1 && a[3]>-1){
+		      pix[i_img][i].x=t4[3][i_img][a[i_img]].x;
+		      pix[i_img][i].y=t4[3][i_img][a[i_img]].y;
+		      pix[i_img][i].pnr=i; 
+              fix[i].pnr=i;
+		           
+              i++;
+              nfix =i;
+		  }
+
+      }while(!feof(FILEIN));
+      fclose(FILEIN);
+
+
+	  
+  }//end of loop through seq, but loop i_img still open
+      
+	
+		for (i=0; i<nfix ; i++)
+	    {
+	      pixel_to_metric (pix[i_img][i].x, pix[i_img][i].y,
+			       imx,imy, pix_x, pix_y,
+			       &crd[i_img][i].x, &crd[i_img][i].y,
+			       chfield);
+	      crd[i_img][i].pnr = pix[i_img][i].pnr;
+	    }
+
+	  
+	  /* ================= */
+
+	    orient (interp, Ex[i_img], I[i_img], ap[i_img], mmp,
+		    nfix, fix, crd[i_img],
+		    &Ex[i_img], &I[i_img], &ap[i_img], i_img);
+
+	  /* ================= */
+
+
+	  /* save orientation and additional parameters */
+	  write_ori (Ex[i_img], I[i_img], img_ori[i_img]);
+	  fp1 = fopen (img_addpar[i_img], "w");
+	  fprintf (fp1, "%f %f %f %f %f %f %f",
+		   ap[i_img].k1, ap[i_img].k2, ap[i_img].k3,
+		   ap[i_img].p1, ap[i_img].p2,
+		   ap[i_img].scx, ap[i_img].she);
+	  fclose (fp1);
+	}
+      Tcl_Eval(interp, ".text delete 3");
+      Tcl_Eval(interp, ".text delete 1");
+      Tcl_Eval(interp, ".text insert 1 \"Orientation from particles \"");
+      Tcl_Eval(interp, ".text delete 2");
+	  if (examine != 4)
+         Tcl_Eval(interp, ".text insert 2 \"...done, sigma0 for each image -> \"");
+	  if (examine == 4 && multi==0)
+		 Tcl_Eval(interp, ".text insert 2 \"resection data written to disk \"");
+      Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
+      Tcl_Eval(interp, ".text insert 3 $tbuf");
 
       break;
+
     }
   return TCL_OK;
 }

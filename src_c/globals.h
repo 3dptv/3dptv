@@ -150,6 +150,7 @@ int  nearest_neighbour_pix();
 void img_coord();
 void raw_orient();
 void sortgrid_man();
+void just_plot();
 void det_lsq ();
 void det_lsq_2 ();
 void det_lsq_3 ();
@@ -160,6 +161,7 @@ void volumedimension();
 
 double epi_line ();
 int  epi_mm ();
+int  epi_mm_2D ();
 void find_candidate_plus_msg ();
 void find_candidate_plus ();
 

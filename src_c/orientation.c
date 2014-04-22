@@ -46,6 +46,8 @@ int	       	nr;  		/* image number for residual display */
     P[1800], p, sumP, pixnr[3600];
   double 	Xp, Yp, Zp, xp, yp, xpd, ypd, r, qq;
   FILE 	*fp1;
+  int dummy, multi;
+
 
   /* read, which parameters shall be used */
   fp1 = fopen_r ("parameters/orient.par");
@@ -100,10 +102,10 @@ int	       	nr;  		/* image number for residual display */
 	  if (crd[i].pnr != fix[i].pnr)	continue;
 
 	  /* do not use the corner points of plate 85 */
-	  if (nfix == 85  &&  fix[i].pnr == 1)	continue;
+	  /*if (nfix == 85  &&  fix[i].pnr == 1)	continue;
 	  if (nfix == 85  &&  fix[i].pnr == 7)	continue;
 	  if (nfix == 85  &&  fix[i].pnr == 43)	continue;
-	  if (nfix == 85  &&  fix[i].pnr == 49)	continue;
+	  if (nfix == 85  &&  fix[i].pnr == 49)	continue;*/
 
 
 	  pixnr[n/2] = i;		/* for drawing residuals */
@@ -314,17 +316,32 @@ int	       	nr;  		/* image number for residual display */
   printf ("scale for x'  = %8.5f   +/- %8.5f\n", ap0.scx, sigmabeta[14]);
   printf ("shearing      = %8.5f   +/- %8.5f\n", ap0.she*ro, sigmabeta[15]*ro);
 
+
+  fp1 = fopen_r ("parameters/examine.par");
+  fscanf (fp1,"%d\n", &dummy);
+  fscanf (fp1,"%d\n", &multi);
+  fclose (fp1);
+  if (dummy==1){
+      examine=4;
+  }
+  else{
+      examine=0;
+  }
+  
+
   /* show original images with residual vectors (requires globals) */
   sprintf (val, "%d: %5.2f micron, ", nr+1, sigma0*1000);
   strcat(buf,val);
 
+//if(multi==0){
   read_image (interp, img_name[nr], img[nr]);
   sprintf(val, "newimage %d", nr+1);
   Tcl_Eval(interp, val);
+//}
 
   puts (buf);
 
-
+//if(multi==0){
   for (i=0; i<n_obs-10; i+=2)
     {
       n = pixnr[i/2];
@@ -336,6 +353,8 @@ int	       	nr;  		/* image number for residual display */
       drawcross (interp, intx1, inty1, 3, nr , "orange");
       drawvector (interp, intx1, inty1, intx2, inty2, 1, nr , "red");
     }
+//}
+
 
 
   if (stopflag)
@@ -349,7 +368,7 @@ int	       	nr;  		/* image number for residual display */
 
 
 
-void raw_orient (Ex0, I, ap, mm, nfix, fix, crd, Ex)
+void raw_orient (Ex0, I, ap, mm, nfix, fix, crd, Ex,only_show)
 Exterior  Ex0, *Ex;
 Interior  I;
 ap_52	  ap;
@@ -363,6 +382,7 @@ coord_2d  crd[];
   double 		Xp, Yp, Zp, xp, yp, xpd, ypd;
   int     	i,j,n, itnum, stopflag, n_obs=0;
   double		dm = 0.0001,  drad = 0.000001;
+ 
 
   /* init X, y (set to zero) */
   for (i=0; i<8; i++)
@@ -380,6 +400,11 @@ coord_2d  crd[];
      because of their residuals */
 
   itnum = 0;  stopflag = 0;
+
+///////////make a menu so one see the raw guess!!!!!
+  if(only_show==1) stopflag=1;
+/////// Beat Lüthi 9. Mai 2007
+
   while ((stopflag == 0) && (itnum < 20))
     {
       ++itnum;
