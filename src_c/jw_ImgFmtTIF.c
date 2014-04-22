@@ -250,14 +250,14 @@ int FileReadTIF(Tcl_Interp *interp,
 	return TCL_ERROR;
     }
 
-    if ((srcX + width) > fileImgWidth) {
+    if ((srcX + width) > (int)fileImgWidth) {
 	width = fileImgWidth - srcX;
     }
-    if ((srcY + height) > fileImgHeight) {
+    if ((srcY + height) > (int)fileImgHeight) {
 	height = fileImgHeight - srcY;
     }
     if ((width <= 0) || (height <= 0)
-	|| (srcX >= fileImgWidth) || (srcY >= fileImgHeight)) {
+	|| (srcX >= (int)fileImgWidth) || (srcY >= (int)fileImgHeight)) {
 	return TCL_OK;
     }
 
