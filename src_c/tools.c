@@ -179,8 +179,10 @@ int		nr;
 {
   char	nr_ch[256];
 
-  if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
-  else if (nr < 100)	sprintf (nr_ch, "0%2d",  nr);
+//  if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
+//  else if (nr < 100)	sprintf (nr_ch, "0%2d",  nr);
+  if (nr < 10)		sprintf (nr_ch, "%1d", nr);
+  else if (nr < 100)	sprintf (nr_ch, "%1d",  nr);
   else	sprintf (nr_ch, "%3d",  nr);
 
   sprintf (filename, "%s%s%s", basename, str, nr_ch);

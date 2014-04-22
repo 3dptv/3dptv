@@ -78,7 +78,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
 
 
   /* sequence loop */
-  for (step = seq_first; step < seq_last; step++)
+  for (step = seq_first; step < seq_last; step=step++)
     {
       sprintf (buf, "Time step: %d, seqnr: %d, Particle info:", step- seq_first, step);
       Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);

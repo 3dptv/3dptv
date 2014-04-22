@@ -305,7 +305,6 @@ int	       	nr;	       	/* image number for ap etc. */
 			  cand[*count].pnr = j;
 			  cand[*count].tol = d;
 			  cand[*count].corr = corr;
-
 			  (*count)++;
 		  } else { printf("in find_candidate_plus: count > maxcand\n");}
 			}
@@ -332,7 +331,10 @@ target		pix[];
 int    		num, *count, i12;
 double		xa, ya, xb, yb, eps;
 int    		n, nx, ny, sumg;
+/*
 candidate	cand[3];
+*/
+candidate	cand[];
 
 {
   register int	j;
@@ -407,11 +409,11 @@ candidate	cand[3];
 			{
 			  if (*count>=maxcand)
 			    { printf("More candidates than (maxcand): %d\n",*count); return; }
-			  cand[*count].pnr = j;
+			  cand[*count].pnr = p2;
 			  cand[*count].tol = d;
  			  cand[*count].corr = corr;
 			  (*count)++;
-			  printf ("%3.0f/%3.1f ", corr, d*1000);
+			  printf ("%d %3.0f/%3.1f \n", p2, corr, d*1000);
 			}
 		    }
 		}

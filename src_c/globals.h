@@ -3,7 +3,7 @@
 #define nmax 5120
 
 extern	int    	n_img;			       /* no of images */
-extern  int	hp_flag;           	       /* flag for highpass */
+extern  int		hp_flag;           	       /* flag for highpass */
 extern	int    	tiff_flag;	               /* flag for tiff header */
 extern	int    	chfield;	               /* flag for field mode */
 extern	int    	nfix;	       		       /* no. of control points */
@@ -33,7 +33,7 @@ extern	double 	pix_x, pix_y;		     	/* pixel size */
 extern	double 	pi, ro;				/* pi, ro */
 extern	double 	cn, cnx, cny, csumg, eps0, corrmin;	 /* correspond. par */
 extern	double 	rmsX, rmsY, rmsZ, mean_sigma0;		 /* a priori rms */
-extern	double  X_lay[], Zmin_lay[], Zmax_lay[];         /* illu. layer */
+extern	double  X_lay[],   Zmin_lay[],   Zmax_lay[];         /* illu. layer current slice */
 
 extern	FILE   	*fp1, *fp2, *fp3, *fp4, *fpp;	/* file pointers */
 

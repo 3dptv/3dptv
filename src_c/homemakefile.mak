@@ -3,11 +3,12 @@
 #----------------------------------------------------------------------#
 
 
-INC_DIR1 = C:\Tcl\include\
+INC_DIR1 = C:\Progra~1\Tcl\include\
 
-TCL_LIB = C:\Tcl\lib\tcl84.lib 
-TK_LIB = C:\Tcl\lib\tk84.lib
-TIFF_LIB = H:\tk84ptv\src_c\libtiff.lib
+TCL_LIB = C:\Progra~1\Tcl\lib\tcl84.lib 
+TK_LIB = C:\Progra~1\Tcl\lib\tk84.lib
+TIFF_LIB = F:\SPTV\Sourcecode\scanptv\src_c\libtiff.lib
+
 
 OBJ = jw_main.obj \
 	jw_ImgFmtTIF.obj \
@@ -40,7 +41,9 @@ OBJ = jw_main.obj \
 
 
 all:	$(OBJ)
-	cl -o jw_prog $(OBJ) $(TCL_LIB) $(TK_LIB) $(TCL_LIB) $(TK_LIB) $(TIFF_LIB)
+	cl -o SPTV_WIP $(OBJ) $(TCL_LIB) $(TK_LIB) $(TCL_LIB) $(TK_LIB) $(TIFF_LIB)
 
 $(OBJ):  
-	cl -c -I$(INC_DIR1) $*.c
+	cl -c -I$(INC_DIR1) $*.c /FR
+	
+	

@@ -17,13 +17,21 @@ Routines contained:    	flow_demo_c
 
 int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int i_seq, nr;
+  int i, i_seq, nr;
   char	        name[128];
   unsigned char	*imgf;
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
 
   nr = atoi(argv[1]);
+
+  fpp = fopen_r ("parameters/sequence.par");
+  for (i=0; i<4; i++)
+    fscanf (fpp, "%s\n", seq_name[i]);     /* name of sequence */
+  fscanf (fpp,"%d\n", &seq_first);
+  fscanf (fpp,"%d\n", &seq_last);
+  fclose (fpp);
+
 
   /* allocate memory */
   imgf = (unsigned char *) calloc (imgsize, 1);

@@ -45,7 +45,7 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
   fprintf(fp2, "   heightAngle   0.785398 }\n\n\n");    
   
   /* create cameras */
-  
+  /*
   fprintf(fp2, "#create cameras\n\n");
 
   for (i=0; i<n_img; i++)
@@ -71,7 +71,7 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
       fprintf(fp2, "    rotation 1 0 0 1.57079 }\n");
       fprintf(fp2, "   Cylinder { radius %3.2f height %3.2f } }\n\n", imx*pix_x, I[i].cc/2);
     }
- 
+  */
   /*  
   fprintf(fp2, "#create coordinate axis\n\n");
   fprintf(fp2, "  DEF group0 Separator { Label { label \"x-axis\" }\n");

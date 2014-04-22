@@ -272,10 +272,7 @@ int FileReadTIF(Tcl_Interp *interp,
     */
     TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometrictype);
     /* test entry !!! */
-    /*
-    printf("\nFileReadTIF: photo interpr = %d", photometrictype);
-    */
-    if ((photometrictype == 0) || (photometrictype == 1)) {
+    if ((photometrictype == 0) || (photometrictype == 1) || (photometrictype == 3)) {
         /*
            bw or grayscale image
         */
@@ -299,15 +296,6 @@ int FileReadTIF(Tcl_Interp *interp,
         block.offset[0] = 0;
         block.offset[1] = 1;
         block.offset[2] = 2;
-    } else if (photometrictype == 3) {
-        /*
-           palette color image
-        */
-        Tcl_AppendResult(interp, "photometric interpretation 3 ",
-            "(palette color) ",
-            "not yet supported", NULL);
-        TIFFSetErrorHandler(prev_handler);
-        return TCL_ERROR;
     } else {
         Tcl_AppendResult(interp, "photometric interpretation >2 ",
             "(palette color and transparency mask) ",

@@ -105,7 +105,7 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
   int  i;
   const char *valp;
 
-  puts ("\nMultimedia Particle Positioning and Tracking\n");
+  puts ("\nMultimedia Particle Positioning and Tracking (Scanning Mode)\n");
 
   valp = Tcl_GetVar(interp, "examine",  TCL_GLOBAL_ONLY);
   examine = atoi (valp);
@@ -143,8 +143,14 @@ int init_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
   fscanf (fpp, "%lf\n", &X_lay[1]);
   fscanf (fpp, "%lf\n", &Zmin_lay[1]);
   fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+  fscanf (fpp, "%lf", &cnx);
+  fscanf (fpp, "%lf", &cny);
+  fscanf (fpp, "%lf", &cn);
+  fscanf (fpp, "%lf", &csumg);
+  fscanf (fpp, "%lf", &corrmin);
+  fscanf (fpp, "%lf", &eps0);
   fclose (fpp);
-
+  
   mmp.nlay = 1;
 
   /* read sequence parameters (needed for some demos) */
@@ -228,7 +234,32 @@ int start_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
   fscanf (fpp, "%lf\n", &mmp.d[0]);
   fclose (fpp);
 
+    /* read illuminated layer data */
+  fpp = fopen_r ("parameters/criteria.par");
+  fscanf (fpp, "%lf\n", &X_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+  fscanf (fpp, "%lf\n", &X_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+  fscanf (fpp, "%lf", &cnx);
+  fscanf (fpp, "%lf", &cny);
+  fscanf (fpp, "%lf", &cn);
+  fscanf (fpp, "%lf", &csumg);
+  fscanf (fpp, "%lf", &corrmin);
+  fscanf (fpp, "%lf", &eps0);
+  fclose (fpp);
+
   mmp.nlay = 1;
+
+  /* read sequence parameters (needed for some demos) */
+
+  fpp = fopen_r ("parameters/sequence.par");
+
+  for (i=0; i<4; i++)		fscanf (fpp, "%s\n", seq_name[i]);
+  fscanf (fpp,"%d\n", &seq_first);
+  fscanf (fpp,"%d\n", &seq_last);
+  fclose (fpp);
 
   /*  create file names  */
   for (i=0; i<n_img; i++)
@@ -463,22 +494,7 @@ int correspondences_proc_c (ClientData clientData, Tcl_Interp* interp, int argc,
       quicksort_coord2d_x (geo[i_img], num[i_img]);
     }
 
-  /* read illuminated layer data for demo version */
-  fpp = fopen_r ("parameters/criteria.par");
-  fscanf (fpp, "%lf\n", &X_lay[0]);
-  fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-  fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-  fscanf (fpp, "%lf\n", &X_lay[1]);
-  fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-  fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-  /* read criteria for accepted match (shape, tolerance), globals */
-  fscanf (fpp, "%lf", &cnx);
-  fscanf (fpp, "%lf", &cny);
-  fscanf (fpp, "%lf", &cn);
-  fscanf (fpp, "%lf", &csumg);
-  fscanf (fpp, "%lf", &corrmin);
-  fscanf (fpp, "%lf", &eps0);
-  fclose (fpp);
+
   /* init multimedia radial displacement LUTs */
   /* ======================================== */
 
@@ -667,10 +683,14 @@ X /= n_img; Y /= n_img;
 
 int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
-  int     i, j, ok, k;
+  int     i, j, ok, k, nslices=19, slicepos=0;
   char    seq_ch[3], seq_name[4][128];
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
+  double slice_step;
+  double slicethickness;
+  double zdim, z_cen_slice[19];
+
 
   fpp = fopen_r ("parameters/sequence.par");
   for (i=0; i<4; i++)
@@ -679,10 +699,60 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
   fscanf (fpp,"%d\n", &seq_last);
   fclose (fpp);
 
+
   display = atoi(argv[1]);
+
+  /* scanning ptv ************** */
+printf("\nObject volume is scanned in %d slices!\n", nslices);
+ slicepos=0;
+  /* read illuminated Volume */
+  fpp = fopen_r ("parameters/criteria.par");
+  fscanf (fpp, "%lf\n", &X_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+  fscanf (fpp, "%lf\n", &X_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+  fscanf (fpp, "%lf", &cnx);
+  fscanf (fpp, "%lf", &cny);
+  fscanf (fpp, "%lf", &cn);
+  fscanf (fpp, "%lf", &csumg);
+  fscanf (fpp, "%lf", &corrmin);
+  fscanf (fpp, "%lf", &eps0);
+  fclose (fpp);
+
+  mmp.nlay = 1;
+
+ zdim=Zmax_lay[0]-Zmin_lay[0];
+ slice_step= zdim/nslices;
+ slicethickness=5.0;
+
+printf("\nzdim: %f, max: %f, min: %f, st: %f\n", zdim,Zmax_lay[0], Zmin_lay[0], slice_step);
+
+
+//for (j=0; j<nslices; j++)
+//	{
+//	  z_cen_slice[j]=Zmax_lay[0]-j*slice_step;
+
+//	}
+
+  /* ************** */
+
 
   for (i=seq_first; i<seq_last+1; i++)
     {
+
+printf("\nstep: %d, zslice[j]: %f, slicepos: %d\n", i);
+
+//	  Zmax_lay[0]= z_cen_slice[slicepos] - slicethickness/2.0;
+//	  Zmin_lay[0]= z_cen_slice[slicepos] + slicethickness/2.0;
+//	  Zmax_lay[1]= z_cen_slice[slicepos] - slicethickness/2.0;
+//	  Zmin_lay[1]= z_cen_slice[slicepos] + slicethickness/2.0;
+//printf("in sequence zslice[j]: %f, zmin0: %f, zmax0: %f\n",
+//z_cen_slice[slicepos], Zmax_lay[0],Zmin_lay[0] );
+
+ //slicepos++; if (slicepos==nslices) {slicepos=0;}
+
       if (i < 10)             sprintf (seq_ch, "00%1d", i);
       else if (i < 100)       sprintf (seq_ch, "0%2d",  i);
       else       sprintf (seq_ch, "%3d",  i);
@@ -729,22 +799,6 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
       if (display) {Tcl_Eval(interp, "update idletasks");}
       determination_proc_c (clientData, interp, argc, argv);
 
-      /* asci */
-      /*
-      sprintf (filename, "corr_%s", seq_ch);
-      fp1 = fopen (filename, "w");
-      fprintf(fp1,"%d\n", match);
-       for (j=0;j<match;j++)
-	{
-	  p1=p2=p3=p4=-2;
-	  if (con[j].p[0] > -1) p1=geo[0][con[j].p[0]].pnr;
-	  if (con[j].p[1] > -1) p2=geo[1][con[j].p[1]].pnr;
-	  if (con[j].p[2] > -1) p3=geo[2][con[j].p[2]].pnr;
-	  if (con[j].p[3] > -1) p4=geo[3][con[j].p[3]].pnr;
-	  fprintf(fp1,"%4d  %4d  %4d  %4d  %4d\n", j+1,p1,p2,p3,p4 );
-	}
-      fclose (fp1);
-      */
 
       /* delete unneeded files */
 
@@ -752,9 +806,6 @@ int sequence_proc_c  (ClientData clientData, Tcl_Interp* interp, int argc, const
 	{
 	  ok = remove (img_lp_name[j]);
 	  ok = remove (img_hp_name[j]);
-	  /*
-	  sprintf (filename, "%s_targets", img_name[j]); ok = remove (filename);
-	  */
 	}
     }
   /* reset of display flag */

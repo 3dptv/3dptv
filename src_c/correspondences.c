@@ -23,7 +23,6 @@ Description:	       	establishment of correspondences for 2/3/4 cameras
 /****************************************************************************/
 
 void correspondences_4 (Tcl_Interp* interp)
-
 {
   int 	i,j,k,l,m,n,o,  i1,i2,i3;
   int   count, match0=0, match4=0, match3=0, match2=0;
@@ -48,22 +47,7 @@ void correspondences_4 (Tcl_Interp* interp)
   /* ----------------------------------------------------------------------- */
 
 
-  /* read illuminated layer data */
-  fpp = fopen_r ("parameters/criteria.par");
-  fscanf (fpp, "%lf\n", &X_lay[0]);
-  fscanf (fpp, "%lf\n", &Zmin_lay[0]);
-  fscanf (fpp, "%lf\n", &Zmax_lay[0]);
-  fscanf (fpp, "%lf\n", &X_lay[1]);
-  fscanf (fpp, "%lf\n", &Zmin_lay[1]);
-  fscanf (fpp, "%lf\n", &Zmax_lay[1]);
-  /* read criteria for accepted match (shape, tolerance), globals */
-  fscanf (fpp, "%lf", &cnx);
-  fscanf (fpp, "%lf", &cny);
-  fscanf (fpp, "%lf", &cn);
-  fscanf (fpp, "%lf", &csumg);
-  fscanf (fpp, "%lf", &corrmin);
-  fscanf (fpp, "%lf", &eps0);
-  fclose (fpp);
+printf("in corres zmin0: %f, zmax0: %f\n", Zmax_lay[0],Zmin_lay[0] );
 
   /*  initialize ...  */
   sprintf (buf,"Establishing correspondences");
@@ -371,31 +355,41 @@ void correspondences_4 (Tcl_Interp* interp)
 
   /* draw crosses on canvas */
   if (display) {
-    for (i=0; i<match4; i++)	       	/* pink crosses for quadruplets */
+    for (i=0; i<match4; i++)	       	/* red crosses for quadruplets */
       {
 	for (j=0; j<n_img; j++)
 	  {
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1)
 	      {
-		intx = pix[j][p1].x - 0.5;
-		inty = pix[j][p1].y - 0.5;
-		drawcross (interp, intx, inty, cr_sz, j, "red");
-		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */
+		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
+		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
+		  {
+		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
+		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
+		    drawcross (interp, intx, inty, cr_sz, j, "red");
+		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white");
+		  }
 	      }
 	  }
       }
-    for (i=match4; i<match4+match3; i++)	/* red crosses for triplets */
+
+    for (i=match4; i<match4+match3; i++)	/* green crosses for triplets */
       {
 	for (j=0; j<n_img; j++)
 	  {
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1 && con[i].p[j] > -1)
 	      {
-		intx = pix[j][p1].x - 0.5;
-		inty = pix[j][p1].y - 0.5;
-		drawcross ( interp, intx, inty, cr_sz, j, "green" );
-		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */ /* number of triplet */
+		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
+		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
+		  {
+		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
+		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
+		    drawcross ( interp, intx, inty, cr_sz, j, "green" );
+		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white");/* number of triplet */
+		  }
+		
 	      }
 	  }
       }
@@ -406,10 +400,34 @@ void correspondences_4 (Tcl_Interp* interp)
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1 && con[i].p[j] > -1)
 	      {
-		intx = pix[j][p1].x - 0.5;
-		inty = pix[j][p1].y - 0.5;
-		drawcross (interp, intx, inty, cr_sz, j, "yellow");
-		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */  /* number of triplet */
+		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
+		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
+		  {
+		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
+		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
+		    drawcross (interp, intx, inty, cr_sz, j, "yellow");
+		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white"); /* number of triplet */
+		  }
+	      }
+	  }
+      }
+    
+    for (j=0; j<n_img; j++)
+      {
+	
+	for (i=0; i<num[j]; i++)
+	  {			      	/* blue crosses for unused detections */
+	    p1 = pix[j][i].tnr;
+	    if (p1 == -1 )
+	      {
+		if (   (fabs(pix[j][i].x-zoom_x[j]) < imx/(2*zoom_f[j]))
+		       && (fabs(pix[j][i].y-zoom_y[j]) < imy/(2*zoom_f[j])))
+		  {
+		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][i].x-zoom_x[j]));
+		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][i].y-zoom_y[j]));
+		    drawcross (interp, intx, inty, cr_sz, j, "blue");
+		    
+		  }
 	      }
 	  }
       }
