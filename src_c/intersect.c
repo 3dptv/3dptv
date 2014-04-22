@@ -130,7 +130,7 @@ double	X1,Y1,Z1,a1,b1,c1, X2,Y2,Z2,a2,b2,c2, X3,Y3,Z3,a3,b3,c3, *X,*Y,*Z;
 /* intersection, given three points with direction cosines */
 
 {
-	int		i, n_max1=0, n_max2;
+	int		i, n_max1, n_max2;
 	double	base[6], max_base1=0, max_base2=0, Za, Zb;
 
 	/* find the maximum base component to decide, wether to take 

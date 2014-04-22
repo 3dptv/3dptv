@@ -3,22 +3,21 @@
 int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 
 {
-  int     i, j, click_x, click_y, n, zf, kind, deletedummy;
+  int     i, j, click_x, click_y, n, zf, kind;
   double  x, y, xa, ya;
   double  xa12, xb12, ya12, yb12;
   int     k, pt1, intx1, inty1, count, intx2, inty2, pt2;
   candidate cand[maxcand];
   Tk_PhotoHandle img_handle;
   Tk_PhotoImageBlock img_block;
- 
-  if (zoom_f[0] == 1) {zf = 2;} else { zf = zoom_f[0];}
 
+  zf = 4;
   click_x = atoi(argv[1]);
   click_y = atoi(argv[2]);
 
   n = atoi(argv[3]);
   kind = atoi(argv[4]);
-  if (examine)	zf *= 2;
+  if (examine)	zf *= 4;
   if (argc == 6 ) zf = atoi(argv[5]);
   
   switch (kind) 
@@ -54,10 +53,10 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
       if (n == 0)
 	{
 	  /* zoom and show img1 */
+
 	  zoom_x[0] = (click_x-imx/2)/zoom_f[0] + zoom_x[0];
 	  zoom_y[0] = (click_y-imy/2)/zoom_f[0] + zoom_y[0];
 	  zoom_f[0] = zf;
-
 	  if (zoom_x[0] < imx/(2*zoom_f[0])) zoom_x[0] = imx/(2*zoom_f[0]);
 	  if (zoom_x[0] > imx-imx/(2*zoom_f[0])) zoom_x[0] = imx-imx/(2*zoom_f[0]);
 	  if (zoom_y[0] < imy/(2*zoom_f[0]))  zoom_y[0] = imy/(2*zoom_f[0]);
@@ -71,7 +70,6 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
      
 	  sprintf(val, "newimage %d", 1);
 	  Tcl_Eval(interp, val);
-
 	  
 	  if (argc != 6 ) {
 	    mark_detections (interp, 0);  
@@ -89,7 +87,7 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 	    {
 	      /* calculate middle of epipolar band */
 	      /* for zoom positions in the other images */
-	      epi_mm (x,y, Ex[0], I[0], G[0], Ex[i], I[i], G[i], mmp,
+	      epi_mm (x,y, Ex[0], I[0], Ex[i], I[i], mmp,
 		      &xa12, &ya12, &xb12, &yb12);
 	      xa = (xa12 + xb12) / 2;  ya = (ya12 + yb12) / 2;
 	      distort_brown_affin (xa, ya, ap[i], &xa, &ya);
@@ -160,7 +158,6 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
       /* get geometric coordinates of nearest point in img[n] */
       x = (float) (click_x - imx/2)/zoom_f[n] + zoom_x[n];
       y = (float) (click_y - imy/2)/zoom_f[n] + zoom_y[n];
-
       pixel_to_metric (x,y, imx,imy, pix_x,pix_y, &x,&y, chfield);
       x -= I[n].xh;	y -= I[n].yh;
       correct_brown_affin (x, y, ap[n], &x, &y);
@@ -174,19 +171,18 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 	  return TCL_OK;
 	}
       pt1 = geo[n][k].pnr;
-
-      intx1 = (int) ( imx/2 + zoom_f[n] * (pix[n][pt1].x-zoom_x[n]));
-      inty1 = (int) ( imy/2 + zoom_f[n] * (pix[n][pt1].y-zoom_y[n]));
+      intx1 = (int) ( imx/2 + zf * (pix[n][pt1].x-zoom_x[n]));
+      inty1 = (int) ( imy/2 + zf * (pix[n][pt1].y-zoom_y[n]));
       drawcross (interp, intx1, inty1, cr_sz+2, n, "BlueViolet");
 
-      sprintf (buf, "%d %d %d %d %d\n", pt1, pix[n][pt1].nx, pix[n][pt1].ny,
+      sprintf (buf, "%d %d %d %d ", pix[n][pt1].nx, pix[n][pt1].ny,
 	       pix[n][pt1].n, pix[n][pt1].sumg);  puts (buf);
 	       	       	       
 	       for (i=0; i<n_img; i++)	 if (i != n)
 		 {
 		   /* calculate epipolar band in img[i] */
 		   epi_mm (geo[n][k].x,geo[n][k].y,
-			   Ex[n],I[n], G[n], Ex[i],I[i], G[i], mmp,
+			   Ex[n],I[n], Ex[i],I[i], mmp,
 			   &xa12, &ya12, &xb12, &yb12);
 		   
 		   /* search candidate in img[i] */
@@ -204,10 +200,10 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 				    &xa12, &ya12, chfield);
 		   metric_to_pixel (xb12, yb12, imx,imy, pix_x,pix_y,
 				    &xb12, &yb12, chfield);
-		   intx1 = (int) ( imx/2 + zoom_f[i] * (xa12 - zoom_x[i]));
-		   inty1 = (int) ( imy/2 + zoom_f[i] * (ya12 - zoom_y[i]));
-		   intx2 = (int) ( imx/2 + zoom_f[i] * (xb12 - zoom_x[i]));
-		   inty2 = (int) ( imy/2 + zoom_f[i] * (yb12 - zoom_y[i]));
+		   intx1 = (int) ( imx/2 + zf * (xa12 - zoom_x[i]));
+		   inty1 = (int) ( imy/2 + zf * (ya12 - zoom_y[i]));
+		   intx2 = (int) ( imx/2 + zf * (xb12 - zoom_x[i]));
+		   inty2 = (int) ( imy/2 + zf * (yb12 - zoom_y[i]));
 
 		   if ( n == 0 ) sprintf( val,"yellow");
 		   if ( n == 1 ) sprintf( val,"green");
@@ -216,15 +212,13 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 
 		   drawvector ( interp, intx1, inty1, intx2, inty2, 1, i, val);
 
-                   for (j=0; j<count; j++)
-                     {
-                       pt2 = cand[j].pnr;
-                       intx2 = (int) ( imx/2 + zoom_f[i] * (pix[i][pt2].x - zoom_x[i]));
-                       inty2 = (int) ( imy/2 + zoom_f[i] * (pix[i][pt2].y - zoom_y[i]));
-                       drawcross (interp, intx2, inty2, cr_sz+2, i, "orange");
-                     }
-   
-		   
+		   for (j=0; j<count; j++)
+		     {
+		       pt2 = cand[j].pnr;
+		       intx2 = (int) ( imx/2 + zf * (pix[i][pt2].x - zoom_x[i]));
+		       inty2 = (int) ( imy/2 + zf * (pix[i][pt2].y - zoom_y[i]));
+		       drawcross (interp, intx2, inty2, cr_sz+3, i, "red");
+		     }
 		 }
 
 	       break;
@@ -250,8 +244,6 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
       }
       break;
 
-
-	  
 /*------------------------ LEFT MOUSE BUTTON ------------------------------*/
 
     case 5: /* measure coordinates and grey value */

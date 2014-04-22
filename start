@@ -1,0 +1,3 @@
+#!/usr/bin/sh
+
+exec /home/logvert/willneff/prog/tk84ptv/jw_prog /home/logvert/willneff/prog/tk84ptv/ptvunix.tcl

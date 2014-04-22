@@ -463,23 +463,3 @@ unsigned char	*img1, *img2;
 	for (end=img1+imgsize, ptr1=img1, ptr2=img2; ptr1<end; ptr1++, ptr2++)
 	*ptr2 = *ptr1;
 }
-
-
-
-/*------------------------------------------------------------------------
-	Subtract mask, Matthias Oswald, Juli 08
-  ------------------------------------------------------------------------*/
-void subtract_mask (img, img_mask, img_new) 
-
-unsigned char	*img, *img_mask, *img_new;
-
-{
-	register unsigned char 	*ptr1, *ptr2, *ptr3;
-	int i;
-	
-	for (i=0, ptr1=img, ptr2=img_mask, ptr3=img_new; i<imgsize; ptr1++, ptr2++, ptr3++, i++)
-    {
-      if (*ptr2 == 0)  *ptr3 = 0;
-      else  *ptr3 = *ptr1;
-    }
- }

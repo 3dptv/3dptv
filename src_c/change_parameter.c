@@ -13,14 +13,6 @@
   Routines contained:   parameter_panel_init, done_proc_c
   
 *********************************************************************/
-
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
-
 #include "ptv.h"
 
 /********************************************************************/
@@ -56,8 +48,6 @@ int parameter_panel_init(Tcl_Interp* interp)
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "highpass", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "mp", "allCam", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "tiff", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "imx", val, TCL_GLOBAL_ONLY);
@@ -79,7 +69,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "mp", "thicknessglass", val, TCL_GLOBAL_ONLY);
 	fclose (fp1);
 
-	/* read 15 parameters from targ_rec.par */
+	/* read 13 parameters from targ_rec.par */
 
 	fp1 = fopen_r ("parameters/targ_rec.par");
 
@@ -109,20 +99,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "mp", "psumgv", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "mp", "pcrossize", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "mp", "mask", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "mp", "maskname", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "mp", "rel_disc", val, TCL_GLOBAL_ONLY);
 	fclose (fp1);
-
-
-    fp1 = fopen_r ("parameters/pft_version.par");
-    fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "mp", "target", val, TCL_GLOBAL_ONLY);
-	fclose (fp1);
-
 
 	/* read 12 parameters from criteria.par */
 
@@ -174,7 +151,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	
 	fclose (fp1);
 
-	/* read 12 parameters from cal_ori.par */
+	/* read 11 parameters from cal_ori.par */
 
 	fp1 = fopen_r ("parameters/cal_ori.par");
 
@@ -198,8 +175,6 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "cp", "ori4", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "tiff", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "pair", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "type", val, TCL_GLOBAL_ONLY);
 
@@ -235,7 +210,6 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "cp", "ppsumgv", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "ppcrossize", val, TCL_GLOBAL_ONLY);
-	
 
 	fclose (fp1);
 
@@ -279,21 +253,6 @@ int parameter_panel_init(Tcl_Interp* interp)
 
 	fclose (fp1);
 
-
-    fp1 = fopen_r ("parameters/shaking.par");
-    
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "first_shake", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "last_shake", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "maxPoints_shake", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "maxFrames_shake", val, TCL_GLOBAL_ONLY);
-	
-	fclose (fp1);
-
-
 	/* read 11 parameters from orient.par */
 
 	fp1 = fopen_r ("parameters/orient.par");
@@ -320,20 +279,8 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "cp", "scx", val, TCL_GLOBAL_ONLY);
 	fscanf (fp1, "%s", val);
 	Tcl_SetVar2(interp, "cp", "she", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "interf", val, TCL_GLOBAL_ONLY);
 
 	fclose (fp1);
-
-
-   
-	fp1 = fopen_r ("parameters/examine.par");
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "examineFlag", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	Tcl_SetVar2(interp, "cp", "combineFlag", val, TCL_GLOBAL_ONLY);
-	fclose (fp1);
-
 
 	/* read 5 parameters from track.par */
 
@@ -368,39 +315,7 @@ int parameter_panel_init(Tcl_Interp* interp)
 	Tcl_SetVar2(interp, "tp", "dny", val, TCL_GLOBAL_ONLY);	
 	fscanf (fp1, "%s", val);
 	*/
-
-	/* 5 textboxes */
-		Tcl_SetVar2(interp, "tp", "maxnum", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-		Tcl_SetVar2(interp, "tp", "deltat", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "vmax", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-		Tcl_SetVar2(interp, "tp", "linktol", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-		Tcl_SetVar2(interp, "tp", "jumptol", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-	/* 8 checkboxes */
-			Tcl_SetVar2(interp, "tp", "gluing", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "track", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "iterate", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "remkin", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "wbin", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "wtraj", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "output", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-			Tcl_SetVar2(interp, "tp", "camconfig", val, TCL_GLOBAL_ONLY);
-	fscanf (fp1, "%s", val);
-
-
-
-
+	
 	fclose (fp1);
 
 	/* changed parameters are read out all together not before "done_proc_c" */
@@ -444,8 +359,6 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	valp = Tcl_GetVar2(interp, "mp", "camcal4",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "highpass",  TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "mp", "allCam",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "tiff",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
@@ -500,19 +413,9 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "mp", "mask",  TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "mp", "maskname",  TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "mp", "rel_disc",  TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
 
 	fclose (fp1);
 
-	fp1 = fopen ("parameters/pft_version.par", "w");
-    valp = Tcl_GetVar2(interp, "mp", "target",  TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	fclose (fp1);
 
 	fp1 = fopen ("parameters/criteria.par", "w");
 
@@ -567,8 +470,6 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "cp", "tiff", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "pair", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "cp", "type", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 
@@ -621,7 +522,6 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "cp", "ppcrossize", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
-	
 
 	fclose (fp1);
 
@@ -664,20 +564,6 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fclose (fp1);
 
 
-	fp1 = fopen ("parameters/shaking.par", "w");
-
-	valp = Tcl_GetVar2(interp, "cp", "first_shake", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "last_shake", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "maxPoints_shake", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "maxFrames_shake", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	
-	fclose (fp1);
-
-
 	fp1 = fopen ("parameters/orient.par", "w");
 
 	valp = Tcl_GetVar2(interp, "cp", "pnrori", TCL_GLOBAL_ONLY);
@@ -702,16 +588,7 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	fprintf (fp1, "%s\n", valp);
 	valp = Tcl_GetVar2(interp, "cp", "she", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "interf", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
 
-	fclose (fp1);
-
-	fp1 = fopen ("parameters/examine.par", "w");
-	valp = Tcl_GetVar2(interp, "cp", "examineFlag", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "cp", "combineFlag", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
 	fclose (fp1);
 
 
@@ -746,34 +623,6 @@ int done_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char*
 	valp = Tcl_GetVar2(interp, "tp", "dny", TCL_GLOBAL_ONLY);
 	fprintf (fp1, "%s\n", valp);
 	*/
-
-	valp = Tcl_GetVar2(interp, "tp", "maxnum", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "deltat", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "vmax", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "linktol", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "jumptol", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-
-	valp = Tcl_GetVar2(interp, "tp", "gluing", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "track", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "iterate", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "remkin", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "wbin", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "wtraj", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "output", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
-	valp = Tcl_GetVar2(interp, "tp", "camconfig", TCL_GLOBAL_ONLY);
-	fprintf (fp1, "%s\n", valp);
 
 
 	fclose (fp1);

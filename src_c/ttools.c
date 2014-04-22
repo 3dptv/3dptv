@@ -264,7 +264,7 @@ double X, Y, Z, xr[4], xl[4], yd[4], yu[4];
   quader[0].x=X+tpar.dvxmin; quader[0].y=Y+tpar.dvymin; quader[0].z=Z+tpar.dvzmin; /* --- */
   quader[1].x=X+tpar.dvxmax; quader[1].y=Y+tpar.dvymin; quader[1].z=Z+tpar.dvzmin; /* +-- */
   quader[2].x=X+tpar.dvxmin; quader[2].y=Y+tpar.dvymax; quader[2].z=Z+tpar.dvzmin; /* -+- */
-  quader[3].x=X+tpar.dvxmin; quader[3].y=Y+tpar.dvymin; quader[3].z=Z+tpar.dvzmax; /* --+ */ //changed by Beat and JuliAn Nov 2008
+  quader[3].x=X+tpar.dvxmax; quader[3].y=Y+tpar.dvymin; quader[3].z=Z+tpar.dvzmax; /* --+ */
   quader[4].x=X+tpar.dvxmax; quader[4].y=Y+tpar.dvymax; quader[4].z=Z+tpar.dvzmin; /* ++- */
   quader[5].x=X+tpar.dvxmax; quader[5].y=Y+tpar.dvymin; quader[5].z=Z+tpar.dvzmax; /* +-+ */
   quader[6].x=X+tpar.dvxmin; quader[6].y=Y+tpar.dvymax; quader[6].z=Z+tpar.dvzmax; /* -++ */
@@ -277,12 +277,12 @@ double X, Y, Z, xr[4], xl[4], yd[4], yu[4];
       xl[i]=imx;
       yd[i]=0;
       yu[i]=imy;
-      img_coord (point.x, point.y, point.z, Ex[i], I[i], G[i], ap[i], mmp, &xz,&yz);
+      img_coord (point.x, point.y, point.z, Ex[i], I[i], ap[i], mmp, &xz,&yz);
       metric_to_pixel (xz,yz, imx,imy, pix_x,pix_y, &xz,&yz, chfield);
 
       for (k=0; k<8; k++)
 	{
-	  img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], G[i], ap[i], mmp, &x,&y);
+	  img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], ap[i], mmp, &x,&y);
 	  metric_to_pixel (x,y, imx,imy, pix_x,pix_y, &x,&y, chfield);
 
 	  if (x <xl[i] ) xl[i]=x;

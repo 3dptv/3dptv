@@ -1,14 +1,14 @@
 #define sqr(x) x*x
-#define maxcand 200 //Beat changed it on 090325
-#define maxtrack 64 //Beat changed it on 090325
+#define maxcand 16
+#define maxtrack 32
 
-#define M 20000 //Beat changed it on 090325
+#define M 5000
 
 #ifndef  M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-#define POSI 80 //Beat changed it on 090325
+#define POSI 40
 
 typedef	double	Dmatrix[3][3];	/* 3 x 3 rotation matrix */
 
@@ -48,12 +48,6 @@ typedef struct
   double cc;
 }
 Interior;
-
-typedef struct
-{
-  double vec_x,vec_y,vec_z;
-}
-Glass;
 
 typedef struct
 {

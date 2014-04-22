@@ -11,13 +11,6 @@
 ** Changes:
 **
 *******************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
-
 #include "ptv.h"
 
 int seq_track_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
@@ -91,8 +84,8 @@ void read_ascii_data(int filenumber)
       c4[3][i].p[3]=-1;
     }
 
-  if (filenumber < 10)        sprintf (filein, "res/rt_is.%1d", filenumber);
-  else if (filenumber < 100)  sprintf (filein, "res/rt_is.%2d",  filenumber);
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
   else       sprintf (filein, "res/rt_is.%3d", filenumber);
 
   FILEIN = fopen (filein, "r");
@@ -129,10 +122,7 @@ void read_ascii_data(int filenumber)
 				filenumber, filein);
 
       FILEIN= fopen (filein, "r");
-	  if (! FILEIN){
-		  printf("Can't open ascii file: %s\n", filein);
-	  }
-	  else{
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
 
       fscanf (FILEIN, "%d\n", &nt4[3][i]);
       for (j=0; j<nt4[3][i]; j++)
@@ -144,41 +134,8 @@ void read_ascii_data(int filenumber)
 		  &t4[3][i][j].sumg, &t4[3][i][j].tnr);
 	}
       fclose (FILEIN);
-	      }
     }
 
-}
-
-/**********************************************************************/
-/* Added by Alex, 19.04.10 to read _targets only, for the external API */
-void read_targets(int i_img, int filenumber,  int *num)
-{
-  FILE	*FILEIN;
-  /* char	filein[256]; */
-  int	i, j;
-  int   dumy;
-  char filein[256];
- 
-
-	compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein);
-  /* read targets of each camera */
-      nt4[3][i_img]=0;
-
-      FILEIN= fopen (filein, "r");
-      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
-
-      fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
-      for (j=0; j<nt4[3][i_img]; j++)
-	{
-	  fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
-		  &pix[i_img][j].pnr,  &pix[i_img][j].x,
-		  &pix[i_img][j].y,    &pix[i_img][j].n ,
-		  &pix[i_img][j].nx,   &pix[i_img][j].ny,
-		  &pix[i_img][j].sumg, &pix[i_img][j].tnr);
-	}
-      fclose (FILEIN);
-
-	  *num = nt4[3][i_img];
 }
 
 /**********************************************************************/
@@ -190,8 +147,8 @@ void write_ascii_data(int filenumber)
 
   set = 0;
 
-  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.0%2d",  filenumber);
   else       sprintf (fileout, "res/ptv_is.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */
@@ -211,8 +168,8 @@ void write_ascii_data(int filenumber)
 
   /* create/update of new targets- and new rt_is-files */
 
-  if (filenumber < 10)        sprintf (fileout, "res/rt_is.%1d", filenumber);
-  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.%2d",  filenumber);
+  if (filenumber < 10)        sprintf (fileout, "res/rt_is.00%1d", filenumber);
+  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.0%2d",  filenumber);
   else       sprintf (fileout, "res/rt_is.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */
@@ -237,10 +194,8 @@ void write_ascii_data(int filenumber)
 				filenumber, fileout);
 
       FILEOUT= fopen (fileout, "w");
-	  if (! FILEOUT){
-		  printf("Can't open ascii file: %s\n", fileout);
-	  }
-	  else{
+      if (! FILEOUT) printf("Can't open ascii file: %s\n", fileout);
+
       fprintf (FILEOUT, "%d\n", nt4[set][i]);
       for (j=0; j<nt4[set][i]; j++)
 	{
@@ -251,7 +206,6 @@ void write_ascii_data(int filenumber)
 		  t4[set][i][j].sumg, t4[set][i][j].tnr);
 	}
       fclose (FILEOUT);
-	      }
     }
 }
 
@@ -265,8 +219,8 @@ void write_added(int filenumber)
 
   set = 0;
 
-  if (filenumber < 10)       sprintf (fileout, "res/added.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (fileout, "res/added.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/added.0%2d",  filenumber);
   else       sprintf (fileout, "res/added.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */
@@ -295,8 +249,8 @@ void write_addedback(int filenumber)
 
   set = 0;
 
-  if (filenumber < 10)       sprintf (fileout, "res/added.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (fileout, "res/added.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/added.0%2d",  filenumber);
   else       sprintf (fileout, "res/added.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */
@@ -343,8 +297,8 @@ void read_ascii_datanew(int filenumber)
       c4[3][i].p[3]=-1;
     }
 
-  if (filenumber < 10)        sprintf (filein, "res/rt_is.%1d", filenumber);
-  else if (filenumber < 100)  sprintf (filein, "res/rt_is.%2d",  filenumber);
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
   else       sprintf (filein, "res/rt_is.%3d", filenumber);
 
   FILEIN = fopen (filein, "r");
@@ -376,8 +330,8 @@ void read_ascii_datanew(int filenumber)
 
   /* read ptv_is-file for prev and next info */
 
-  if (filenumber < 10)       sprintf (filein, "res/ptv_is.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (filein, "res/ptv_is.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (filein, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (filein, "res/ptv_is.0%2d",  filenumber);
   else       sprintf (filein, "res/ptv_is.%3d",  filenumber);
 
   FILEIN = fopen (filein, "r");
@@ -396,8 +350,8 @@ void read_ascii_datanew(int filenumber)
 
   /* read added-file for prio info */
 
-  if (filenumber < 10)       sprintf (filein, "res/added.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (filein, "res/added.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (filein, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (filein, "res/added.0%2d",  filenumber);
   else       sprintf (filein, "res/added.%3d",  filenumber);
 
   FILEIN = fopen (filein, "r");
@@ -447,8 +401,8 @@ void write_ascii_datanew(int filenumber)
 
   set = 0;
 
-  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.%1d", filenumber);
-  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.%2d",  filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.0%2d",  filenumber);
   else       sprintf (fileout, "res/ptv_is.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */
@@ -468,8 +422,8 @@ void write_ascii_datanew(int filenumber)
 
   /* update of targets- and rt_is-files */
 
-  if (filenumber < 10)        sprintf (fileout, "res/rt_is.%1d", filenumber);
-  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.%2d",  filenumber);
+  if (filenumber < 10)        sprintf (fileout, "res/rt_is.00%1d", filenumber);
+  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.0%2d",  filenumber);
   else       sprintf (fileout, "res/rt_is.%3d",  filenumber);
 
   /*  printf ("write file: %s\n",fileout); */

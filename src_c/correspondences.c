@@ -13,36 +13,30 @@ Creation Date:	       	1988/89
 Description:	       	establishment of correspondences for 2/3/4 cameras
 
 ****************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
 
 #include "ptv.h"
 
-/* #define maxcand 100 */
+#define maxcand 16
 
 /****************************************************************************/
 /*--------------- 4 camera model: consistent quadruplets -------------------*/
 /****************************************************************************/
 
-void correspondences_4 (Tcl_Interp* interp, const char** argv)
+void correspondences_4 (Tcl_Interp* interp)
+
 {
   int 	i,j,k,l,m,n,o,  i1,i2,i3;
-  int   count, match0=0, match4=0, match3=0, match2=0, match1=0;
+  int   count, match0=0, match4=0, match3=0, match2=0;
   int 	p1,p2,p3,p4, p31, p41, p42;
   int  	pt1;
   int 	tim[4][nmax];
   int  	intx, inty;
-  double       	xa12,ya12,xb12,yb12,X,Y,Z;
+  double       	xa12, xb12, ya12, yb12;
   double       	corr;
   candidate   	cand[maxcand];
   n_tupel     	*con0;
   correspond  	*list[4][4];
 /* ----------------------------------------------------------------------- */
-
 
   /* allocate memory for lists of correspondences */
   for (i1=0; i1<n_img-1; i1++)	for (i2=i1+1; i2<n_img; i2++)
@@ -54,7 +48,22 @@ void correspondences_4 (Tcl_Interp* interp, const char** argv)
   /* ----------------------------------------------------------------------- */
 
 
-printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
+  /* read illuminated layer data */
+  fpp = fopen_r ("parameters/criteria.par");
+  fscanf (fpp, "%lf\n", &X_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[0]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[0]);
+  fscanf (fpp, "%lf\n", &X_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmin_lay[1]);
+  fscanf (fpp, "%lf\n", &Zmax_lay[1]);
+  /* read criteria for accepted match (shape, tolerance), globals */
+  fscanf (fpp, "%lf", &cnx);
+  fscanf (fpp, "%lf", &cny);
+  fscanf (fpp, "%lf", &cn);
+  fscanf (fpp, "%lf", &csumg);
+  fscanf (fpp, "%lf", &corrmin);
+  fscanf (fpp, "%lf", &eps0);
+  fclose (fpp);
 
   /*  initialize ...  */
   sprintf (buf,"Establishing correspondences");
@@ -79,29 +88,8 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
     }
 
 
-  /* -------------if only one cam and 2D--------- */ //by Beat Lüthi June 2007
-  if(n_img==1){
-	  if(res_name[0]==0){
-          sprintf (res_name, "rt_is");
-	  }
-	 fp1 = fopen (res_name, "w");
-		fprintf (fp1, "%4d\n", num[0]);
-	  for (i=0; i<num[0]; i++){
-          o = epi_mm_2D (geo[0][i].x,geo[0][i].y,
-		      Ex[0], I[0],  G[0], mmp,
-		      &X,&Y,&Z);
-          pix[0][geo[0][i].pnr].tnr=i;
-		  fprintf (fp1, "%4d", i+1);
-		  fprintf (fp1, " %9.3f %9.3f %9.3f", X, Y, Z);
-          fprintf (fp1, " %4d", geo[0][i].pnr);
-          fprintf (fp1, " %4d", -1);
-          fprintf (fp1, " %4d", -1);
-          fprintf (fp1, " %4d\n", -1);
-	  }
-	  fclose (fp1);
-	  match1=num[0];
-  }
-  /* -------------end of only one cam and 2D ------------ */
+  /* ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------ */
 
   /* matching  1 -> 2,3,4  +  2 -> 3,4  +  3 -> 4 */
 
@@ -113,22 +101,9 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
       /* establish correspondences from num[i1] points of img[i1] to img[i2] */
       for (i=0; i<num[i1]; i++)	if (geo[i1][i].x != -999)
 	{
-	  /*o = epi_mm (geo[i1][i].x,geo[i1][i].y,
-		      Ex[i1], I[i1], G[i1], Ex[i2], I[i2], G[i2], mmp,
+	  o = epi_mm (geo[i1][i].x,geo[i1][i].y,
+		      Ex[i1], I[i1], Ex[i2], I[i2], mmp,
 		      &xa12, &ya12, &xb12, &yb12);
-
-	  o = epi_mm (xa12, ya12,
-		      Ex[i2], I[i2], G[i2], Ex[i1], I[i1], G[i1], mmp,
-		      &xa12, &ya12, &xb12, &yb12);*/
-
-      o = epi_mm (geo[i1][i].x,geo[i1][i].y,
-		      Ex[i1], I[i1], G[i1], Ex[i2], I[i2], G[i2], mmp,
-		      &xa12, &ya12, &xb12, &yb12);
-	  
-    /////ich glaube, da muss ich einsteigen, wenn alles erledigt ist.
-	  ///////mit bild_1 x,y Epipole machen und dann selber was schreiben um die Distanz zu messen.
-	  ///////zu Punkt in bild_2.
-
 
 	  /* origin point in the list */
 	  p1 = i;  list[i1][i2][p1].p1 = p1;	pt1 = geo[i1][p1].pnr;
@@ -137,8 +112,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 	  find_candidate_plus (geo[i2], pix[i2], num[i2],
 			       xa12, ya12, xb12, yb12, eps0,
 			       pix[i1][pt1].n,pix[i1][pt1].nx,pix[i1][pt1].ny,
-			       pix[i1][pt1].sumg, cand, &count, i2,argv);
-
+			       pix[i1][pt1].sumg, cand, &count, i2);
 
 	  /* write all corresponding candidates to the preliminary list */
 	  /* of correspondences */
@@ -245,7 +219,7 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
   /* ----------------------------------------------------------------------- */
 
   /* search consistent triplets :  123, 124, 134, 234 */
-  if ((n_img ==4 && allCam_flag==0) || n_img ==3)
+  if (n_img >= 3)
     {
       puts ("Search consistent triplets");
       match0=0;
@@ -321,14 +295,12 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
   /* search consistent pairs :  12, 13, 14, 23, 24, 34 */
   /* only if an object model is available or if only 2 images are used */
-  if(1<2 && n_img>1 && allCam_flag==0){
-	  puts ("Search pairs");
+  puts ("Search pairs");
 
 
   match0 = 0;
   for (i1=0; i1<n_img-1; i1++)
-    //if ( n_img == 2 || (num[0] < 64 && num[1] < 64 && num[2] < 64 && num[3] < 64))
-	if ( n_img > 1)
+    if ( n_img == 2 || (num[0] < 64 && num[1] < 64 && num[2] < 64 && num[3] < 64))
       for (i2=i1+1; i2<n_img; i2++)
 	for (i=0; i<num[i1]; i++)
 	  {
@@ -373,18 +345,11 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 
       con[match++] = con0[i];
     }
-  } //end pairs?
 
   match2 = match-match4-match3;
-  if(n_img==1){
-     sprintf (buf, "determined %d points from 2D", match1);
-     puts (buf);
-  }
-  else{
-     sprintf (buf, "%d consistent quadruplets(red), %d triplets(green) and %d unambigous pairs",
-	      match4, match3, match2);
-     puts (buf);
-  }
+  sprintf (buf, "%d consistent quadruplets, %d triplets and %d unambigous pairs",
+	   match4, match3, match2);
+  puts (buf);
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 3");
   Tcl_Eval(interp, ".text insert 3 $tbuf");
@@ -392,54 +357,45 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
   /* ----------------------------------------------------------------------- */
 
   /* give each used pix the correspondence number */
-  for (i=0; i<match; i++){
-      for (j=0; j<n_img; j++){
-		  if (con[i].p[j] > -1){ //Bug, detected in Nov 2011 by Koni&Beat
-	          p1 = geo[j][con[i].p[j]].pnr;
-	          if (p1 > -1 && p1 < 1202590843){
-	              pix[j][p1].tnr= i;
-	          }
-		  }
-	  }
-  }
+  for (i=0; i<match; i++)
+    {
+      for (j=0; j<n_img; j++)
+	{
+	  p1 = geo[j][con[i].p[j]].pnr;
+	  if (p1 > -1)
+	    {
+	      pix[j][p1].tnr= i;
+	    }
+	}
+    }
 
   /* draw crosses on canvas */
   if (display) {
-    for (i=0; i<match4; i++)	       	/* red crosses for quadruplets */
+    for (i=0; i<match4; i++)	       	/* pink crosses for quadruplets */
       {
 	for (j=0; j<n_img; j++)
 	  {
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1)
 	      {
-		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
-		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
-		  {
-		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
-		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
-		    drawcross (interp, intx, inty, cr_sz, j, "red");
-		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white");
-		  }
+		intx = pix[j][p1].x - 0.5;
+		inty = pix[j][p1].y - 0.5;
+		drawcross (interp, intx, inty, cr_sz, j, "red");
+		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */
 	      }
 	  }
       }
-
-    for (i=match4; i<match4+match3; i++)	/* green crosses for triplets */
+    for (i=match4; i<match4+match3; i++)	/* red crosses for triplets */
       {
 	for (j=0; j<n_img; j++)
 	  {
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1 && con[i].p[j] > -1)
 	      {
-		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
-		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
-		  {
-		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
-		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
-		    drawcross ( interp, intx, inty, cr_sz, j, "green" );
-		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white");/* number of triplet */
-		  }
-		
+		intx = pix[j][p1].x - 0.5;
+		inty = pix[j][p1].y - 0.5;
+		drawcross ( interp, intx, inty, cr_sz, j, "green" );
+		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */ /* number of triplet */
 	      }
 	  }
       }
@@ -450,34 +406,10 @@ printf("in corres zmin0: %f, zmax0: %f\n", Zmin_lay[0],Zmax_lay[0] );
 	    p1 = geo[j][con[i].p[j]].pnr;
 	    if (p1 > -1 && con[i].p[j] > -1)
 	      {
-		if (   (fabs(pix[j][p1].x-zoom_x[j]) < imx/(2*zoom_f[j]))
-		       && (fabs(pix[j][p1].y-zoom_y[j]) < imy/(2*zoom_f[j])))
-		  {
-		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][p1].x-zoom_x[j]));
-		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][p1].y-zoom_y[j]));
-		    drawcross (interp, intx, inty, cr_sz, j, "yellow");
-		    if (zoom_f[j]>=2) draw_pnr (interp, intx+5 , inty+0, i, j, "white"); /* number of triplet */
-		  }
-	      }
-	  }
-      }
-    
-    for (j=0; j<n_img; j++)
-      {
-	
-	for (i=0; i<num[j]; i++)
-	  {			      	/* blue crosses for unused detections */
-	    p1 = pix[j][i].tnr;
-	    if (p1 == -1 )
-	      {
-		if (   (fabs(pix[j][i].x-zoom_x[j]) < imx/(2*zoom_f[j]))
-		       && (fabs(pix[j][i].y-zoom_y[j]) < imy/(2*zoom_f[j])))
-		  {
-		    intx = (int) ( imx/2 + zoom_f[j] * (pix[j][i].x-zoom_x[j]));
-		    inty = (int) ( imy/2 + zoom_f[j] * (pix[j][i].y-zoom_y[j]));
-		    drawcross (interp, intx, inty, cr_sz, j, "blue");
-		    
-		  }
+		intx = pix[j][p1].x - 0.5;
+		inty = pix[j][p1].y - 0.5;
+		drawcross (interp, intx, inty, cr_sz, j, "yellow");
+		/* draw_pnr (interp, intx+5 , inty+0, i, j, "white"); */  /* number of triplet */
 	      }
 	  }
       }

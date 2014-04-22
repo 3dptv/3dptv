@@ -1,10 +1,9 @@
 /*  global declarations for ptv  */
 
-#define nmax 20240
+#define nmax 5120
 
 extern	int    	n_img;			       /* no of images */
-extern  int		hp_flag;           	       /* flag for highpass */
-extern  int		allCam_flag;           	       /* flag for using all cams for points */
+extern  int	hp_flag;           	       /* flag for highpass */
 extern	int    	tiff_flag;	               /* flag for tiff header */
 extern	int    	chfield;	               /* flag for field mode */
 extern	int    	nfix;	       		       /* no. of control points */
@@ -20,7 +19,7 @@ extern  int     corp, corc, corn;              /* no. of correspondences in p,c,
 extern	int    	nr[4][4];		       /* point numbers for man. ori */
 extern	int    	imx, imy, imgsize;     	       /* image size */
 extern	int    	zoom_x[], zoom_y[], zoom_f[];  /* zoom parameters */
-extern	int    	pp1, pp2, pp3, pp4,pp5;	       /* for man. orientation */
+extern	int    	pp1, pp2, pp3, pp4;	       /* for man. orientation */
 extern	int    	seq_first, seq_last;	       /* 1. and last img of seq */
 extern	int    	demo_nr;		       /* for demo purposes */
 extern	int    	examine;       		       /* extra output */
@@ -34,8 +33,7 @@ extern	double 	pix_x, pix_y;		     	/* pixel size */
 extern	double 	pi, ro;				/* pi, ro */
 extern	double 	cn, cnx, cny, csumg, eps0, corrmin;	 /* correspond. par */
 extern	double 	rmsX, rmsY, rmsZ, mean_sigma0;		 /* a priori rms */
-extern	double  X_lay[],   Zmin_lay[],   Zmax_lay[];         /* illu. layer current slice */
-extern  double  db_scale;           /*dumbbell length, Beat Mai 2010*/ 
+extern	double  X_lay[], Zmin_lay[], Zmax_lay[];         /* illu. layer */
 
 extern	FILE   	*fp1, *fp2, *fp3, *fp4, *fpp;	/* file pointers */
 
@@ -59,11 +57,10 @@ extern	unsigned char	*zoomimg;		/* zomm image data */
 
 extern	Exterior        Ex[];	       	/* exterior orientation */
 extern	Interior       	I[];	        /* interior orientation */
-extern	Glass       	G[];	        /* glass orientation */
 extern	ap_52	       	ap[];	       	/* add. parameters */
 extern	mm_np	       	mmp;	       	/* 3-media parameters */
 extern	target	       	pix[4][nmax];  	/* target pixel data */
-extern	target	       	pix0[4][12];    	/* pixel data for man_ori points */
+extern	target	       	pix0[4][4];    	/* pixel data for man_ori points */
 extern	coord_2d       	crd[4][nmax];  	/* (distorted) metric coordinates */
 extern	coord_2d       	geo[4][nmax];  	/* corrected metric coordinates */
 extern	coord_3d       	fix[];	        /* testfield points coordinates */
@@ -108,7 +105,6 @@ void read_image();
 int  read_tiff ();
 int  write_tiff ();
 void copy_images();
-void subtract_mask();
 
 int  peak_fit_new();
 void highpass();
@@ -119,10 +115,6 @@ void filter_3 ();
 void unsharp_mask ();
 void split ();
 void multimed_nlay ();
-void multimed_nlay_v2 ();
-void trans_Cam_Point ();
-void back_trans_Point ();
-void getG();
 
 void quicksort_con ();
 int  flow_demo_c();
@@ -151,48 +143,23 @@ void init_mmLUT ();
 
 void correspondences_4();
 void det_lsq();
-void pos_from_ray();
-void dist_to_ray();
 void ray_tracing();
-void point_line_line();
-void norm_cross();
-void dot();
-void modu();
-void ray_tracing_v2();
-void mid_point();
-void cross();
-void dotP();
 void intersect_rt_3m();
 void intersect_rt();
 int  nearest_neighbour_pix();
 void img_coord();
-void img_coord_old();
 void raw_orient();
-void raw_orient_v3();
-void raw_orient_v4();
-void raw_orient_v5();
-int mod();
-void getabcFromRot();
 void sortgrid_man();
-void sortgrid_file();
-void just_plot();
-void det_lsq_3d ();
+void det_lsq ();
 void det_lsq_2 ();
 void det_lsq_3 ();
 void det_lsq_4 ();
+void raw_orient ();
 void orient();
-void orient_v3();
-void orient_v6();
-void orient_v4();
-void orient_v5();
-void prepare_eval();
-void eval_ori();
-void eval_ori_v2();
 void volumedimension();
 
 double epi_line ();
 int  epi_mm ();
-int  epi_mm_2D ();
 void find_candidate_plus_msg ();
 void find_candidate_plus ();
 
@@ -205,7 +172,6 @@ void mark_correspondences ();
 void mark_corr ();
 
 void ata ();
-void ata_v2 ();
 void matinv ();
 void atl ();
 void matmul ();
@@ -218,7 +184,7 @@ int  candsearch_in_pix ();
 int  candsearch_in_pixrest ();
 int  corrtest();
 void predict();
-void readseqtrackcrit ();
+void readseqtrackcrit();
 void searchquader();
 void angle_acc();
 void sortwhatfound();
@@ -251,6 +217,5 @@ int  seq_track_proc_c();
 
 void read_ascii_datanew();
 void write_ascii_datanew();
-void read_targets();
 
 

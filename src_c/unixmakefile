@@ -1,0 +1,46 @@
+#----------------------------------------------------------------------#
+#    Makefile for PTV                                    	       #
+#----------------------------------------------------------------------#
+
+
+INC_DIR1 = /home/logvert/n_inc/tcltk842
+
+TCL_LIB = -L/home/logvert/n_lib/tcltk842 -ltcl8.4
+TK_LIB = -L/home/logvert/n_lib/tcltk842 -ltk8.4
+
+OBJ = jw_main.o \
+	jw_ImgFmtTIF.o \
+	jw_ptv.o \
+	tools.o \
+	change_parameter.o \
+	segmentation.o \
+	image_processing.o \
+	draw.o \
+	peakfitting.o \
+	multimed.o \
+	trafo.o \
+	correspondences.o \
+	ray_tracing.o \
+	lsqadj.o \
+	epi.o \
+	imgcoord.o \
+	intersect.o \
+	rotation.o \
+	orientation.o \
+	pointpos.o \
+	sortgrid.o \
+	checkpoints.o \
+	mousefunction.o \
+	demo.o \
+	track.o \
+	ttools.o \
+	vrml.o \
+	ptv.o
+
+
+all:	$(OBJ)
+	gcc -o jw_prog $(OBJ) $(TCL_LIB) $(TK_LIB) $(TCL_LIB) $(TK_LIB) -ltiff -lX11 -ldl -lsocket -lnsl -lm
+	@ mv -f jw_prog ..
+
+$(OBJ):  
+	gcc -c -Wall -I$(INC_DIR1) $*.c

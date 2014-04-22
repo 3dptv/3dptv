@@ -21,7 +21,8 @@ Routines contained:    	trackcorr_c
 void write_added();
 void write_addedback();
 
-int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
+int trackcorr_c (ClientData clientData, Tcl_Interp* interp,
+		 int argc, const char** argv)
 {
   char  val[256], buf[256];
   int i, j, h, k, mm, kk, step, okay=0, invol=0;
@@ -77,7 +78,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 
   /* sequence loop */
-  for (step = seq_first; step < seq_last; step=step++)
+  for (step = seq_first; step < seq_last; step++)
     {
       sprintf (buf, "Time step: %d, seqnr: %d, Particle info:", step- seq_first, step);
       Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
@@ -115,7 +116,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	    for (j=0; j<n_img; j++)
 	      {
-		img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+		img_coord (X2, Y2, Z2, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 		metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 		x1[j]=xn[j];
 		y1[j]=yn[j];
@@ -123,7 +124,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	  } else {  X2=X1; Y2=Y1; Z2=Z1;
 	  for (j=0;j<n_img;j++) {
 	    if (c4[1][h].p[j] == -1) {
-	      img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+	      img_coord (X2, Y2, Z2, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 	      metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 	      x1[j]=xn[j];
 	      y1[j]=yn[j];
@@ -160,18 +161,9 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	      for(k=0; k<4; k++)
 		{
-		  //p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
-		  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-		  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
-			if(philf[j][k] == -999) {
-				p16[j*4+k].ftnr=-1;
-			}else{
-                p16[j*4+k].whichcam[j]=1;
-				p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
-			}
-		  
-		  
-		  
+		  p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
+		  if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+		  if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
 		}
 	    }
 
@@ -222,7 +214,7 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 	      searchquader(X5, Y5, Z5, &xr, &xl, &yd, &yu);
 
 	      for (j=0;j<n_img;j++) {
-		img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+		img_coord (X5, Y5, Z5, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 		metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 		x2[j]=xn[j];
 		y2[j]=yn[j];
@@ -236,21 +228,12 @@ int trackcorr_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 		  for(k=0; k<4; k++)
 		    {
-		      //if( t4[3][j][philf[j][k]].tnr != -1)  //Beat 090325
-			//{
-				if (philf[j][k] == -999){
-                     p16[j*4+k].ftnr=-1;
-				}else{
-					if( t4[3][j][philf[j][k]].tnr != -1){
-                        p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr;
-                        p16[j*4+k].whichcam[j]=1;
-					}
-				}
-			  //p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; //Beat 090325
-			  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-			  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
-			
-			//}
+		      if( t4[3][j][philf[j][k]].tnr != -1)
+			{
+			  p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr;
+			  if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+			  if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
+			}
 		    }
 		}
 
@@ -322,7 +305,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 	      /* *************************************************************** */
 
 	      for (j=0;j<n_img;j++) {
-		img_coord (X5, Y5, Z5, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+		img_coord (X5, Y5, Z5, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 		metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 	      }
 
@@ -355,7 +338,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 		X4 = X5; Y4 =Y5; Z4 = Z5;
 		invol=0; okay=0;
 
-		det_lsq_3d (Ex, I, G, ap, mmp,
+		det_lsq (Ex, I, ap, mmp,
 			 x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X4, &Y4, &Z4);
 
 		/* volume check */
@@ -469,7 +452,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 		  printf("X3: %6.3f  %6.3f  %6.3f, ftnr: %d\n", X3, Y3, Z3, w[mm].ftnr);
 		*/
 		for (j=0;j<n_img;j++) {
-		  img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+		  img_coord (X2, Y2, Z2, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 		  metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 		}
 
@@ -501,7 +484,7 @@ h, X3, Y3, Z3, dl, acc, angle, quali, rr);
 		  X3 = X2; Y3 =Y2; Z3 = Z2;
 		  invol=0; okay=0;
 
-		  det_lsq_3d (Ex, I, G, ap, mmp,
+		  det_lsq (Ex, I, ap, mmp,
 			   x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
 
 		  /* in volume check */
@@ -803,7 +786,7 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 
 	    for (j=0; j<n_img; j++)
 	      {
-		img_coord (X2, Y2, Z2, Ex[j],I[j], G[j], ap[j], mmp, &xn[j], &yn[j]);
+		img_coord (X2, Y2, Z2, Ex[j],I[j], ap[j], mmp, &xn[j], &yn[j]);
 		metric_to_pixel (xn[j], yn[j], imx,imy, pix_x,pix_y, &xn[j], &yn[j], chfield);
 	      }
 
@@ -819,15 +802,9 @@ int trackback_c (ClientData clientData, Tcl_Interp* interp,
 		for(k=0; k<4; k++)
 		  {
 		    if( zaehler1>0) {
-		      if (philf[j][k] == -999){
-                     p16[j*4+k].ftnr=-1;
-				}else{
-                     p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr;
-                     p16[j*4+k].whichcam[j]=1;
-				}
-			  //p16[j*4+k].ftnr=t4[3][j][philf[j][k]].tnr; //Beat 090325
-			  //if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
-			  //if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
+		      p16[j*4+k].ftnr=t4[2][j][philf[j][k]].tnr;
+		      if(philf[j][k] != -999) p16[j*4+k].whichcam[j]=1;
+		      if(philf[j][k] == -999) p16[j*4+k].ftnr=-1;
 		    }
 		  }
 	      }
@@ -912,7 +889,7 @@ printf("h: %d, old and ok: X3: %6.3f %6.3f %6.3f, ftnr: %d, prev: %d, next: %d, 
 		    X3 = X2; Y3 =Y2; Z3 = Z2;
 		    invol=0; okay=0;
 
-		    det_lsq_3d (Ex, I, G, ap, mmp,
+		    det_lsq (Ex, I, ap, mmp,
 			     x2[0], y2[0], x2[1], y2[1], x2[2], y2[2], x2[3], y2[3], &X3, &Y3, &Z3);
 
 		    /* volume check */

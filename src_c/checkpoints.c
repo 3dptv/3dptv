@@ -16,11 +16,6 @@ Description:	       	calibration quality control from check points
 Routines contained:		
 
 ****************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
 
 #include "ptv.h"
 	
@@ -84,16 +79,16 @@ void checkpoint_proc (Tcl_Interp* interp)
            
       switch (n_img)
 	{
-	case 2: det_lsq_2 (Ex, I, G, ap, mmp,
+	case 2: det_lsq_2 (Ex, I, ap, mmp,
 			   crd[0][i].x,crd[0][i].y,
 			   crd[1][i].x,crd[1][i].y,
 			   &X,&Y,&Z);			break;
-	case 3: det_lsq_3 (Ex, I, G, ap, mmp,
+	case 3: det_lsq_3 (Ex, I, ap, mmp,
 			   crd[0][i].x,crd[0][i].y,
 			   crd[1][i].x,crd[1][i].y,
 			   crd[2][i].x,crd[2][i].y,
 			   &X,&Y,&Z);			break;
-	case 4: det_lsq_4 (Ex, I, G, ap, mmp,
+	case 4: det_lsq_4 (Ex, I, ap, mmp,
 			   crd[0][i].x,crd[0][i].y,
 			   crd[1][i].x,crd[1][i].y,
 			   crd[2][i].x,crd[2][i].y,

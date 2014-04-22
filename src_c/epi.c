@@ -1,17 +1,10 @@
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
 #include "ptv.h"
 
-double epi_line (xl, yl, Ex1, I1, G1, Ex2, I2, G2)
+double epi_line (xl, yl, Ex1, I1, Ex2, I2)
 
 double    xl, yl;
 Exterior  Ex1, Ex2;
 Interior  I1, I2;
-Glass     G1, G2;
 
 {
   int i,j;
@@ -52,12 +45,11 @@ Glass     G1, G2;
 
 
 
-int epi_mm (x1, y1, Ex1, I1, G1, Ex2, I2, G2, mmp, xmin, ymin, xmax, ymax)
+int epi_mm (x1, y1, Ex1, I1, Ex2, I2, mmp, xmin, ymin, xmax, ymax)
 
 double     x1, y1;	  	/* input coord */
 Exterior   Ex1, Ex2;           	/* orientation data */
 Interior   I1, I2;	      	/* orientation data */
-Glass      G1, G2;	      	/* glass data */
 mm_np	   mmp;		        /* multimed param. (layers) */
 double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
 
@@ -72,8 +64,7 @@ double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
   double X1,Y1,Z1, X, Y, Z;
   double Zmin, Zmax;
 
-  //ray_tracing    (x1,y1, Ex1, I1,     mmp, &X1, &Y1, &Z1, &a, &b, &c);
-  ray_tracing_v2 (x1,y1, Ex1, I1, G1, mmp, &X1, &Y1, &Z1, &a, &b, &c);
+  ray_tracing (x1,y1, Ex1, I1, mmp, &X1, &Y1, &Z1, &a, &b, &c);
 
   /* calculate min and max depth for position (valid only for one setup) */
   Zmin = Zmin_lay[0]
@@ -83,56 +74,14 @@ double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
 
 
   Z = Zmin;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-  //img_xy_mm_geo_old (X,Y,Z, Ex2, I2,     mmp, &xa, &ya);
-  img_xy_mm_geo     (X,Y,Z, Ex2, I2, G2, mmp, &xa, &ya);
+  img_xy_mm_geo (X,Y,Z, Ex2, I2, mmp, &xa, &ya);
 
   Z = Zmax;   X = X1 + (Z-Z1) * a/c;   Y = Y1 + (Z-Z1) * b/c;
-  //img_xy_mm_geo_old (X,Y,Z, Ex2, I2,     mmp, &xb, &yb);
-  img_xy_mm_geo     (X,Y,Z, Ex2, I2, G2, mmp, &xb, &yb);
+  img_xy_mm_geo (X,Y,Z, Ex2, I2, mmp, &xb, &yb);
 
   /*  ==> window given by xa,ya,xb,yb  */
 
   *xmin = xa;  *ymin = ya;  *xmax = xb;  *ymax = yb;
-
-  return (0);
-}
-
-int epi_mm_2D (x1, y1, Ex1, I1, G1, mmp, xp,yp,zp)
-
-double     x1, y1;	  	/* input coord */
-Exterior   Ex1;           	/* orientation data */
-Interior   I1;	      	/* orientation data */
-Glass      G1;	      	/* glass data */
-mm_np	   mmp;		        /* multimed param. (layers) */
-double *xp, *yp, *zp;
-//double	   *xmin, *ymin, *xmax, *ymax;    /* output search window */
-
-{
-  /*  ray tracing gives the point of exit and the direction
-      cosines at the waterside of the glass;
-      min. and max. depth give window in object space,
-      which can be transformed into _2 image
-      (use img_xy_mm because of comparison with img_geo)  */
-
-  double a, b, c, xa,ya,xb,yb;
-  double X1,Y1,Z1,X,Y,Z;
-  
-  double Zmin, Zmax;
-
-  ray_tracing_v2 (x1,y1, Ex1, I1, G1, mmp, &X1, &Y1, &Z1, &a, &b, &c);
-
-  /* calculate min and max depth for position (valid only for one setup) */
-  Zmin = Zmin_lay[0]
-    + (X1-X_lay[0]) * (Zmin_lay[1]-Zmin_lay[0]) / (X_lay[1]-X_lay[0]);
-  Zmax = Zmax_lay[0]
-    + (X1-X_lay[0]) * (Zmax_lay[1]-Zmax_lay[0]) / (X_lay[1]-X_lay[0]);
-
-
-  Z = 0.5*(Zmin+Zmax);   
-  X = X1 + (Z-Z1) * a/c;   
-  Y = Y1 + (Z-Z1) * b/c;
-  
-  *xp=X; *yp=Y; *zp=Z;
 
   return (0);
 }
@@ -264,7 +213,7 @@ candidate	cand[];
 
 
 void find_candidate_plus (crd, pix, num, xa,ya,xb,yb, eps, n, nx, ny, sumg,
-						  cand, count, nr,argv)
+						  cand, count, nr)
 
 /*  binarized search in a x-sorted coord-set, exploits shape information  */
 
@@ -275,35 +224,12 @@ double		xa, ya, xb, yb, eps;
 int    		n, nx, ny, sumg;
 candidate	cand[];
 int	       	nr;	       	/* image number for ap etc. */
-const char** argv;
-
 
 {
   register int	j;
-  int dummy;
   int	       	j0, dj, p2;
   double      	m, b, d, temp, qn, qnx, qny, qsumg, corr;
-  double       	xmin, xmax, ymin, ymax,particle_size;
-  int dumbbell=0;
-  double tol_band_width;
-  
-  //Beat Mai 2010 for dumbbell
-  if (atoi(argv[1])==3){
-      dumbbell=1;
-  }
-  if (dumbbell==0){
-	  /////here is new Beat version of April 2010
-	  if (nx>ny) particle_size=nx;
-	  else       particle_size=ny;
-	  tol_band_width=eps*0.5*(pix_x+pix_y)*particle_size;
-  }
-  else{
-      tol_band_width=eps;
-  }
-  if(tol_band_width<0.06){
-       tol_band_width=0.06;
-  }
-
+  double       	xmin, xmax, ymin, ymax;
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
@@ -338,31 +264,23 @@ const char** argv;
       /* binarized search for start point of candidate search */
       for (j0=num/2, dj=num/4; dj>1; dj/=2)
 	{
-	  if (crd[j0].x < (xa - tol_band_width))  j0 += dj;
+	  if (crd[j0].x < (xa - eps))  j0 += dj;
 	  else  j0 -= dj;
 	}
       j0 -= 12;  if (j0 < 0)  j0 = 0;		       	/* due to trunc */
 
       for (j=j0, *count=0; j<num; j++)			/* candidate search */
 	{
-	  if (crd[j].x > xb+tol_band_width)  return;		/* finish search */
+	  if (crd[j].x > xb+eps)  return;		/* finish search */
 
-	  if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width))
+	  if ((crd[j].y > ya-eps) && (crd[j].y < yb+eps))
 	    {
-	      if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width))
+	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-          
-		  /* Beat: modified in April 2010 to allow for better treatment of 
-		  //different sized traced particles, in particular colloids and tracers
-		  if ( d < eps ){
-          */
-          /////here is new Beat version of April 2010
-		   //if (nx>ny) particle_size=nx;
-		   //else       particle_size=ny;
-		   if ( d < tol_band_width ){
-		   ///////end of new Beat version
 
+		  if ( d < eps )
+		    {
 		      p2 = crd[j].pnr;
 		      if (n  < pix[p2].n)      	qn  = (double) n/pix[p2].n;
 		      else		       	qn  = (double) pix[p2].n/n;
@@ -371,30 +289,28 @@ const char** argv;
 		      if (ny < pix[p2].ny)	qny = (double) ny/pix[p2].ny;
 		      else		       	qny = (double) pix[p2].ny/ny;
 		      if (sumg < pix[p2].sumg)
-			        qsumg = (double) sumg/pix[p2].sumg;
+			qsumg = (double) sumg/pix[p2].sumg;
 		      else	qsumg = (double) pix[p2].sumg/sumg;
 
-		      // empirical correlation coefficient
-			  // from shape and brightness parameters 
+		      /* empirical correlation coefficient
+			 from shape and brightness parameters */
 		      corr = (4*qsumg + 2*qn + qnx + qny);
-		      // create a tendency to prefer those matches
-			  // with brighter targets 
+		      /* create a tendency to prefer those matches
+			 with brighter targets */
 		      corr *= ((double) (sumg + pix[p2].sumg));
 
-			  if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg){
-				 if ( *count < maxcand) {
-			        cand[*count].pnr = j;
-			        cand[*count].tol = d;
-			        cand[*count].corr = corr;
-			        (*count)++;
-		         } else {
-			        dummy=(int)maxcand;
-			        printf("in find_candidate_plus: count > maxcand\n");}
-			     }
-		      }
-		   }
-           
-           
+		      if (qn>=cn && qnx>=cnx && qny>=cny && qsumg>csumg)
+			{
+				if ( *count < maxcand) {
+			  cand[*count].pnr = j;
+			  cand[*count].tol = d;
+			  cand[*count].corr = corr;
+
+			  (*count)++;
+		  } else { printf("in find_candidate_plus: count > maxcand\n");}
+			}
+		    }
+		}
 	    }
 	}
     }
@@ -416,17 +332,13 @@ target		pix[];
 int    		num, *count, i12;
 double		xa, ya, xb, yb, eps;
 int    		n, nx, ny, sumg;
-/*
 candidate	cand[3];
-*/
-candidate	cand[];
 
 {
   register int	j;
   int	       	j0, dj, p2;
   double        m, b, d, temp, qn, qnx, qny, qsumg, corr;
   double       	xmin, xmax, ymin, ymax;
-  double tol_band_width,particle_size;
 
   /* define sensor format for search interrupt */
   xmin = (-1) * pix_x * imx/2;	xmax = pix_x * imx/2;
@@ -435,10 +347,6 @@ candidate	cand[];
   xmax -= I[i12].xh;	ymax -= I[i12].yh;
   correct_brown_affin (xmin,ymin, ap[i12], &xmin,&ymin);
   correct_brown_affin (xmax,ymax, ap[i12], &xmax,&ymax);
-
-  if (nx>ny) particle_size=nx;
-  else       particle_size=ny;
-  tol_band_width=eps*0.5*(pix_x+pix_y)*particle_size;
 
   for (j=0; j<4; j++)
     {
@@ -460,21 +368,22 @@ candidate	cand[];
       /* binarized search for start point of candidate search */
       for (j0=num/2, dj=num/4; dj>1; dj/=2)
 	{
-	  if (crd[j0].x < (xa - tol_band_width))  j0 += dj;
+	  if (crd[j0].x < (xa - eps))  j0 += dj;
 	  else  j0 -= dj;
 	}
       j0 -= 12;  if (j0 < 0)  j0 = 0;  	/* due to trunc */
 
       for (j=j0, *count=0; j<num; j++) 	/* candidate search */
 	{
-	  if (crd[j].x > xb+tol_band_width)  return;      	/* finish search */
+	  if (crd[j].x > xb+eps)  return;      	/* finish search */
 
-	  if ((crd[j].y > ya-tol_band_width) && (crd[j].y < yb+tol_band_width))
+	  if ((crd[j].y > ya-eps) && (crd[j].y < yb+eps))
 	    {
-	      if ((crd[j].x > xa-tol_band_width) && (crd[j].x < xb+tol_band_width))
+	      if ((crd[j].x > xa-eps) && (crd[j].x < xb+eps))
 		{
 		  d = fabs ((crd[j].y - m*crd[j].x - b) / sqrt(m*m+1));
-          if ( d < tol_band_width ){
+		  if (d < eps)
+		    {
 		      p2 = crd[j].pnr;
 		      if (n  < pix[p2].n)      	qn  = (double) n/pix[p2].n;
 		      else		       	qn  = (double) pix[p2].n/n;
@@ -498,11 +407,11 @@ candidate	cand[];
 			{
 			  if (*count>=maxcand)
 			    { printf("More candidates than (maxcand): %d\n",*count); return; }
-			  cand[*count].pnr = p2;
+			  cand[*count].pnr = j;
 			  cand[*count].tol = d;
  			  cand[*count].corr = corr;
 			  (*count)++;
-			  printf ("%d %3.0f/%3.1f \n", p2, corr, d*1000);
+			  printf ("%3.0f/%3.1f ", corr, d*1000);
 			}
 		    }
 		}

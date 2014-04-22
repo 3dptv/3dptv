@@ -21,10 +21,9 @@ int round (double x)
 }
 
 
-void write_ori (Ex, I, G, filename)  /* write exterior and interior orientation */
+void write_ori (Ex, I, filename)  /* write exterior and interior orientation */
 Exterior Ex;
 Interior I;
-Glass    G;
 char	 filename[64];
 {
   FILE	*fp;
@@ -36,15 +35,13 @@ char	 filename[64];
   for (i=0; i<3; i++)  fprintf (fp, "    %10.7f %10.7f %10.7f\n",
 				Ex.dm[i][0], Ex.dm[i][1], Ex.dm[i][2]);
   fprintf (fp,"\n    %8.4f %8.4f\n    %8.4f\n", I.xh, I.yh, I.cc);
-  fprintf (fp,"\n    %20.15f %20.15f  %20.15f\n", G.vec_x, G.vec_y, G.vec_z);
   fclose (fp);
 }
 
 
-void read_ori (Ex, I, G, filename)	  /* read exterior and interior orientation */
+void read_ori (Ex, I, filename)	  /* read exterior and interior orientation */
 Exterior *Ex;
 Interior *I;
-Glass    *G;
 char	 filename[64];
 {
   FILE	*fp;
@@ -57,7 +54,6 @@ char	 filename[64];
   for (i=0; i<3; i++)  fscanf (fp, " %lf %lf %lf",
 			       &(Ex->dm[i][0]), &(Ex->dm[i][1]), &(Ex->dm[i][2]));
   fscanf (fp, "%lf %lf %lf", &(I->xh), &(I->yh), &(I->cc));
-  fscanf (fp, "%lf %lf %lf", &(G->vec_x), &(G->vec_y), &(G->vec_z));
   fclose (fp);
 }
 
@@ -183,10 +179,8 @@ int		nr;
 {
   char	nr_ch[256];
 
-//  if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
-//  else if (nr < 100)	sprintf (nr_ch, "0%2d",  nr);
-  if (nr < 10)		sprintf (nr_ch, "%1d", nr);
-  else if (nr < 100)	sprintf (nr_ch, "%2d",  nr);
+  if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
+  else if (nr < 100)	sprintf (nr_ch, "0%2d",  nr);
   else	sprintf (nr_ch, "%3d",  nr);
 
   sprintf (filename, "%s%s%s", basename, str, nr_ch);
@@ -198,8 +192,8 @@ int		nr;
 {
   char	nr_ch[256];
 
-  if (nr < 10)		sprintf (nr_ch, "%1d", nr);
-  else if (nr < 100)	sprintf (nr_ch, "%2d",  nr);
+  if (nr < 10)		sprintf (nr_ch, "00%1d", nr);
+  else if (nr < 100)	sprintf (nr_ch, "0%2d",  nr);
   else 	sprintf (nr_ch, "%3d",  nr);
 
   sprintf (filename, "%s%s%s", basename, nr_ch, str);

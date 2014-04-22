@@ -5,20 +5,14 @@ Routine:		       	peakfitting.c
 Author/Copyright:		Hans-Gerd Maas
 
 Address:		       	Institute of Geodesy and Photogrammetry
-		      		    ETH - Hoenggerberg
-		       		    CH - 8093 Zurich
+		      		ETH - Hoenggerberg
+		       		CH - 8093 Zurich
 
 Creation Date:			Feb. 1990
 
 Description:
 
 ****************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
 
 #include "ptv.h"
 
@@ -35,11 +29,12 @@ int	       	nr;		       	/* image number for display */
 /*  labeling with discontinuity,
 	reunification with distance and profile criteria  */
 {
+
   int	       	n_peaks=0;	      /* # of peaks detected */
-  int     		n_wait;	      	      /* size of waitlist for connectivity */
+  int     	n_wait;	      	      /* size of waitlist for connectivity */
   int	       	x8[8], y8[8];  	      /* neighbours for connectivity */
   int	       	p2;	       	      /* considered point number */
-  int	      	sumg_min, gvthres[4], thres, disco, nxmin,nxmax, nymin,nymax, nnmin, nnmax,rel_disc,dummy;
+  int	      	sumg_min, gvthres[4], thres, disco, nxmin,nxmax, nymin,nymax, nnmin, nnmax;
   /* parameters for target acceptance */
   int           pnr, sumg, xn, yn;	/* collecting variables for center of gravity */
   int         	n_target=0;	/* # of targets detected */
@@ -57,7 +52,6 @@ int	       	nr;		       	/* image number for display */
   peak	       	*peaks, *ptr_peak;    /* detected peaks */
   targpix       waitlist[2048];     /* pix to be tested for connectivity */
   FILE   	*fpp;	       	/* parameter file pointer */
-  
 
   /* read image name, threshold and shape limits from parameter file */
 
@@ -73,10 +67,7 @@ int	       	nr;		       	/* image number for display */
   fscanf (fpp, "%d  %d", &nxmin, &nxmax);	/* pixels per target,  	*/
   fscanf (fpp, "%d  %d", &nymin, &nymax);	/* abs, in x, in y    	*/
   fscanf (fpp, "%d", &sumg_min);		       	/* min. sumg */
-  fscanf (fpp, "%d", &cr_sz);				/* size of crosses */
-  fscanf (fpp, "%d", &dummy);				/* size of crosses */
-  fscanf (fpp, "%d", &dummy);				/* size of crosses */
-  fscanf (fpp, "%d", &rel_disc);
+  fscanf (fpp, "%d", &cr_sz);		       	/* size of crosses */
   fclose (fpp);
 
   /* give thres value refering to image number */
@@ -92,6 +83,7 @@ int	       	nr;		       	/* image number for display */
   peaks = (peak *) malloc (4*nmax * sizeof(peak));
   ptr_peak = peaks;
 
+/*------------------------------------------------------------------------*/
 
   /*------------------------------------------------------------------------*/
 
@@ -101,7 +93,7 @@ int	       	nr;		       	/* image number for display */
 
   puts("Searching local maxima, connectivity analysis, peak factor 2 set");
 
-  for (i=ymin; i<ymax-1; i++)  for (j=xmin; j<xmax; j++)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
+  for (i=ymin; i<ymax; i++)  for (j=xmin; j<xmax; j++)
     {
       n = i*imx + j;
 
@@ -169,7 +161,7 @@ int	       	nr;		       	/* image number for display */
 		  /* conditions for threshold, discontinuity, image borders */
 		  /* and peak fitting */
 		  if (   (gv > thres)
-			 && (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax-1)//Beat Lüthi Jan 09 I changed to (i=ymin; i<ymax-1; i++), new:-1
+			 && (xn>=xmin)&&(xn<xmax) && (yn>=ymin)&&(yn<ymax)
 			 && (gv <= gvref+disco)
 			 && (gvref + disco >= *(img + imx*(yn-1) + xn))
 			 && (gvref + disco >= *(img + imx*(yn+1) + xn))
@@ -288,16 +280,9 @@ int	       	nr;		       	/* image number for display */
 	    {
 	      intx1 = (int) (x1 + l * (x2 - x1) / s12);
 	      inty1 = (int) (y1 + l * (y2 - y1) / s12);
-		  if(rel_disc==0){//Beat March 2011
-	         gv = *(img + inty1*imx + intx1) + disco; 
-	         if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;
-	         if (unify == 0)	break;
-		  }
-		  else{//Beat March 2011
-		     gv = *(img + inty1*imx + intx1); //Beat March 2011
-		     if (gv < (gv1+l*(gv2-gv1)/s12)*(double)disco*0.01)	unify = 0; //Beat March 2011
-	         if (unify == 0)	break;
-		  }
+	      gv = *(img + inty1*imx + intx1) + disco;
+	      if (gv < (gv1+l*(gv2-gv1)/s12) || gv<gv1 || gv<gv2)	unify = 0;
+	      if (unify == 0)	break;
 	    }
 	  if (unify == 0)
 	    {

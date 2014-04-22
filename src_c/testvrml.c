@@ -45,7 +45,7 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
   fprintf(fp2, "   heightAngle   0.785398 }\n\n\n");    
   
   /* create cameras */
-  
+  /*
   fprintf(fp2, "#create cameras\n\n");
 
   for (i=0; i<n_img; i++)
@@ -71,39 +71,8 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
       fprintf(fp2, "    rotation 1 0 0 1.57079 }\n");
       fprintf(fp2, "   Cylinder { radius %3.2f height %3.2f } }\n\n", imx*pix_x, I[i].cc/2);
     }
- 
-  /*  
-  fprintf(fp2, "#create coordinate axis\n\n");
-  fprintf(fp2, "  DEF group0 Separator { Label { label \"x-axis\" }\n");
-  fprintf(fp2, "   Material {\n");
-  fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
-  fprintf(fp2, "    diffuseColor 1.00 0.00 0.00 }\n");
-  fprintf(fp2, "   Separator {\n");
-  fprintf(fp2, "   Coordinate3 { point [\n");
-  fprintf(fp2, "    %5.1f 0.000 0.000,\n",X_lay[1]);
-  fprintf(fp2, "    0.000 0.000 0.000, ] }\n");
-  fprintf(fp2, "   IndexedLineSet { coordIndex  [ 0, 1, -1 ] } } }\n\n");
-  
-  fprintf(fp2, "  DEF group0 Separator { Label { label \"y-axis\" }\n");
-  fprintf(fp2, "   Material {\n");
-  fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
-  fprintf(fp2, "    diffuseColor 0.00 1.00 0.00 }\n");
-  fprintf(fp2, "   Separator {\n");
-  fprintf(fp2, "   Coordinate3 { point [\n");
-  fprintf(fp2, "    0.000 %5.1f 0.000,\n", ymax);
-  fprintf(fp2, "    0.000   0.000 0.000, ] }\n");
-  fprintf(fp2, "   IndexedLineSet { coordIndex [ 0, 1, -1 ] } } }\n\n");
-
-  fprintf(fp2, "  DEF group0 Separator { Label { label \"z-axis\" }\n");
-  fprintf(fp2, "   Material {\n");
-  fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
-  fprintf(fp2, "    diffuseColor 0.00 0.00 1.00 }\n");
-  fprintf(fp2, "   Separator {\n");
-  fprintf(fp2, "   Coordinate3 { point  [\n");
-  fprintf(fp2, "    0.000 0.000 %5.1f,\n",-Zmin_lay[0]);
-  fprintf(fp2, "    0.000 0.000   0.000, ] }\n");
-  fprintf(fp2, "   IndexedLineSet { coordIndex [ 0, 1, -1 ] } } }\n\n");
   */
+ 
   fprintf(fp2, "  DEF group0 Separator { Label { label \"object volume\" }\n");
   fprintf(fp2, "   Material {\n");
   fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
@@ -126,14 +95,26 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
   fprintf(fp2, "    3, 7, -1,\n");
   fprintf(fp2, "    4, 5, 6, 7, 4, -1 ] } } }\n");
   
+  /* different material for particles */
+
+  fprintf(fp2, "\nDEF old Material {\n");
+  fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
+  fprintf(fp2, "        diffuseColor   0 1 0 }\n\n");
+  
+  fprintf(fp2, "\nDEF new Material {\n");
+  fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
+  fprintf(fp2, "        diffuseColor   1 0 0 }\n\n");
+ /* end of different material for particles */
+
+  
   fprintf(fp2, "\n\n# start trajectories\n\n");
   /* read trackfile from ptv and create vectorfield */
  
   for (i=seq_first; i<seq_last;i++)
     {
-      if (i < 10)             sprintf (val, "res/ptv_is.00%1d", i);
-      else if (i < 100)       sprintf (val, "res/ptv_is.0%2d",  i);
-      else       sprintf (val, "res/ptv_is.%3d",  i);
+      if (i < 10)             sprintf (val, "res/added.00%1d", i);
+      else if (i < 100)       sprintf (val, "res/added.0%2d",  i);
+      else       sprintf (val, "res/added.%3d",  i);
   
       printf("Create VRML, read file: %s\n", val);     
       fp1 = fopen (val, "r");
@@ -149,15 +130,16 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	fscanf (fp1, "%lf\n", &line1[j].x1);
 	fscanf (fp1, "%lf\n", &line1[j].y1);
 	fscanf (fp1, "%lf\n", &line1[j].z1);
+	fscanf (fp1, "%d\n", &line1[j].type);
       }
 
       strcpy(val, "");     
       fclose (fp1);
 
       /* read next time step */     
-      if (i+1 < 10)             sprintf (val, "res/ptv_is.00%1d", i+1);
-      else if (i+1 < 100)       sprintf (val, "res/ptv_is.0%2d",  i+1);
-      else       sprintf (val, "res/ptv_is.%3d",  i+1);
+      if (i+1 < 10)             sprintf (val, "res/added.00%1d", i+1);
+      else if (i+1 < 100)       sprintf (val, "res/added.0%2d",  i+1);
+      else       sprintf (val, "res/added.%3d",  i+1);
       
       fp1 = fopen (val, "r");     
       fscanf (fp1,"%d\n", &anz2);
@@ -169,23 +151,23 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	fscanf (fp1, "%lf\n", &line2[j].x1);
 	fscanf (fp1, "%lf\n", &line2[j].y1);
 	fscanf (fp1, "%lf\n", &line2[j].z1);
+	fscanf (fp1, "%d\n", &line2[j].type);
       }
       fclose (fp1);
-      
-      fprintf(fp2, "  DEF group0 Separator { Label { label \"time step %d\" }\n", i);
-      fprintf(fp2, "   Material {\n");
-      fprintf(fp2, "    ambientColor 0.25 0.25 0.25\n");
-      fprintf(fp2, "    diffuseColor 1.0 %.4f 0.0 }\n\n", color);
-      
+
       for(j=0;j<anz1;j++) { 	
 	m = line1[j].n;
 	if (m >= 0) {	
 	 
 	  fprintf(fp2, "    Separator {\n");
+	  if(line1[j].type == 4) {  fprintf(fp2, "     USE old\n");}
+	  if(line1[j].type == 2) {  fprintf(fp2, "     USE new\n");}
+
+
 	  fprintf(fp2, "    Transform {translation %7.3f %7.3f %7.3f}\n",
 		  line1[j].x1, line1[j].y1, line1[j].z1);
 	  
-	  fprintf(fp2, "    Cube { width %3.2f height %3.2f depth %3.2f } }\n", 
+	  fprintf(fp2, "    Cube { width %3.2f height %3.2f depth  %3.2f } }\n", 
 		  cubes, cubes, cubes );
 	  /*
 	  fprintf(fp2, "    Sphere { radius %3.2f } }\n", cubes );
@@ -194,6 +176,9 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	  if(i ==seq_last-1) {
 	    
 	  fprintf(fp2, "    Separator {\n");
+	  if(line2[m].type == 4) {  fprintf(fp2, "     USE old\n");}
+	  if(line2[m].type == 2) {  fprintf(fp2, "     USE new\n");}
+
 	  fprintf(fp2, "    Transform {translation %7.3f %7.3f %7.3f}\n",
 		  line2[m].x1, line2[m].y1, line2[m].z1);
 	  
@@ -209,6 +194,9 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	  if(line2[m].n <= 0) {
 	   
 	  fprintf(fp2, "    Separator {\n");
+	  if(line2[m].type == 4) {  fprintf(fp2, "     USE old\n");}
+	  if(line2[m].type == 2) {  fprintf(fp2, "     USE new\n");}
+
 	  fprintf(fp2, "    Transform {translation %7.3f %7.3f %7.3f}\n",
 		  line2[m].x1, line2[m].y1, line2[m].z1);
 	  
@@ -259,6 +247,9 @@ int vrmltracks_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 
 	    
 	  fprintf(fp2, "    Separator {\n");
+	  if(line2[m].type == 4) {  fprintf(fp2, "     USE old\n");}
+	  if(line2[m].type == 2) {  fprintf(fp2, "     USE new\n");}
+
 	  fprintf(fp2, "     Coordinate3 { point [\n");
 	  fprintf(fp2, "      %7.3f %7.3f %7.3f,\n",line1[j].x1, line1[j].y1, line1[j].z1);
 	  fprintf(fp2, "      %7.3f %7.3f %7.3f, ] }\n", line2[m].x1, line2[m].y1, line2[m].z1);

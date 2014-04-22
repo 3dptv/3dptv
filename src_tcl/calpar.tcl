@@ -123,7 +123,7 @@ label $w.m.ppsumgv.l
 label $w.m.ppcross.l
 
 $w.target.l config -text "Target recognition on plate"  -font {Helvetica 12 bold}
-$w.gvthres.l config -text "Grayvalue threshold, "
+$w.gvthres.l config -text "Greyvalue threshold, "
 $w.gvthres.l1 config -text "  1.: "
 $w.gvthres.l2 config -text "  2.: "
 $w.gvthres.l3 config -text "  3.: "
@@ -147,7 +147,7 @@ entry $w.maxnpx.e -width 5 -relief sunken -bd 2 -textvariable cp(maxnpixx)
 $w.maxnpy.l config -text "         max npix in y: "
 entry $w.maxnpy.e -width 5 -relief sunken -bd 2 -textvariable cp(maxnpixy)
 
-$w.m.ppsumgv.l config -text "Sum of grayvalue: "
+$w.m.ppsumgv.l config -text "Sum of greyvalue: "
 entry $w.m.ppsumgv.e -width 5 -relief sunken -bd 2 -textvariable cp(ppsumgv)
 $w.m.toldisc.l config -text "     Tolerable discontinuity: "
 entry $w.m.toldisc.e -width 5 -relief sunken -bd 2 -textvariable cp(toldisc)
@@ -209,7 +209,6 @@ entry $w.p23.e -width 4 -relief sunken -bd 2 -textvariable cp(p23)
 $w.p24.l config -text "  P4:"
 entry $w.p24.e -width 4 -relief sunken -bd 2 -textvariable cp(p24)
 
-
 # Calibpicture 3
 
 frame $w.img3a
@@ -234,7 +233,6 @@ $w.p33.l config -text "  P3:"
 entry $w.p33.e -width 4 -relief sunken -bd 2 -textvariable cp(p33)
 $w.p34.l config -text "  P4:"
 entry $w.p34.e -width 4 -relief sunken -bd 2 -textvariable cp(p34)
-
 
 # Calibpicture 4
 
@@ -261,69 +259,21 @@ entry $w.p43.e -width 4 -relief sunken -bd 2 -textvariable cp(p43)
 $w.p44.l config -text "  P4:"
 entry $w.p44.e -width 4 -relief sunken -bd 2 -textvariable cp(p44)
 
-####################################################################
-# Shaking parameters
-
-frame $w.sh_img1a
-frame $w.sh_img1
-frame $w.sh_img2a
-frame $w.sh_img2
-frame $w.first_shake
-frame $w.last_shake
-frame $w.maxPoints_shake
-frame $w.maxFrames_shake
-
-label $w.sh_img1.l
-label $w.sh_img2.l
-label $w.mshake
-label $w.first_shake.l
-label $w.last_shake.l
-label $w.maxPoints_shake.l
-label $w.maxFrames_shake.l
-
-$w.mshake config -text "Shaking parameters" -font {Helvetica 12 bold}
-
-$w.first_shake.l config -text "  first frame:"
-entry $w.first_shake.e -width 7 -relief sunken -bd 2 -textvariable cp(first_shake)
-$w.last_shake.l config -text "  last frame:"
-entry $w.last_shake.e -width 7 -relief sunken -bd 2 -textvariable cp(last_shake)
-$w.maxPoints_shake.l config -text "  max # points used for orientation:"
-entry $w.maxPoints_shake.e -width 4 -relief sunken -bd 2 -textvariable cp(maxPoints_shake)
-$w.maxFrames_shake.l config -text "  max # frames used for orientation:"
-entry $w.maxFrames_shake.e -width 4 -relief sunken -bd 2 -textvariable cp(maxFrames_shake)
-######################################################################
-
 # Orientation parameters
 
 frame $w.oripar
 frame $w.oripara
 frame $w.pnrori
-#################
-frame $w.examineFlag
-frame $w.combineFlag
-#################
 frame $w.oripp
 frame $w.orilens
 frame $w.oriaff
-frame $w.oriinter
 
 label $w.oripar.l
 label $w.pnrori.l
-#################
-label $w.examineFlag.l
-label $w.combineFlag.l
-#################
 label $w.lens
 label $w.affin
-label $w.interfaces
 
 $w.oripar.l config -text "Orientation parameters"  -font {Helvetica 12 bold}
-################
-$w.examineFlag.l config -text "Calibrate with different z-positions?"
-entry $w.examineFlag.e -width 2 -relief sunken -bd 2 -textvariable cp(examineFlag)
-$w.combineFlag.l config -text "Combine preprocessed planes?"
-entry $w.combineFlag.e -width 2 -relief sunken -bd 2 -textvariable cp(combineFlag)
-################
 $w.pnrori.l config -text "Point number for orientation"
 entry $w.pnrori.e -width 2 -relief sunken -bd 2 -textvariable cp(pnrori)
 checkbutton $w.pdist -text "Principle distance   " -variable cp(pdist)
@@ -338,9 +288,6 @@ checkbutton $w.lensp2 -text "p2  " -variable cp(p2)
 $w.affin config -text "Affin transformation:   "
 checkbutton $w.afftrafoscx -text "scx   " -variable cp(scx)
 checkbutton $w.afftrafoshe -text "she   " -variable cp(she)
-$w.interfaces config -text "Interfaces:   "
-checkbutton $w.interfacesy -text "are variable   " -variable cp(interf)
-
 
 # Plate of testcoord-, calib.picture- and pre-orientationfiles
 pack $w.title -pady 8
@@ -361,63 +308,11 @@ pack $w.c1 $w.c2 $w.c3 $w.c4 -side top -padx 8 -pady 2
 pack $w.plate.l $w.plate.e -side left
 pack $w.plate -pady 5
 
-tooltip::tooltip $w.calp1.e "Path to the file for the calibration image of camera 1. 
-Path and filename is also used for the result of orientation, i.e. the extension '.ori' is appended to this name.
-Note that if this name + .ori is equal to 'Orientation data' to the left, then the initial guess will be automatically updated, but also overwritten."
-tooltip::tooltip $w.calp2.e "Path to the file for the calibration image of camera 2. 
-Path and filename is also used for the result of orientation, i.e. the extension '.ori' is appended to this name.
-Note that if this name + .ori is equal to 'Orientation data' to the left, then the initial guess will be automatically updated, but also overwritten."
-tooltip::tooltip $w.calp3.e "Path to the file for the calibration image of camera 3. 
-Path and filename is also used for the result of orientation, i.e. the extension '.ori' is appended to this name.
-Note that if this name + .ori is equal to 'Orientation data' to the left, then the initial guess will be automatically updated, but also overwritten."
-tooltip::tooltip $w.calp4.e "Path to the file for the calibration image of camera 4. 
-Path and filename is also used for the result of orientation, i.e. the extension '.ori' is appended to this name.
-Note that if this name + .ori is equal to 'Orientation data' to the left, then the initial guess will be automatically updated, but also overwritten."
-
-tooltip::tooltip $w.cori1.e "Path to the file with the initial guess for orientation of camera 1. The format of the file is:
-x, y, z of camera position in (mm)
-omega, phi, kappa of angles around x, y, z (rad). BEWARE for anglees 0,0,0 the camera looks into direction 0,0,-1 !!!
-3 x 3 matrix entries don't matter, since omega, phi, kappa define this rotation matrix
-dx, dy (microns) the chip is not perfectly centered around the optical axis
-focal distance (mm), roughly you can guess it as chipsize / imagesize * dist from camera to image
-vec_x, vec_y, vec_z (mm), orientation and distance of air-side of interface measured from origo defined by 'File of Coordinates on Plate''."
-tooltip::tooltip $w.cori2.e "Path to the file with the initial guess for orientation of camera 2. The format of the file is:
-x, y, z of camera position in (mm)
-omega, phi, kappa of angles around x, y, z (rad). BEWARE for anglees 0,0,0 the camera looks into direction 0,0,-1 !!!
-3 x 3 matrix entries don't matter, since omega, phi, kappa define this rotation matrix
-dx, dy (microns) the chip is not perfectly centered around the optical axis
-focal distance (mm), roughly you can guess it as chipsize / imagesize * dist from camera to image
-vec_x, vec_y, vec_z (mm), orientation and distance of air-side of interface measured from origo defined by 'File of Coordinates on Plate''."
-tooltip::tooltip $w.cori3.e "Path to the file with the initial guess for orientation of camera 3. The format of the file is:
-x, y, z of camera position in (mm)
-omega, phi, kappa of angles around x, y, z (rad). BEWARE for anglees 0,0,0 the camera looks into direction 0,0,-1 !!!
-3 x 3 matrix entries don't matter, since omega, phi, kappa define this rotation matrix
-dx, dy (microns) the chip is not perfectly centered around the optical axis
-focal distance (mm), roughly you can guess it as chipsize / imagesize * dist from camera to image
-vec_x, vec_y, vec_z (mm), orientation and distance of air-side of interface measured from origo defined by 'File of Coordinates on Plate''."
-tooltip::tooltip $w.cori4.e "Path to the file with the initial guess for orientation of camera 4. The format of the file is:
-x, y, z of camera position in (mm)
-omega, phi, kappa of angles around x, y, z (rad). BEWARE for anglees 0,0,0 the camera looks into direction 0,0,-1 !!!
-3 x 3 matrix entries don't matter, since omega, phi, kappa define this rotation matrix
-dx, dy (microns) the chip is not perfectly centered around the optical axis
-focal distance (mm), roughly you can guess it as chipsize / imagesize * dist from camera to image
-vec_x, vec_y, vec_z (mm), orientation and distance of air-side of interface measured from origo defined by 'File of Coordinates on Plate''."
-
-tooltip::tooltip $w.plate.e "Defines the path to the file where the coordinates of your calibration target are defined.
-This is a 4 column ASCII file with point number, x,y,z positions in mm units. This file DEFINES the orientation of the coordinate system."
-
-
 # Imageheader Tiff, frame or field for calibration
 checkbutton $w.pic.tiff -text "TIFF-Header    " -variable cp(tiff)
 radiobutton $w.pic.fram -variable cp(type) -text "Frame   " -value 0
 radiobutton $w.pic.fieldodd -variable cp(type) -text "Field odd   " -value 1
 radiobutton $w.pic.fieldeven -variable cp(type) -text "Field even" -value 2
-
-tooltip::tooltip $w.pic.tiff "Should be checked."
-tooltip::tooltip $w.pic.fram "Should be checked."
-tooltip::tooltip $w.pic.fieldodd "Should NOT be checked."
-tooltip::tooltip $w.pic.fieldeven "Should NOT be checked."
-
 
 pack $w.pic.tiff $w.pic.fram $w.pic.fieldodd $w.pic.fieldeven -side left
 pack $w.pic -pady 1
@@ -425,12 +320,6 @@ pack $w.pic -pady 1
 ####################################################
 pack $w.isize.l $w.isizeh.l  $w.isizeh.e $w.isizev.l $w.isizev.e   -side left
 pack $w.pixsize.l $w.pixsizeh.l $w.pixsizeh.e $w.pixsizev.l  $w.pixsizev.e -side left
-
-tooltip::tooltip $w.isizeh.e "number of pixels in horizontal direction."
-tooltip::tooltip $w.isizev.e "number of pixels in vertical direction."
-tooltip::tooltip $w.pixsizeh.e "The pixel size (mm) is provided by the camera manufacturer. You can also work it out by dividing chip width by horizontal pixel number."
-tooltip::tooltip $w.pixsizev.e "The pixel size (mm) is provided by the camera manufacturer. You can also work it out by dividing chip height by vertical pixel number."
-
 
 pack $w.isize $w.isizeh $w.isizev -in $w.isizeha -side left
 pack $w.pixsize $w.pixsizeh $w.pixsizev -in $w.isizehb -side left
@@ -450,18 +339,10 @@ pack $w.maxnp.l $w.maxnp.e $w.maxnpx.l $w.maxnpx.e \
 pack $w.target -side top -pady 6
 pack $w.gvthres -side top -pady 2
 
-tooltip::tooltip $w.gvthres "With these parameters you control the grayvalues your target points need to have in order to be recognized." 
-tooltip::tooltip $w.minnp.e "How many pixels of a targetpoint neeed to be above grayvalue threshold in order to be recognized?"
-tooltip::tooltip $w.minnpx.e "How many pixels in x direction of a targetpoint need to be above grayvalue threshold in order to be recognized?"
-tooltip::tooltip $w.minnpy.e "How many pixels in y direction of a targetpoint need to be above grayvalue threshold in order to be recognized?"
-tooltip::tooltip $w.maxnpx.e "Maximum number of pixels in x direction of a targetpoint above grayvalue threshold in order to still be recognized."
-tooltip::tooltip $w.maxnpy.e "Maximum number of pixels in y direction of a targetpoint above grayvalue threshold in order to still be recognized."
-
 
 pack $w.minnpa  $w.minnp $w.minnpx $w.minnpy -side top
 pack $w.minnp $w.minnpx $w.minnpy $w.minnpy -in $w.minnpa -side left 
 pack $w.minnpa -pady 2
-
 
 pack $w.maxnpa  $w.maxnp $w.maxnpx $w.maxnpy -side top
 pack $w.maxnp $w.maxnpx $w.maxnpy $w.maxnpy -in $w.maxnpa -side left 
@@ -472,50 +353,20 @@ pack  $w.m.ppsumgv.l $w.m.ppsumgv.e  $w.m.toldisc.l $w.m.toldisc.e  $w.m.ppcross
 pack $w.m.ppsumgv $w.m.toldisc $w.m.ppcross -side left  -side left -in $w.m
 pack $w.m -pady 3
 
-tooltip::tooltip $w.m.ppsumgv.e "Minimum sum of all grayvalues of a traget point above threshold in order to be recognized."
-tooltip::tooltip $w.m.toldisc.e "If - within a target point - grayvalues jump more than this value, then it is split into 2 target points."
-tooltip::tooltip $w.m.ppcross.e "Influences only rendering."
-
-
 # packing for point number for manual pre-orientation
 
 pack $w.mori -pady 6
 pack $w.img1.l $w.p11.l  $w.p11.e $w.p12.l $w.p12.e $w.p13.l \
-	$w.p13.e $w.p14.l $w.p14.e  -side left
-pack $w.img1 $w.p11 $w.p12 $w.p13 $w.p14  -in $w.img1a -side left
+	$w.p13.e $w.p14.l $w.p14.e -side left
+pack $w.img1 $w.p11 $w.p12 $w.p13 $w.p14 -in $w.img1a -side left
 pack $w.img1a -pady 2
-tooltip::tooltip $w.img1 "Points that need to be visible and manually clicked in the Calibration image 1."
-tooltip::tooltip $w.p11 "First point that needs to be visible and manually clicked in Calibration image 1."
-tooltip::tooltip $w.p12 "Second point that needs to be visible and manually clicked in Calibration image 1."
-tooltip::tooltip $w.p13 "Third point that needs to be visible and manually clicked in Calibration image 1."
-tooltip::tooltip $w.p14 "Fourth point that needs to be visible and manually clicked in Calibration image 1."
-
-tooltip::tooltip $w.img2 "Points that need to be visible and manually clicked in the Calibration image 2."
-tooltip::tooltip $w.p21 "First point that needs to be visible and manually clicked in Calibration image 2."
-tooltip::tooltip $w.p22 "Second point that needs to be visible and manually clicked in Calibration image 2."
-tooltip::tooltip $w.p23 "Third point that needs to be visible and manually clicked in Calibration image 2."
-tooltip::tooltip $w.p24 "Fourth point that needs to be visible and manually clicked in Calibration image 2."
-
-tooltip::tooltip $w.img3 "Points that need to be visible and manually clicked in the Calibration image 3."
-tooltip::tooltip $w.p31 "First point that needs to be visible and manually clicked in Calibration image 3."
-tooltip::tooltip $w.p32 "Second point that needs to be visible and manually clicked in Calibration image 3."
-tooltip::tooltip $w.p33 "Third point that needs to be visible and manually clicked in Calibration image 3."
-tooltip::tooltip $w.p34 "Fourth point that needs to be visible and manually clicked in Calibration image 3."
-
-tooltip::tooltip $w.img4 "Points that need to be visible and manually clicked in the Calibration image 4."
-tooltip::tooltip $w.p41 "First point that needs to be visible and manually clicked in Calibration image 4."
-tooltip::tooltip $w.p42 "Second point that needs to be visible and manually clicked in Calibration image 4."
-tooltip::tooltip $w.p43 "Third point that needs to be visible and manually clicked in Calibration image 4."
-tooltip::tooltip $w.p44 "Fourth point that needs to be visible and manually clicked in Calibration image 4."
-
-
 pack $w.img2.l $w.p21.l  $w.p21.e $w.p22.l $w.p22.e $w.p23.l \
-	$w.p23.e $w.p24.l $w.p24.e  -side left
+	$w.p23.e $w.p24.l $w.p24.e -side left
 pack $w.img2 $w.p21 $w.p22 $w.p23 $w.p24 -in $w.img2a -side left
 pack $w.img2a -pady 2
 
 pack $w.img3.l $w.p31.l  $w.p31.e $w.p32.l $w.p32.e $w.p33.l \
-	$w.p33.e $w.p34.l $w.p34.e  -side left
+	$w.p33.e $w.p34.l $w.p34.e -side left
 pack $w.img3 $w.p31 $w.p32 $w.p33 $w.p34 -in $w.img3a -side left
 pack $w.img3a -pady 2
 
@@ -524,68 +375,18 @@ pack $w.img4.l $w.p41.l  $w.p41.e $w.p42.l $w.p42.e $w.p43.l \
 pack $w.img4 $w.p41 $w.p42 $w.p43 $w.p44 -in $w.img4a -side left
 pack $w.img4a -pady 2
 
-########################################################################
-# packing for Shaking parameters
-
-pack $w.mshake -pady 6
-pack $w.sh_img1.l $w.first_shake.l  $w.first_shake.e $w.last_shake.l $w.last_shake.e -side left
-pack $w.sh_img1 $w.first_shake $w.last_shake -in $w.sh_img1a -side left
-pack $w.sh_img1a -pady 2
-
-tooltip::tooltip $w.first_shake.e "Sequence for 'Orientation with particle position' begins at this frame."
-tooltip::tooltip $w.last_shake.e "Sequence for 'Orientation with particle position' ends at this frame."
-
-pack $w.mshake -pady 6
-pack $w.sh_img2.l $w.maxPoints_shake.l  $w.maxPoints_shake.e $w.maxFrames_shake.l $w.maxFrames_shake.e -side left
-pack $w.sh_img2 $w.maxPoints_shake $w.maxFrames_shake -in $w.sh_img2a -side left
-pack $w.sh_img2a -pady 2
-
-tooltip::tooltip $w.maxPoints_shake.e "If the number of linked(!) quadruplets of the first frame is not anyway larger than this number, 
-also triplets will be included - possibly of more than one frame."
-tooltip::tooltip $w.maxFrames_shake.e "If triplets are used to reach 'max # points used for orientation' the max number of frames is confined. 
-The frames are spread equally between first and last frame, defined one line above."
-########################################################################
-
 # packing of checkbuttons for orientation parameters
 
 pack $w.oripar.l -pady 8
-##################
-pack $w.examineFlag.l $w.examineFlag.e -side left
-tooltip::tooltip $w.examineFlag.e "If you do a multiplane calibration then set to 1 otherwise to 0."
-pack $w.combineFlag.l $w.combineFlag.e -side left
-tooltip::tooltip $w.combineFlag.e "If you do a multiplane calibration AND if you have already treated all your individual planes (defined in the file parameters/multi_planes.par) 
-and now you want to combine them, then set to 1 otherwise to 0."
-
-##################
-pack $w.pnrori.l $w.pnrori.e -side left
-tooltip::tooltip $w.pnrori.e "Leave this number set to 0."
+pack $w.pnrori.l $w.pnrori.e -side left 
 pack $w.oripar -pady 2
-##################
-pack $w.examineFlag -in $w.oripara
-pack $w.combineFlag -in $w.oripara
-##################
 pack $w.pnrori -in $w.oripara
 pack $w.oripara 
 pack $w.pdist  $w.ppointx  $w.ppointy -in $w.oripp -side left
-tooltip::tooltip $w.pdist "Principale distance is set free to be adjusted. Keep checked."
-tooltip::tooltip $w.ppointx "chip offset dx is set free to be adjusted. Keep checked."
-tooltip::tooltip $w.ppointy "chip offset dy  is set free to be adjusted. Keep checked."
 pack $w.lens $w.lensk1 $w.lensk2 $w.lensk3 $w.lensp1 $w.lensp2 \
     -in $w.orilens -side left  -fill x
-tooltip::tooltip $w.lens "It is recommended NOT TO USE all these (higher order) lens parameters." 
-tooltip::tooltip $w.lensk1 "It is recommended NOT TO USE all these (higher order) lens parameters."
-tooltip::tooltip $w.lensk2 "It is recommended NOT TO USE all these (higher order) lens parameters."
-tooltip::tooltip $w.lensk3 "It is recommended NOT TO USE all these (higher order) lens parameters."
-tooltip::tooltip $w.lensp1 "It is recommended NOT TO USE all these (higher order) lens parameters."
-tooltip::tooltip $w.lensp2 "It is recommended NOT TO USE all these (higher order) lens parameters."
 pack $w.affin $w.afftrafoscx $w.afftrafoshe -in $w.oriaff -side left
-tooltip::tooltip $w.affin "It is recommended NOT TO USE all these (higher order) lens parameters." 
-tooltip::tooltip $w.afftrafoscx "It is recommended NOT TO USE all these (higher order) lens parameters."
-tooltip::tooltip $w.afftrafoshe "It is recommended NOT TO USE all these (higher order) lens parameters."
-pack $w.interfaces  $w.interfacesy -in $w.oriinter -side left
-tooltip::tooltip $w.interfaces "It is recommended to make an as good as possible guess for the orientation of the interfaces ('Orientation data') but then leave them as they are."
-tooltip::tooltip $w.interfacesy "It is recommended to make an as good as possible guess for the orientation of the interfaces ('Orientation data') but then leave them as they are."
-pack $w.oripp $w.orilens $w.oriaff $w.oriinter -side top
+pack $w.oripp $w.orilens $w.oriaff -side top
 
 
 # OK-button ##################################

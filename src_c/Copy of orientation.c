@@ -99,12 +99,11 @@ int	       	nr;  		/* image number for residual display */
 	  /* check for correct correspondence */
 	  if (crd[i].pnr != fix[i].pnr)	continue;
 
-	  /* do not use the corner points of plate 85 
+	  /* do not use the corner points of plate 85 */
 	  if (nfix == 85  &&  fix[i].pnr == 1)	continue;
 	  if (nfix == 85  &&  fix[i].pnr == 7)	continue;
 	  if (nfix == 85  &&  fix[i].pnr == 43)	continue;
 	  if (nfix == 85  &&  fix[i].pnr == 49)	continue;
-	  */
 
 
 	  pixnr[n/2] = i;		/* for drawing residuals */

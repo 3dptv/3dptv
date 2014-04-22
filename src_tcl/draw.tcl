@@ -51,7 +51,7 @@ proc markier { w x y image} {
 proc measure { p1 p2 p3 p4 imgnr } {
 
     global clicki xs ys fx fy k tbuf
-    global px0 px1 px2 px3 py0 py1 py2 py3 
+    global px0 px1 px2 px3 py0 py1 py2 py3
 
     for {set i 1} {$i < 5} {incr i 1} {
 
@@ -60,26 +60,19 @@ proc measure { p1 p2 p3 p4 imgnr } {
 	
 	set point [set p$i]
 	.text delete 3
-	.text insert 3 "measure point $point >> with MS Left,   one step back >> with MS Right"
+	.text insert 3 "measure point $point >> with MS Left"
 
 	tkwait variable clicki
+	set whatimage .cam$imgnr.pic
 
-	  if { $clicki == 0 } {
-		.text delete 2
-		.text insert 2 "one step back"
-		set i [expr $i - 2]
-
-	  } else {
-		set whatimage .cam$imgnr.pic
-		if { $k == $whatimage } {
-	    		set fx  [concat $fx $xs]
-	    		set fy  [concat $fy $ys]
-       	 } else { 
-	    		.text delete 2
-	    		.text insert 2 "not image $imgnr"
-	   		 set i [expr $i - 1 ]
-		}
-	  }
+	if { $k == $whatimage } {
+	    set fx  [concat $fx $xs]
+	    set fy  [concat $fy $ys]
+        } else { 
+	    .text delete 2
+	    .text insert 2 "not image $imgnr"
+	    set i [expr $i - 1 ]
+	}	
     }
 
     set px0 [lindex $fx 0] 

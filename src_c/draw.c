@@ -63,7 +63,7 @@ void mark_detections (Tcl_Interp* interp, int nr)
       printf ("No points detected");  return;
     }
   limy = imy/(2*zoom_f[nr]);
-  limx = imx/(2*zoom_f[nr]);
+  limx = imx/(2*zoom_f[nr]); /*	if (zoom_f[nr] > 2)  d=3; */
   for (i=0; i<num[nr]; i++)
     {
       if (   (fabs(pix[nr][i].x-zoom_x[nr]) < limx)
@@ -79,10 +79,12 @@ void mark_detections (Tcl_Interp* interp, int nr)
 void mark_correspondences (Tcl_Interp* interp, int nr)
 /* draws crosses and numbers for corresponding points in a displayed window */
 {
-  int  	i,j, pnr, lim, sum, intx, inty;
+  int  	i,j, pnr, lim, sum, intx, inty, d=2;
   double  x, y;
   
   if (match == 0) return;
+  
+  if (zoom_f[nr] > 2)  d=3;
   
   lim = imx/(2*zoom_f[nr]);
   
@@ -161,7 +163,7 @@ int mark_track_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 /* draws crosses for detected points in a displayed image */
 {
   char  seq_name[4][128];
-  int   i_img, i_seq, h, intx, inty;
+  int   i_img, i_seq, h, intx, inty,i, k;
 
   cr_sz = atoi(Tcl_GetVar2(interp, "mp", "pcrossize",  TCL_GLOBAL_ONLY));
 
@@ -179,6 +181,16 @@ int mark_track_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
   Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 2");
   Tcl_Eval(interp, ".text insert 2 $tbuf");
+
+
+  /*Alloc space*/
+  /*
+  for (i=0; i<4; i++) {
+    mega[i]=(P *) calloc(sizeof(P),M);
+    c4[i]=(corres *) calloc(sizeof(corres),M); 
+    for (k=0; k<4; k++)
+      t4[i][k]=(target *) calloc(sizeof (target),M);}
+  */
   
   /* track sequence */
   for (i_seq=seq_first; i_seq<=seq_last; i_seq++)
@@ -207,7 +219,12 @@ int mark_track_c(ClientData clientData, Tcl_Interp* interp, int argc, const char
 	  Tcl_Eval(interp, "update idletasks");	      
 	}
     }
-
+  /*
+  for (i=0; i<4; i++) 
+    { free (mega[i]);free (c4[i]);
+    for (k=0; k<4; k++) free (t4[i][k]);
+    }
+  */
   sprintf(val, "...done");
   Tcl_SetVar(interp, "tbuf", val, TCL_GLOBAL_ONLY);
   Tcl_Eval(interp, ".text delete 3");
@@ -245,8 +262,8 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 
   for (i=seq_first; i<seq_last;i++)
     {
-      if (i < 10)             sprintf (val, "res/ptv_is.%1d", i);
-      else if (i < 100)       sprintf (val, "res/ptv_is.%2d",  i);
+      if (i < 10)             sprintf (val, "res/ptv_is.00%1d", i);
+      else if (i < 100)       sprintf (val, "res/ptv_is.0%2d",  i);
       else       sprintf (val, "res/ptv_is.%3d",  i);
  
       fp1 = fopen (val, "r");
@@ -267,8 +284,8 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
       fclose (fp1);
 
       /* read next time step */     
-      if (i+1 < 10)             sprintf (val, "res/ptv_is.%1d", i+1);
-      else if (i+1 < 100)       sprintf (val, "res/ptv_is.%2d",  i+1);
+      if (i+1 < 10)             sprintf (val, "res/ptv_is.00%1d", i+1);
+      else if (i+1 < 100)       sprintf (val, "res/ptv_is.0%2d",  i+1);
       else       sprintf (val, "res/ptv_is.%3d",  i+1);
       
       fp1 = fopen (val, "r");      
@@ -290,10 +307,10 @@ int trajectories_c(ClientData clientData, Tcl_Interp* interp, int argc, const ch
 	if (m >= 0)  {	  
 	  for (k=0; k<n_img; k++)
 	    {
-	      img_coord (line1[j].x1, line1[j].y1, line1[j].z1, Ex[k],I[k], G[k], ap[k], mmp, &p1[k].x, &p1[k].y);
+	      img_coord (line1[j].x1, line1[j].y1, line1[j].z1, Ex[k],I[k], ap[k], mmp, &p1[k].x, &p1[k].y);
 	      metric_to_pixel (p1[k].x, p1[k].y, imx,imy, pix_x,pix_y, &p1[k].x, &p1[k].y, chfield);
 	      
-	      img_coord (line2[m].x1, line2[m].y1, line2[m].z1, Ex[k],I[k], G[k], ap[k], mmp, &p2[k].x, &p2[k].y);
+	      img_coord (line2[m].x1, line2[m].y1, line2[m].z1, Ex[k],I[k], ap[k], mmp, &p2[k].x, &p2[k].y);
 	      metric_to_pixel (p2[k].x, p2[k].y, imx,imy, pix_x,pix_y, &p2[k].x, &p2[k].y, chfield); 
 	      
 	      if ( fabs( p2[k].x-zoom_x[k]) < imx/(2*zoom_f[k])
