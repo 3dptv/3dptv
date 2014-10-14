@@ -13,7 +13,6 @@ Description:		display of image sequences
 Routines contained: flow_demo_c
 
 **********************************************************************/
-
 #include "ptv.h"
 
 int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)

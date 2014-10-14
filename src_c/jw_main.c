@@ -3,6 +3,7 @@
  *
  *	  Provides a default version of the Tcl_AppInit procedure for
  *	  use in wish and similar Tk-based applications.
+
 */
 
 #include "ptv.h"
@@ -17,7 +18,9 @@ int *tclDummyMathPtr = (int *) matherr;
 
 #ifdef TK_TEST
 EXTERN int	Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
-#endif
+#endif /* TK_TEST */
+
+
 
 /*
  *----------------------------------------------------------------------
@@ -36,7 +39,10 @@ EXTERN int	Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
  *----------------------------------------------------------------------
  */
 
-int main(int argc, char **argv)
+int
+main(argc, argv)
+    int argc;			/* Number of command-line arguments. */
+    char **argv;		/* Values of command-line arguments. */
 {
 	Tk_Main(argc, argv, Tcl_AppInit);
 	return 0;	 /* Needed only to prevent compiler warning. */
@@ -61,8 +67,9 @@ int main(int argc, char **argv)
  *----------------------------------------------------------------------
  */
 
-int Tcl_AppInit(Tcl_Interp *interp)
-//	Tcl_Interp *interp	  Interpreter for application.
+int
+Tcl_AppInit(interp)
+    Tcl_Interp *interp;		/* Interpreter for application. */
 {
 	if (Tcl_Init(interp) == TCL_ERROR) {
 		return TCL_ERROR;
@@ -71,7 +78,6 @@ int Tcl_AppInit(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 	Tcl_StaticPackage(interp, "Tk", Tk_Init, Tk_SafeInit);
-
 #ifdef TK_TEST
 	if (Tktest_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
@@ -113,7 +119,8 @@ int Tcl_AppInit(Tcl_Interp *interp)
 }
 
 
-int jw_Init(Tcl_Interp *interp)
+int jw_Init(interp)
+  Tcl_Interp *interp;
 {
   Tcl_CreateCommand(interp, "init_proc_cmd", init_proc_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -143,9 +150,6 @@ int jw_Init(Tcl_Interp *interp)
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
   Tcl_CreateCommand(interp, "calib_cmd", calibration_proc_c,
-	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
-
-  Tcl_CreateCommand(interp, "restore_cmd", restore_proc_c,
 	(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
   Tcl_CreateCommand(interp, "mouse_cmd", mouse_proc_c,

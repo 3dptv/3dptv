@@ -17,9 +17,11 @@ Routines contained: 	pix_in_next, candsearch_in_pix, searchposition,
 ****************************************************************************/
 #include "ptv.h"
 
-#ifdef EVER_CALLED		// Unused function, ad holten 12-2012
-int pix_in_next (target next[], int num, double x, double y, 
-				 double dl, double dr, double du, double dd, int found[POSI])
+int pix_in_next (next, num, x, y, dl, dr, du, dd, found)
+target  next[];
+int     num;
+double  x, y, dl, dr, du, dd;
+int found[POSI];
 {
 	/* search of POSI near candidates in targetlist */
 
@@ -49,12 +51,16 @@ int pix_in_next (target next[], int num, double x, double y,
 			zaehler++;
 		}
 	}
+
 	return (zaehler);
 }
-#endif
 
-int candsearch_in_pix (target next[], int num, double x, double y, 
-				 double dl, double dr, double du, double dd, int p[4])
+
+int candsearch_in_pix (next, num, x, y, dl, dr, du, dd, p)
+target  next[];
+int     num;
+double  x, y, dl, dr, du, dd;
+int p[4];
 {
 	/* search of four near candidates in targetlist */
 
@@ -77,8 +83,7 @@ int candsearch_in_pix (target next[], int num, double x, double y,
 	p1 = p2 = p3 = p4 = -999;
 	d1 = d2 = d3 = d4 = dmin;
 
-	if (x>=0.0 && x<=imx ) {
-		if (y>=0.0 && y<=imy ) {
+  if (x>=0.0 && x<=imx ) { if (y>=0.0 && y<=imy ) {
 
 			/* binarized search for start point of candidate search */
 			for (j0=num/2, dj=num/4; dj>1; dj/=2)
@@ -96,8 +101,7 @@ int candsearch_in_pix (target next[], int num, double x, double y,
 					{
 						d = sqrt ((x-next[j].x)*(x-next[j].x) + (y-next[j].y)*(y-next[j].y));
 
-						if (d < dmin) {
-							dmin = d; pnr = j;
+	    if (d < dmin) { dmin = d; pnr = j;
 						}
 						if ( d < d1 )
 						{
@@ -122,19 +126,22 @@ int candsearch_in_pix (target next[], int num, double x, double y,
 					}
 				}
 			}
+
 			p[0]=p1;
 			p[1]=p2;
 			p[2]=p3;
 			p[3]=p4;
 			for (j=0; j<4; j++) if ( p[j] != -999 ) {zaehler++; }
-		}
-	}
+  } }
 	return (zaehler);
 }
 
 
-int candsearch_in_pixrest (target  next[], int num, double x, double y, 
-						   double dl, double dr, double du, double dd, int p[4])
+int candsearch_in_pixrest (next, num, x, y, dl, dr, du, dd, p)
+target  next[];
+int     num;
+double  x, y, dl, dr, du, dd;
+int p[4];
 {
 	/* search of four near candidates in targetlist */
 
@@ -184,7 +191,9 @@ int candsearch_in_pixrest (target  next[], int num, double x, double y,
 }
 
 
-void predict (double x1, double y1, double x2, double y2, double *x3, double *y3)
+
+void predict (x1, y1, x2, y2, x3, y3)
+double x1, y1, x2, y2, *x3, *y3;
 {
 	*x3 = 2*x2 - x1;
 	*y3 = 2*y2 - y1;
@@ -197,8 +206,7 @@ void readseqtrackcrit ()
 	int i_img;
 	/* reads pixfiles and try to track particles in imagespace
 	 over the sequence */
-	fpp = fopen_rp ("parameters/sequence.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
+  fpp = fopen_r ("parameters/sequence.par");
 	for (i_img=0; i_img<4; i_img++) {
 		fscanf (fpp, "%s\n", seq_name[i_img]);
 	}
@@ -207,8 +215,7 @@ void readseqtrackcrit ()
 	fscanf (fpp,"%d\n", &seq_last);
 	fclose (fpp);
 
-	fpp = fopen_rp ("parameters/track.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
+  fpp = fopen_r ("parameters/track.par");
 	fscanf (fpp, "%lf\n", &tpar.dvxmin);
 	fscanf (fpp, "%lf\n", &tpar.dvxmax);
 	fscanf (fpp, "%lf\n", &tpar.dvymin);
@@ -227,8 +234,7 @@ void readseqtrackcrit ()
 	fclose (fpp);
 
 	/* read illuminated layer data */
-	fpp = fopen_rp ("parameters/criteria.par");	// replaced fopen_r, ad holten 12-2012
-	if (!fpp) return;
+  fpp = fopen_r ("parameters/criteria.par");
 	fscanf (fpp, "%lf\n", &X_lay[0]);
 	fscanf (fpp, "%lf\n", &Zmin_lay[0]);
 	fscanf (fpp, "%lf\n", &Zmax_lay[0]);
@@ -240,8 +246,11 @@ void readseqtrackcrit ()
 
 
 
-void searchquader(double X, double Y, double Z, 
-				  double xr[4], double xl[4], double yd[4], double yu[4])
+
+
+
+void searchquader(X, Y, Z, xr, xl, yd, yu)
+double X, Y, Z, xr[4], xl[4], yd[4], yu[4];
 {
 	int    k, i;
 	double x, y, xz, yz;
@@ -258,7 +267,7 @@ void searchquader(double X, double Y, double Z,
 	quader[0].x=X+tpar.dvxmin; quader[0].y=Y+tpar.dvymin; quader[0].z=Z+tpar.dvzmin; /* --- */
 	quader[1].x=X+tpar.dvxmax; quader[1].y=Y+tpar.dvymin; quader[1].z=Z+tpar.dvzmin; /* +-- */
 	quader[2].x=X+tpar.dvxmin; quader[2].y=Y+tpar.dvymax; quader[2].z=Z+tpar.dvzmin; /* -+- */
-	quader[3].x=X+tpar.dvxmin; quader[3].y=Y+tpar.dvymin; quader[3].z=Z+tpar.dvzmax; /* --+ */ //changed by Beat and JuliAn Nov 2008
+  quader[3].x=X+tpar.dvxmin; quader[3].y=Y+tpar.dvymin; quader[3].z=Z+tpar.dvzmax; /* --+ ;bug found by Beat 02_05*/
 	quader[4].x=X+tpar.dvxmax; quader[4].y=Y+tpar.dvymax; quader[4].z=Z+tpar.dvzmin; /* ++- */
 	quader[5].x=X+tpar.dvxmax; quader[5].y=Y+tpar.dvymin; quader[5].z=Z+tpar.dvzmax; /* +-+ */
 	quader[6].x=X+tpar.dvxmin; quader[6].y=Y+tpar.dvymax; quader[6].z=Z+tpar.dvzmax; /* -++ */
@@ -271,12 +280,12 @@ void searchquader(double X, double Y, double Z,
 		xl[i]=imx;
 		yd[i]=0;
 		yu[i]=imy;
-		img_coord (point.x, point.y, point.z, Ex[i], I[i], G[i], ap[i], mmp, &xz,&yz);
+      img_coord (point.x, point.y, point.z, Ex[i], I[i], ap[i], mmp, &xz,&yz);
 		metric_to_pixel (xz,yz, imx,imy, pix_x,pix_y, &xz,&yz, chfield);
 
 		for (k=0; k<8; k++)
 		{
-			img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], G[i], ap[i], mmp, &x,&y);
+	  img_coord (quader[k].x, quader[k].y, quader[k].z, Ex[i], I[i], ap[i], mmp, &x,&y);
 			metric_to_pixel (x,y, imx,imy, pix_x,pix_y, &x,&y, chfield);
 
 			if (x <xl[i] ) xl[i]=x;
@@ -295,6 +304,7 @@ void searchquader(double X, double Y, double Z,
 		yu[i]=yz-yu[i];
 	}
 	return;
+
 }
 
 
@@ -349,10 +359,13 @@ void sortwhatfound (foundpix item[16], int *zaehler)
 	}
 	for (i=0; i<16; ++i) if(item[i].freq != 0) different++;
 	*zaehler=different;
+
 }
 
-void angle_acc(double X0, double Y0, double Z0, double X1, double Y1, double Z1, 
-			   double X2, double Y2, double Z2, double *angle, double *acc)
+
+
+void angle_acc( X0, Y0, Z0,X1, Y1, Z1, X2, Y2, Z2, angle, acc )
+double X0, Y0, Z0,X1, Y1, Z1, X2, Y2, Z2, *angle, *acc;
 {
 	double ds, da;
 	coord_3d v0, v1, v2;
@@ -365,15 +378,12 @@ void angle_acc(double X0, double Y0, double Z0, double X1, double Y1, double Z1,
 	ds= sqrt( v2.x*v2.x+v2.y*v2.y+v2.z*v2.z);
 	/* special case 200 gon */
 	if (v1.x ==-v0.x && v1.y ==-v0.y && v1.z ==-v0.z)
-	{
-		*angle =200;
-	}
-	else {
+    { *angle =200; } else {
 		da=acos ((v0.x*v1.x+v0.y*v1.y+v0.z*v1.z)/
 		   (sqrt( v1.x*v1.x+v1.y*v1.y+v1.z*v1.z)*
 			sqrt( v0.x*v0.x+v0.y*v0.y+v0.z*v0.z)));
-		*angle=da*ro;
-	}
+  *angle=da*ro; }
 	*acc=ds;
+
 	return;
 }

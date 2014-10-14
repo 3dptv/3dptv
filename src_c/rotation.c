@@ -20,16 +20,20 @@ Routines contained: 	   -
 
 #include "ptv.h"
 
-void rotation_matrix (Exterior Ex, Dmatrix dm)
+void rotation_matrix (Ex, dm)
+
+Exterior  Ex;
+Dmatrix   dm;
+
 {
 	dm[0][0] =	cos(Ex.phi) * cos(Ex.kappa);
-	dm[0][1] = -cos(Ex.phi) * sin(Ex.kappa);
+    dm[0][1] = (-1) * cos(Ex.phi) * sin(Ex.kappa);
 	dm[0][2] =	sin(Ex.phi);
 	dm[1][0] =	cos(Ex.omega) * sin(Ex.kappa)
 				+ sin(Ex.omega) * sin(Ex.phi) * cos(Ex.kappa);
 	dm[1][1] =	cos(Ex.omega) * cos(Ex.kappa)
 				- sin(Ex.omega) * sin(Ex.phi) * sin(Ex.kappa);
-	dm[1][2] = -sin(Ex.omega) * cos(Ex.phi);
+    dm[1][2] = (-1) * sin(Ex.omega) * cos(Ex.phi);
 	dm[2][0] =	sin(Ex.omega) * sin(Ex.kappa)
 				- cos(Ex.omega) * sin(Ex.phi) * cos(Ex.kappa);
 	dm[2][1] =	sin(Ex.omega) * cos(Ex.kappa)

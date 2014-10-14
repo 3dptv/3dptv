@@ -23,9 +23,11 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 
 	switch (kind) 
 	{
+
 /* -------------------------- MIDDLE MOUSE BUTTON ---------------------------------- */
 
 	case 1:
+      
 		zoom_x[n] = (click_x - imx/2)/zoom_f[n] + zoom_x[n];
 		zoom_y[n] = (click_y - imy/2)/zoom_f[n] + zoom_y[n];
 		zoom_f[n] *= 2;
@@ -49,7 +51,8 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 	  
 	case 2:    /* zoom images at corresponding position by factor zf */
 	  
-		if (n == 0) {
+      if (n == 0)
+	{
 			/* zoom and show img1 */
 			zoom_x[0] = (click_x-imx/2)/zoom_f[0] + zoom_x[0];
 			zoom_y[0] = (click_y-imy/2)/zoom_f[0] + zoom_y[0];
@@ -69,6 +72,7 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 			sprintf(val, "newimage %d", 1);
 			Tcl_Eval(interp, val);
 
+	  
 			if (argc != 6 ) {
 				mark_detections (interp, 0);  
 				mark_correspondences (interp, 0);
@@ -81,10 +85,11 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 			x -= I[n].xh;	 y -= I[n].yh;
 			correct_brown_affin (x, y, ap[0], &x, &y);
 
-			for (i=1; i<n_img; i++) {
+	  for (i=1; i<n_img; i++)
+	    {
 				/* calculate middle of epipolar band */
 				/* for zoom positions in the other images */
-				epi_mm (x,y, Ex[0], I[0], G[0], Ex[i], I[i], G[i], mmp,
+	      epi_mm (x,y, Ex[0], I[0], Ex[i], I[i], mmp,
 					&xa12, &ya12, &xb12, &yb12);
 				xa = (xa12 + xb12) / 2;  ya = (ya12 + yb12) / 2;
 				distort_brown_affin (xa, ya, ap[i], &xa, &ya);
@@ -115,9 +120,9 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 					mark_correspondences (interp, i);
 					mark_corr (interp, i);
 				}
+	      
 			}
-		}
-		else { 
+	} else { 
 			sprintf(val,"Zooming of corresp. areas is only possible by clicking in image 1");
 			Tcl_SetVar(interp, "tbuf", val, TCL_GLOBAL_ONLY);
 			Tcl_Eval(interp, ".text delete 2");
@@ -127,6 +132,7 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 
 
 	case 6:
+      
 		/* Zoom with high zf for tracking */
 		zoom_x[n] = (click_x - imx/2)/zoom_f[n] + zoom_x[n];
 		zoom_y[n] = (click_y - imy/2)/zoom_f[n] + zoom_y[n];
@@ -147,7 +153,6 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 		Tcl_Eval(interp, val);
 
 		break;
-
 /*----------------------- RIGHT MOUSE BUTTON ------------------------------*/
 
 	case 3: /* generate epipolar line segments */
@@ -160,7 +165,8 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 		x -= I[n].xh;	 y -= I[n].yh;
 		correct_brown_affin (x, y, ap[n], &x, &y);
 		k = nearest_neighbour_geo (geo[n], num[n], x, y, 0.05);
-		if (k == -999) {
+      if (k == -999)
+	{	  
 			sprintf (buf, "no point near click coord ! Click again!");	puts (buf);
 			Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);
 			Tcl_Eval(interp, ".text delete 2");
@@ -179,7 +185,8 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 		for (i=0; i<n_img; i++) if (i != n)
 		{
 			/* calculate epipolar band in img[i] */
-			epi_mm (geo[n][k].x,geo[n][k].y, Ex[n],I[n], G[n], Ex[i],I[i], G[i], mmp,
+		   epi_mm (geo[n][k].x,geo[n][k].y,
+			   Ex[n],I[n], Ex[i],I[i], mmp,
 					&xa12, &ya12, &xb12, &yb12);
 
 			/* search candidate in img[i] */
@@ -209,20 +216,26 @@ int mouse_proc_c (ClientData clientData, Tcl_Interp* interp, int argc, const cha
 
 			drawvector ( interp, intx1, inty1, intx2, inty2, 1, i, val);
 
-			for (j=0; j<count; j++) {
+                   for (j=0; j<count; j++)
+                     {
 				pt2 = cand[j].pnr;
 				intx2 = (int) ( imx/2 + zoom_f[i] * (pix[i][pt2].x - zoom_x[i]));
 				inty2 = (int) ( imy/2 + zoom_f[i] * (pix[i][pt2].y - zoom_y[i]));
 				drawcross (interp, intx2, inty2, cr_sz+2, i, "orange");
 			}
+   
+		   
 		}
+
 		break;
 
 					  
 	case 4: /* delete points, which should not be used for orientation */
 	 
+      
 		j = kill_in_list (interp, n, num[n], click_x, click_y);
-		if (j != -1) {
+      if (j != -1)
+	{
 			num[n] -= 1;
 			sprintf (buf, "point %d deleted", j);  puts (buf);
 			Tcl_SetVar(interp, "tbuf", buf, TCL_GLOBAL_ONLY);

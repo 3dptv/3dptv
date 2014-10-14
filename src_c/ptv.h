@@ -23,7 +23,6 @@ extern Tcl_CmdProc correspondences_proc_c;
 extern Tcl_CmdProc determination_proc_c;
 extern Tcl_CmdProc sequence_proc_c;
 extern Tcl_CmdProc calibration_proc_c;
-extern Tcl_CmdProc restore_proc_c;
 extern Tcl_CmdProc quit_proc_c;
 extern Tcl_CmdProc mouse_proc_c;
 extern Tcl_CmdProc flow_demo_c;

@@ -1,0 +1,65 @@
+***************
+*** 250,263 ****
+  	return TCL_ERROR;
+      }
+  
+-     if ((srcX + width) > (int)fileImgWidth) {
+  	width = fileImgWidth - srcX;
+      }
+-     if ((srcY + height) > (int)fileImgHeight) {
+  	height = fileImgHeight - srcY;
+      }
+      if ((width <= 0) || (height <= 0)
+- 	|| (srcX >= (int)fileImgWidth) || (srcY >= (int)fileImgHeight)) {
+  	return TCL_OK;
+      }
+  
+--- 250,263 ----
+  	return TCL_ERROR;
+      }
+  
++     if ((srcX + width) > fileImgWidth) {
+  	width = fileImgWidth - srcX;
+      }
++     if ((srcY + height) > fileImgHeight) {
+  	height = fileImgHeight - srcY;
+      }
+      if ((width <= 0) || (height <= 0)
++ 	|| (srcX >= fileImgWidth) || (srcY >= fileImgHeight)) {
+  	return TCL_OK;
+      }
+  
+***************
+*** 321,327 ****
+      printf("\nFileReadTIF: block.pixelSize = %d", block.pixelSize);
+      printf("\nFileReadTIF: scanline size   = %d", TIFFScanlineSize(tif));
+      */
+-     Tk_PhotoExpand(interp,imageHandle, destX + width, destY + height);
+  
+      /*
+      if (srcY > 0) {
+--- 321,327 ----
+      printf("\nFileReadTIF: block.pixelSize = %d", block.pixelSize);
+      printf("\nFileReadTIF: scanline size   = %d", TIFFScanlineSize(tif));
+      */
++     Tk_PhotoExpand(imageHandle, destX + width, destY + height);
+  
+      /*
+      if (srcY > 0) {
+***************
+*** 365,371 ****
+          }
+  	block.height = nLines;
+  
+- 	Tk_PhotoPutBlock(interp,imageHandle, &block, destX, destY, width, nLines, TK_PHOTO_COMPOSITE_SET);
+  	destY += nLines;
+      }
+  
+--- 365,371 ----
+          }
+  	block.height = nLines;
+  
++ 	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, nLines, TK_PHOTO_COMPOSITE_SET);
+  	destY += nLines;
+      }
+  

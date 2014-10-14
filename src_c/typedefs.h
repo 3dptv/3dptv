@@ -1,14 +1,14 @@
 #define sqr(x) x*x
-#define maxcand 200 //Beat changed it on 090325
-#define maxtrack 64 //Beat changed it on 090325
+#define maxcand 16
+#define maxtrack 32
 
-#define M 20000 //Beat changed it on 090325
+#define M 25000
 
 #ifndef  M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-#define POSI 80 //Beat changed it on 090325
+#define POSI 40
 
 typedef	double	Dmatrix[3][3];	/* 3 x 3 rotation matrix */
 
@@ -44,16 +44,23 @@ trackparameters;
 
 typedef struct
 {
+  int N;					// Anzahl ecken des Prisma
+  double t;				// dicke des Prisma
+  double f_pr;			// Rotation umdrehungen/sec des Prisma
+  double f_cam;			// frame rate Camera
+  int N_slice;			// Anzahl frames per volume slice
+  double s;				// Dicke der Lichtschicht
+  double offset;		// Versatz der Lichtschicht
+  double index;			// Refractive index
+}
+scanparameters;
+
+typedef struct
+{
   double xh, yh;
   double cc;
 }
 Interior;
-
-typedef struct
-{
-  double vec_x,vec_y,vec_z;
-}
-Glass;
 
 typedef struct
 {
@@ -156,7 +163,7 @@ mm_LUT;
 
 typedef struct /* struct for what was found to corres */
 {
- int ftnr, freq, whichcam[4];
+ int ftnr, freq, whichcam[4], slice;
 }
 foundpix;
 
@@ -191,6 +198,10 @@ typedef struct Pstruct
   float finaldecis; /*final decision critera by which the link was established*/
   int linkdecis[POSI]; /* pointer of possible links to next data set*/
   int inlist; /* Counter of number of possible links to next data set*/
+  int prev_slice; /* 0 = previous neighbour; 1 = current neighbour; 2 = next neighbour; */
+  int next_slice; /* 0 = previous neighbour; 1 = current neighbour; 2 = next neighbour; */
+  int slices[POSI];
+
 } P;
 
 

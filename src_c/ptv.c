@@ -11,38 +11,7 @@
 ** Changes:
 **
 *******************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
-
-/* ----- recent changes -------------------------------------------------------
-  ad holten, 12-2012
-  replaced:
-	if		(filenumber < 10)	sprintf (filein, "res/rt_is.%1d", filenumber);
-	else if (filenumber < 100)	sprintf (filein, "res/rt_is.%2d",  filenumber);
-	else						sprintf (filein, "res/rt_is.%3d", filenumber);
-  by
-	sprintf (filein, "res/rt_is.%d", filenumber);
-
-  replaced:
-	fp = fopen (filein, "r");
-	if (! fp) printf("Can't open ascii file: %s\n", filein);
-  by
-	fp = fopen_rp (filein);		(fopen_rp prints an error message on failure)
-	if (!fp) return;
-------------------------------------------------------------------------------*/
-
 #include "ptv.h"
-
-void level1(void);
-void level2(void);
-void level3(void);
-void neighbours(float seekx[], float radi[], int nliste[], int *innliste, int set);
-
-
 
 int seq_track_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
@@ -84,14 +53,18 @@ int seq_track_proc_c(ClientData clientData, Tcl_Interp* interp, int argc, const 
 	rotate_dataset();
 	write_ascii_data(step-1);
 
+
 	for (i=0; i<4; i++)
-	{ 
-		free (mega[i]);
-		free (c4[i]);
+    { free (mega[i]);free (c4[i]);
 		for (k=0; k<n_img; k++) free (t4[i][k]);
 	}
+
 	return TCL_OK;
 }
+
+
+
+
 
 
 void read_ascii_data(int filenumber)
@@ -99,6 +72,7 @@ void read_ascii_data(int filenumber)
 	FILE *FILEIN;
 	char filein[256];
 	int  i, j;
+  int   dumy;
 
 	for(i=0; i<M; i++)
 	{
@@ -114,23 +88,22 @@ void read_ascii_data(int filenumber)
 		c4[3][i].p[3]=-1;
 	}
 
-	// replaced next lines, ad holten 12-2012
-	//		if		(filenumber < 10)	sprintf (filein, "res/rt_is.%1d", filenumber);
-	//		else if (filenumber < 100)	sprintf (filein, "res/rt_is.%2d",  filenumber);
-	//		else						sprintf (filein, "res/rt_is.%3d", filenumber);
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/rt_is.%3d", filenumber);
 
-	sprintf (filein, "res/rt_is.%d", filenumber);
-	FILEIN = fopen_rp (filein);			// replaced fopen(), ad holten 12-2012
-	if (! FILEIN) return;
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
 
 	i=0;
 	m[3]=0;
 
-	fscanf(FILEIN, "%*d\n");		// skip the # of 3D points
-	do {
+  fscanf(FILEIN, "%d\n", &dumy); /* read # of 3D points on dumy */
+  do
+    {
 		/*read dataset row by row, x,y,z and correspondences */
-		fscanf(FILEIN, "%*d %f %f %f %d %d %d %d\n",
-			&mega[3][i].x[0], &mega[3][i].x[1], &mega[3][i].x[2],
+      fscanf(FILEIN, "%d %f %f %f %d %d %d %d\n",
+	     &dumy, &mega[3][i].x[0], &mega[3][i].x[1], &mega[3][i].x[2],
 			&c4[3][i].p[0], &c4[3][i].p[1], &c4[3][i].p[2], &c4[3][i].p[3]);
 
 		c4[3][i].nr=i;
@@ -142,6 +115,7 @@ void read_ascii_data(int filenumber)
 		i++;
 		m[3]++;
 	} while(!feof(FILEIN));
+
 	fclose(FILEIN);
 
 	/* read targets of each camera */
@@ -151,8 +125,9 @@ void read_ascii_data(int filenumber)
 		compose_name_plus_nr_str (seq_name[i], "_targets",
 			filenumber, filein);
 
-		FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012
-		if (FILEIN) {
+      FILEIN= fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
 			fscanf (FILEIN, "%d\n", &nt4[3][i]);
 			for (j=0; j<nt4[3][i]; j++)
 			{
@@ -164,36 +139,237 @@ void read_ascii_data(int filenumber)
 			}
 			fclose (FILEIN);
 		}
-	}
+
 }
 
+
+
+
 /**********************************************************************/
-/* Added by Alex, 19.04.10 to read _targets only, for the external API */
-void read_targets(int i_img, int filenumber,  int *num)
+
+void read_ascii_data_first(int filenumber)
+{
+  FILE	*FILEIN;
+  char	filein[256];
+  int	i, j, filecount;
+  int   dumy;
+
+  
+      /*reset all other variable to default value*/
+	for (j=0; j<scan_par.N_slice;j++)
+	  {
+		  for(i=0;i<M;i++)
+     {
+	  mega_slice[3][j][i].prev = -1;
+      mega_slice[3][j][i].prev_slice = -1;
+      mega_slice[3][j][i].next_slice = -2;
+	  mega_slice[3][j][i].next = -2;
+      mega_slice[3][j][i].prio = 1;
+      mega_slice[3][j][i].inlist = 0;
+      mega_slice[3][j][i].finaldecis = 1000000.0;
+      
+	  c4_slice[3][j][i].p[0]=-1;
+      c4_slice[3][j][i].p[1]=-1;
+      c4_slice[3][j][i].p[2]=-1;
+      c4_slice[3][j][i].p[3]=-1;
+	  }
+	}
+
+
+	for (filecount=0; filecount<scan_par.N_slice;filecount++)
+  {
+  
+  
+
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/rt_is.%3d", filenumber);
+
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
+  i=0;
+  m_slice[3][filecount]=0;
+
+  fscanf(FILEIN, "%d\n", &dumy); /* read # of 3D points on dumy */
+  do
+    {
+      /*read dataset row by row, x,y,z and correspondences */
+      fscanf(FILEIN, "%d %f %f %f %d %d %d %d %d\n",
+	     &dumy, &mega_slice[3][filecount][i].x[0], &mega_slice[3][filecount][i].x[1],
+		 &mega_slice[3][filecount][i].x[2], &c4_slice[3][filecount][i].p[0],
+		 &c4_slice[3][filecount][i].p[1], &c4_slice[3][filecount][i].p[2], &c4_slice[3][filecount][i].p[3],
+		 &mega_slice[3][filecount][i].prio);
+
+      c4_slice[3][filecount][i].nr=i;
+
+      for(j=0; j<POSI; j++){
+	mega_slice[3][filecount][i].decis[j] = 0.0;
+	mega_slice[3][filecount][i].linkdecis[j] = -999;
+}
+      i++;
+      m_slice[3][filecount]++;
+    }while(!feof(FILEIN));
+
+  fclose(FILEIN);
+
+  /* read targets of each camera */
+  for (i=0; i<n_img; i++)
+    {
+      nt4_slice[3][i][filecount]=0;
+	  compose_name_plus_nr_str (seq_name[i], "_targets",
+				filenumber, filein);
+
+      FILEIN= fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
+      fscanf (FILEIN, "%d\n", &nt4_slice[3][i][filecount]);
+      for (j=0; j<nt4_slice[3][i][filecount]; j++)
+	{
+	  fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
+		  &t4_slice[3][i][filecount][j].pnr, &t4_slice[3][i][filecount][j].x,
+		  &t4_slice[3][i][filecount][j].y, &t4_slice[3][i][filecount][j].n ,
+		  &t4_slice[3][i][filecount][j].nx ,&t4_slice[3][i][filecount][j].ny,
+		  &t4_slice[3][i][filecount][j].sumg, &t4_slice[3][i][filecount][j].tnr);
+	}
+      fclose (FILEIN);
+    }
+  filenumber++;
+ }
+  
+}
+/**********************************************************************/
+
+void read_ascii_data_back(int filenumber)
 {
 	FILE *FILEIN;
-	int  j;
 	char filein[256];
+  int	i, j, filecount;
+  int   dumy, fixnumber1, fixnumber2;
+  double fdumy;
+  
+      /*reset all other variable to default value*/
+	for (j=0; j<scan_par.N_slice;j++)
+	  {
+		  for(i=0;i<M;i++)
+     {
+	  mega_slice[3][j][i].prev = -1;
+      mega_slice[3][j][i].prev_slice = -1;
+      mega_slice[3][j][i].next_slice = -2;
+	  mega_slice[3][j][i].next = -2;
+      mega_slice[3][j][i].prio = 4;
+      mega_slice[3][j][i].inlist = 0;
+      mega_slice[3][j][i].finaldecis = 1000000.0;
+      
+	  c4_slice[3][j][i].p[0]=-1;
+      c4_slice[3][j][i].p[1]=-1;
+      c4_slice[3][j][i].p[2]=-1;
+      c4_slice[3][j][i].p[3]=-1;
+	  }
+    }
 
-	compose_name_plus_nr_str (seq_name[i_img], "_targets",filenumber, filein);
+
+  fixnumber1=filenumber-scan_par.N_slice;
+  fixnumber2=filenumber+scan_par.N_slice;
+
+	for (filecount=0; filecount<scan_par.N_slice;filecount++)
+  {
+  
+  
+
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/rt_is.%3d", filenumber);
+
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
+  i=0;
+  m_slice[3][filecount]=0;
+
+  fscanf(FILEIN, "%d\n", &dumy); /* read # of 3D points on dumy */
+  do
+    {
+      /*read dataset row by row, x,y,z and correspondences */
+      fscanf(FILEIN, "%d %f %f %f %d %d %d %d\n",
+	     &dumy, &mega_slice[3][filecount][i].x[0], &mega_slice[3][filecount][i].x[1],
+		 &mega_slice[3][filecount][i].x[2], &c4_slice[3][filecount][i].p[0],
+		 &c4_slice[3][filecount][i].p[1], &c4_slice[3][filecount][i].p[2], &c4_slice[3][filecount][i].p[3]);
+
+      c4_slice[3][filecount][i].nr=i;
+
+      for(j=0; j<POSI; j++){
+	mega_slice[3][filecount][i].decis[j] = 0.0;
+	mega_slice[3][filecount][i].linkdecis[j] = -999;
+      }
+      i++;
+      m_slice[3][filecount]++;
+    }while(!feof(FILEIN));
+
+  fclose(FILEIN);
+
+
+/* read ptv_is-file for prev and next info */
+
+  if (filenumber < 10)       sprintf (filein, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (filein, "res/ptv_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/ptv_is.%3d",  filenumber);
+
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file for reading\n");
+
+  fscanf(FILEIN, "%d\n", &dumy);
+
+  for(i=0; i<=m_slice[3][filecount]; i++)
+    {
+      /*read dataset row by row*/
+      fscanf(FILEIN, "%4d %4d %4d %4d %lf %lf %lf\n", &mega_slice[3][filecount][i].prev_slice, 
+		  &mega_slice[3][filecount][i].prev, &mega_slice[3][filecount][i].next_slice, 
+		  &mega_slice[3][filecount][i].next, &fdumy, &fdumy, &fdumy);
+
+
+		if (mega_slice[3][filecount][i].prev_slice != -1)
+		{ mega_slice[3][filecount][i].prev_slice=mega_slice[3][filecount][i].prev_slice-fixnumber1;}
+		
+		if (mega_slice[3][filecount][i].next_slice != -2)
+		{ mega_slice[3][filecount][i].next_slice=mega_slice[3][filecount][i].next_slice-fixnumber2;}
+		
+
+
+
+    }
+  fclose(FILEIN);
+  /* end of read ptv_is-file for prev and next info */
+
+
+
 	/* read targets of each camera */
-	nt4[3][i_img]=0;
+  for (i=0; i<n_img; i++)
+    {
+      nt4_slice[3][i][filecount]=0;
+	  compose_name_plus_nr_str (seq_name[i], "_targets",
+				filenumber, filein);
 
-	FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012
-	if (FILEIN) {
-		fscanf (FILEIN, "%d\n", &nt4[3][i_img]);
-		for (j=0; j<nt4[3][i_img]; j++)
+      FILEIN= fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
+
+      fscanf (FILEIN, "%d\n", &nt4_slice[3][i][filecount]);
+      for (j=0; j<nt4_slice[3][i][filecount]; j++)
 		{
 			fscanf (FILEIN, "%4d %lf %lf %d %d %d %d %d\n",
-				&pix[i_img][j].pnr,  &pix[i_img][j].x,
-				&pix[i_img][j].y,	 &pix[i_img][j].n ,
-				&pix[i_img][j].nx,	 &pix[i_img][j].ny,
-				&pix[i_img][j].sumg, &pix[i_img][j].tnr);
+		  &t4_slice[3][i][filecount][j].pnr, &t4_slice[3][i][filecount][j].x,
+		  &t4_slice[3][i][filecount][j].y, &t4_slice[3][i][filecount][j].n ,
+		  &t4_slice[3][i][filecount][j].nx ,&t4_slice[3][i][filecount][j].ny,
+		  &t4_slice[3][i][filecount][j].sumg, &t4_slice[3][i][filecount][j].tnr);
 		}
 		fclose (FILEIN);
 	}
-	*num = nt4[3][i_img];
+  filenumber++;
 }
+
+}
+
+
 
 /**********************************************************************/
 void write_ascii_data(int filenumber)
@@ -204,23 +380,19 @@ void write_ascii_data(int filenumber)
 
 	set = 0;
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10)  sprintf (fileout, "res/ptv_is.%1d", filenumber);
-	//	else if (filenumber < 100) sprintf (fileout, "res/ptv_is.%2d",	filenumber);
-	//	else					   sprintf (fileout, "res/ptv_is.%3d",	filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/ptv_is.%3d",  filenumber);
 
 	/*	printf ("write file: %s\n",fileout); */
-	sprintf (fileout, "res/ptv_is.%d", filenumber);
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) {
-		printf("Can't open ascii file for writing\n");
-		return;		// added, ad holten, 12-2012
-	}
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 	fprintf(FILEOUT, "%d\n", m[set]);
 
 	for(i=0; i<m[set]; i++)
 	{
-		/* write dataset row by row */
+      /*read dataset row by row*/
 		fprintf(FILEOUT, "%4d %4d %10.3f %10.3f %10.3f\n",
 		mega[set][i].prev, mega[set][i].next, mega[set][i].x[0],
 		mega[set][i].x[1], mega[set][i].x[2]);
@@ -229,18 +401,14 @@ void write_ascii_data(int filenumber)
 
 	/* create/update of new targets- and new rt_is-files */
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (fileout, "res/rt_is.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (fileout, "res/rt_is.%2d",  filenumber);
-	//	else					  sprintf (fileout, "res/rt_is.%3d",  filenumber);
+  if (filenumber < 10)        sprintf (fileout, "res/rt_is.00%1d", filenumber);
+  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/rt_is.%3d",  filenumber);
 
 	/*	printf ("write file: %s\n",fileout); */
-	sprintf (fileout, "res/rt_is.%d", filenumber);
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) {
-		printf("Can't open ascii file for writing\n");
-		return;			// added, ad holten 12-2012
-	}
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 	fprintf(FILEOUT, "%d\n", m[set]);
 
 	for (i=0; i<m[set]; i++)
@@ -249,6 +417,7 @@ void write_ascii_data(int filenumber)
 			i+1, mega[set][i].x[0], mega[set][i].x[1], mega[set][i].x[2],
 			c4[set][i].p[0], c4[set][i].p[1], c4[set][i].p[2], c4[set][i].p[3]);
 	}
+
 	fclose(FILEOUT);
 
 	/* write targets of each camera */
@@ -258,10 +427,8 @@ void write_ascii_data(int filenumber)
 		filenumber, fileout);
 
 		FILEOUT= fopen (fileout, "w");
-		if (! FILEOUT){
-			printf("Can't open ascii file: %s\n", fileout);
-		}
-		else {
+      if (! FILEOUT) printf("Can't open ascii file: %s\n", fileout);
+
 			fprintf (FILEOUT, "%d\n", nt4[set][i]);
 			for (j=0; j<nt4[set][i]; j++)
 			{
@@ -274,8 +441,109 @@ void write_ascii_data(int filenumber)
 			fclose (FILEOUT);
 		}
 	}
+
+/**********************************************************************/
+void write_ascii_data_slice(int filenumber)
+{
+  FILE	*FILEOUT;
+  char	fileout[256];
+  int	i, set, j, filecount;
+  int   fixnumber1, fixnumber2;
+
+  set = 0;
+  
+  fixnumber1=filenumber-scan_par.N_slice;
+  fixnumber2=filenumber+scan_par.N_slice;
+
+
+  for (filecount=0; filecount<scan_par.N_slice;filecount++)
+  {
+  
+
+  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/ptv_is.%3d",  filenumber);
+
+  /*  printf ("write file: %s\n",fileout); */
+  FILEOUT = fopen (fileout, "w");
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
+  fprintf(FILEOUT, "%d\n", m_slice[set][filecount]);
+
+  for(i=0; i<m_slice[set][filecount]; i++)
+    {
+      /*write dataset row by row*/
+		if (mega_slice[set][filecount][i].prev_slice != -1)
+		{ mega_slice[set][filecount][i].prev_slice=mega_slice[set][filecount][i].prev_slice+fixnumber1;}
+		if (mega_slice[set][filecount][i].prev_slice == -1)
+		{ mega_slice[set][filecount][i].prev_slice=-1;}
+		if (mega_slice[set][filecount][i].next_slice != -2)
+		{ mega_slice[set][filecount][i].next_slice=mega_slice[set][filecount][i].next_slice+fixnumber2;}
+		if (mega_slice[set][filecount][i].next_slice == -2)
+		{ mega_slice[set][filecount][i].next_slice=-2;}
+      fprintf(FILEOUT, "%4d %4d %4d %4d %10.3f %10.3f %10.3f\n",
+	      mega_slice[set][filecount][i].prev_slice, mega_slice[set][filecount][i].prev,
+		  mega_slice[set][filecount][i].next_slice, mega_slice[set][filecount][i].next,
+		  mega_slice[set][filecount][i].x[0], mega_slice[set][filecount][i].x[1],mega_slice[set][filecount][i].x[2]);
+    }
+  fclose(FILEOUT);
+
+  /* create/update of new targets- and new rt_is-files */
+/*
+if (0)
+{
+*/
+  if (filenumber < 10)        sprintf (fileout, "res/rt_is.00%1d", filenumber);
+  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/rt_is.%3d",  filenumber);
+
+  /*  printf ("write file: %s\n",fileout); */
+  FILEOUT = fopen (fileout, "w");
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
+  fprintf(FILEOUT, "%d\n", m_slice[set][filecount]);
+
+  for(i=0; i<m_slice[set][filecount]; i++)
+    {
+      fprintf(FILEOUT, "%4d %9.3f %9.3f %9.3f %4d %4d %4d %4d %4d\n",
+	     i+1, mega_slice[set][filecount][i].x[0], mega_slice[set][filecount][i].x[1],
+		 mega_slice[set][filecount][i].x[2], c4_slice[set][filecount][i].p[0],
+		 c4_slice[set][filecount][i].p[1], c4_slice[set][filecount][i].p[2],
+		 c4_slice[set][filecount][i].p[3], mega_slice[set][filecount][i].prio);
+    }
+
+  fclose(FILEOUT);
+
+  /* write targets of each camera */
+  for (i=0; i<n_img; i++)
+    {
+      compose_name_plus_nr_str (seq_name[i], "_targets",
+				filenumber, fileout);
+
+      FILEOUT= fopen (fileout, "w");
+      if (! FILEOUT) printf("Can't open ascii file: %s\n", fileout);
+
+      fprintf (FILEOUT, "%d\n", nt4_slice[set][i][filecount]);
+      for (j=0; j<nt4_slice[set][i][filecount]; j++)
+	{
+	  fprintf (FILEOUT, "%4d %9.4f %9.4f %5d %5d %5d %5d %5d\n",
+		  t4_slice[set][i][filecount][j].pnr, t4_slice[set][i][filecount][j].x,
+		  t4_slice[set][i][filecount][j].y, t4_slice[set][i][filecount][j].n ,
+		  t4_slice[set][i][filecount][j].nx ,t4_slice[set][i][filecount][j].ny,
+		  t4_slice[set][i][filecount][j].sumg, t4_slice[set][i][filecount][j].tnr);
+	}
+      fclose (FILEOUT);
+    }
+
+/*}*/
+	filenumber++;
+  }
+  
 }
 
+
+
+/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 void write_added(int filenumber)
 {
 	FILE	*FILEOUT;
@@ -284,17 +552,14 @@ void write_added(int filenumber)
 
 	set = 0;
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (fileout, "res/added.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (fileout, "res/added.%2d", filenumber);
-	//	else					  sprintf (fileout, "res/added.%3d", filenumber);
-	sprintf (fileout, "res/added.%d", filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/added.0%2d",  filenumber);
+  else       sprintf (fileout, "res/added.%3d",  filenumber);
 
 	/*	printf ("write file: %s\n",fileout); */
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) 
-		printf("Can't open ascii file for writing\n");
-	else {
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 		fprintf(FILEOUT, "%d\n", m[set]);
 
 		for(i=0; i<m[set]; i++)
@@ -305,9 +570,9 @@ void write_added(int filenumber)
 				mega[set][i].x[1], mega[set][i].x[2], mega[set][i].prio);
 		}
 		fclose(FILEOUT);
-	}
-}
 
+}
+/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 /**********************************************************************/
 void write_addedback(int filenumber)
 {
@@ -317,17 +582,14 @@ void write_addedback(int filenumber)
 
 	set = 0;
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (fileout, "res/added.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (fileout, "res/added.%2d", filenumber);
-	//	else					  sprintf (fileout, "res/added.%3d", filenumber);
-	sprintf (fileout, "res/added.%d", filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/added.0%2d",  filenumber);
+  else       sprintf (fileout, "res/added.%3d",  filenumber);
 
 	/*	printf ("write file: %s\n",fileout); */
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) 
-		printf("Can't open ascii file for writing\n");
-	else {
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 		fprintf(FILEOUT, "%d\n", m[set]);
 
 		for(i=0; i<m[set]; i++)
@@ -338,8 +600,12 @@ void write_addedback(int filenumber)
 				mega[set][i].x[1], mega[set][i].x[2], mega[set][i].prio);
 		}
 		fclose(FILEOUT);
+
+
+
 	}
-}
+/* ************************************************************* */
+
 /* ************************************************************* */
 
 void read_ascii_datanew(int filenumber)
@@ -364,14 +630,12 @@ void read_ascii_datanew(int filenumber)
 		c4[3][i].p[3]=-1;
 	}
 
-	// replaced next lines, ad holten 12-2012
-	//	if (filenumber < 10)	   sprintf (filein, "res/rt_is.%1d", filenumber);
-	//	else if (filenumber < 100) sprintf (filein, "res/rt_is.%2d",  filenumber);
-	//	else					   sprintf (filein, "res/rt_is.%3d", filenumber);
+  if (filenumber < 10)        sprintf (filein, "res/rt_is.00%1d", filenumber);
+  else if (filenumber < 100)  sprintf (filein, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/rt_is.%3d", filenumber);
 
-	sprintf (filein, "res/rt_is.%d", filenumber);
-	FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012
-	if (! FILEIN) return;
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
 
 	m[3]=0;
 
@@ -394,54 +658,48 @@ void read_ascii_datanew(int filenumber)
 			mega[3][i].linkdecis[j] = -999;
 		}
 	}
+
 	fclose(FILEIN);
 
 	/* read ptv_is-file for prev and next info */
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (filein, "res/ptv_is.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (filein, "res/ptv_is.%2d",  filenumber);
-	//	else					  sprintf (filein, "res/ptv_is.%3d",  filenumber);
-	
-	sprintf (filein, "res/ptv_is.%3d",  filenumber);
-	FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012
-	if (! FILEIN) return;
+  if (filenumber < 10)       sprintf (filein, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (filein, "res/ptv_is.0%2d",  filenumber);
+  else       sprintf (filein, "res/ptv_is.%3d",  filenumber);
+
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file for reading\n");
 
 	fscanf(FILEIN, "%d\n", &dumy);
 
 	for(i=0; i<=m[3]; i++)
 	{
 		/*read dataset row by row*/
-		fscanf(FILEIN, "%4d %4d %lf %lf %lf\n", 
-			&mega[3][i].prev, &mega[3][i].next, &fdumy, &fdumy, &fdumy);
+      fscanf(FILEIN, "%4d %4d %lf %lf %lf\n", &mega[3][i].prev, &mega[3][i].next, &fdumy, &fdumy, &fdumy);
 	}
 	fclose(FILEIN);
 	/* end of read ptv_is-file for prev and next info */
 
+
 	/* read added-file for prio info */
 
-	// replaced next lines, ad holten 12-2012
-	//	if (filenumber < 10)	   sprintf (filein, "res/added.%1d", filenumber);
-	//	else if (filenumber< 100)  sprintf (filein, "res/added.%2d",  filenumber);
-	//	else					   sprintf (filein, "res/added.%3d",  filenumber);
+  if (filenumber < 10)       sprintf (filein, "res/added.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (filein, "res/added.0%2d",  filenumber);
+  else       sprintf (filein, "res/added.%3d",  filenumber);
 
-	sprintf (filein, "res/added.%d", filenumber);
-	FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012
-	if (! FILEIN) return;
+  FILEIN = fopen (filein, "r");
+  if (! FILEIN) printf("Can't open ascii file for reading\n");
 
-	// replaced next code, ad holten 12-2012
-	//	fscanf(FILEIN, "%d\n", &dumy);
-	//	for(i=0; i<=m[3]; i++)
-	//	{
-	//		/*read dataset row by row*/
-	//		fscanf(FILEIN, "%*4d %4d %lf %lf %lf %d\n",
-	//			&dumy, &dumy, &fdumy, &fdumy, &fdumy, &mega[3][i].prio);
-	//	}
+  fscanf(FILEIN, "%d\n", &dumy);
 
-	fscanf(FILEIN, "%*d\n");
-	for(i=0; i<=m[3]; i++)		/* read dataset row by row */
-		fscanf(FILEIN, "%*d %*d %*lf %*lf %*lf %d\n", &mega[3][i].prio);
+  for(i=0; i<=m[3]; i++)
+    {
+      /*read dataset row by row*/
+      fscanf(FILEIN, "%4d %4d %lf %lf %lf %d\n", &dumy, &dumy, &fdumy, &fdumy, &fdumy, &mega[3][i].prio);
+    }
 	fclose(FILEIN);
+  /* end of read added-file for prio info */
+
 
 	/* read targets of each camera */
 	for (i=0; i<n_img; i++)
@@ -450,8 +708,8 @@ void read_ascii_datanew(int filenumber)
 		compose_name_plus_nr_str (seq_name[i], "_targets",
 		filenumber, filein);
 
-		FILEIN = fopen_rp (filein);		// replaced fopen(), ad holten 12-2012	
-		if (! FILEIN) break;
+      FILEIN= fopen (filein, "r");
+      if (! FILEIN) printf("Can't open ascii file: %s\n", filein);
 
 		fscanf (FILEIN, "%d\n", &nt4[3][i]);
 		for (j=0; j<nt4[3][i]; j++)
@@ -464,6 +722,7 @@ void read_ascii_datanew(int filenumber)
 		}
 		fclose (FILEIN);
 	}
+
 }
 
 /**********************************************************************/
@@ -475,23 +734,19 @@ void write_ascii_datanew(int filenumber)
 
 	set = 0;
 	
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (fileout, "res/ptv_is.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (fileout, "res/ptv_is.%2d",  filenumber);
-	//	else					  sprintf (fileout, "res/ptv_is.%3d",  filenumber);
+  if (filenumber < 10)       sprintf (fileout, "res/ptv_is.00%1d", filenumber);
+  else if (filenumber< 100)  sprintf (fileout, "res/ptv_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/ptv_is.%3d",  filenumber);
 
-	sprintf (fileout, "res/ptv_is.%d",  filenumber);
 	/*	printf ("write file: %s\n",fileout); */
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) {
-		printf("Can't open ascii file for writing\n");
-		return;		// added, ad holten 12-2012
-	}
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 	fprintf(FILEOUT, "%d\n", m[set]);
 
 	for(i=0; i<m[set]; i++)
 	{
-		/* write dataset row by row, prev/next order changed because backwards*/
+      /*read dataset row by row, prev/next order changed because backwards*/
 		fprintf(FILEOUT, "%4d %4d %10.3f %10.3f %10.3f\n",
 			mega[set][i].prev, mega[set][i].next, mega[set][i].x[0],
 			mega[set][i].x[1], mega[set][i].x[2]);
@@ -500,18 +755,14 @@ void write_ascii_datanew(int filenumber)
 
 	/* update of targets- and rt_is-files */
 
-	// replaced next lines, ad holten 12-2012
-	//	if		(filenumber < 10) sprintf (fileout, "res/rt_is.%1d", filenumber);
-	//	else if (filenumber< 100) sprintf (fileout, "res/rt_is.%2d",  filenumber);
-	//	else					  sprintf (fileout, "res/rt_is.%3d",  filenumber);
+  if (filenumber < 10)        sprintf (fileout, "res/rt_is.00%1d", filenumber);
+  else if (filenumber< 100)   sprintf (fileout, "res/rt_is.0%2d",  filenumber);
+  else       sprintf (fileout, "res/rt_is.%3d",  filenumber);
 	
-	sprintf (fileout, "res/rt_is.%d",  filenumber);
 	/*	printf ("write file: %s\n",fileout); */
 	FILEOUT = fopen (fileout, "w");
-	if (! FILEOUT) {
-		printf("Can't open ascii file for writing\n");
-		return;			// added, ad holten 12-2012
-	}
+  if (! FILEOUT) printf("Can't open ascii file for writing\n");
+
 	fprintf(FILEOUT, "%d\n", m[set]);
 
 	for(i=0; i<m[set]; i++)
@@ -521,6 +772,7 @@ void write_ascii_datanew(int filenumber)
 			i+1, mega[set][i].x[0], mega[set][i].x[1], mega[set][i].x[2],
 			c4[set][i].p[0], c4[set][i].p[1], c4[set][i].p[2], c4[set][i].p[3]);
 	}
+
 	fclose(FILEOUT);
 
 	/* write targets of each camera */
@@ -530,10 +782,8 @@ void write_ascii_datanew(int filenumber)
 		filenumber, fileout);
 
 		FILEOUT= fopen (fileout, "w");
-		if (! FILEOUT) {
-			printf("Can't open ascii file: %s\n", fileout);
-			break;		// added, ad holten 12-2012
-		}
+      if (! FILEOUT) printf("Can't open ascii file: %s\n", fileout);
+
 		fprintf (FILEOUT, "%d\n", nt4[set][i]);
 		for (j=0; j<nt4[set][i]; j++)
 		{
@@ -545,8 +795,13 @@ void write_ascii_datanew(int filenumber)
 		}
 		fclose (FILEOUT);
 	}
+
 }
 /* ************************************************************* */
+
+
+
+
 
 int tracking(ClientData clientData, Tcl_Interp* interp, int argc, const char** argv)
 {
@@ -570,9 +825,9 @@ void level1(void)
 	   trad is radius of correlation neigbourhood, trad1
 	   is search radius for next timestep with link*/
 
-	trad[0] = (float) tpar.dvxmax;
-	trad[1] = (float) tpar.dvymax;
-	trad[2] = (float) tpar.dvzmax;
+    trad[0]= tpar.dvxmax;
+    trad[1]= tpar.dvymax;
+    trad[2]= tpar.dvzmax;
 
 	/* BEGIN TRACKING*/
 
@@ -604,6 +859,7 @@ void level1(void)
 							for(j=0; j < 3; j++)
 								seekx[j] = 2*mega[2][n2liste[k]].x[j]-mega[1][liste[i]].x[j];
 
+
 							/*find neigbours in next timestep t = 3*/
 							inn3liste = 0;
 							neighbours(seekx, trad, n3liste, &inn3liste, 3);
@@ -623,7 +879,7 @@ void level1(void)
 								acc += sqr(mega[1][liste[i]].x[ii] - 2*mega[2][n2liste[k]].x[ii]
 									   + mega[3][n3liste[l]].x[ii]);
 
-								acc = (float)sqrt(acc);
+	      acc=sqrt(acc);
 								if (esti > acc)
 									esti = acc;
 						} /*for(l....)*/
@@ -634,6 +890,7 @@ void level1(void)
 				mega[1][liste[i]].inlist = inn2liste;
 				if(inn2liste > 1)
 					sort(inn2liste, mega[1][liste[i]].decis, mega[1][liste[i]].linkdecis);
+
 			} /*if(inn1liste > 0)*/
 
 		} /*for(i=0....)*/
@@ -644,12 +901,14 @@ void level1(void)
 			finish = 0;
 
 			for(i=0; i<inliste; i++) {
+
 				if(mega[1][liste[i]].next < 0) {
 					if(mega[1][liste[i]].inlist > 0) {
 						/*in the following is a sorted list of decis assumed*/
 						flag = 1;
 						j = 0;
 						do {
+
 							if(mega[2][mega[1][liste[i]].linkdecis[j]].prev < 0) {
 								/*found possible link*/
 								mega[1][liste[i]].next = mega[1][liste[i]].linkdecis[j];
@@ -678,13 +937,16 @@ void level1(void)
 								j++; /* if first choice is not possible then try next */
 							}
 						} while((j < mega[1][liste[i]].inlist) && flag);
+
 					} /*if(mega[1]....)*/
 					else {
 						mega[1][liste[i]].next=-1; /*No link could be established*/
 					} /*else*/
 				} /*if(mega[1]	.next < 0)*/
 			} /*for(i=0....)*/
+
 		} while(finish);
+
 	}  /*if(inlist >0)*/
  
 	/*END OF FIRST TRAIL*/
@@ -704,9 +966,11 @@ void level2(void)
 
 	/* Define some varibles. This is done every time tracking is called
 	   (my be not necessary but is not a big problem*/
-	trad[0] = (float) tpar.dvxmax;
-	trad[1] = (float) tpar.dvymax;
-	trad[2] = (float) tpar.dvzmax;
+
+
+    trad[0]= tpar.dvxmax;
+    trad[1]= tpar.dvymax;
+    trad[2]= tpar.dvzmax;
 
 	/* BEGIN TRACKING*/
 	/* Secondly start with second priority this is if particle has already no link to
@@ -716,8 +980,7 @@ void level2(void)
 	/*links named -1 or -2 are no links*/
 
 	for(inliste=0, i=0; i<m[1]; i++)
-		if (mega[1][i].next < 0 && mega[1][i].prev < 0)
-		{
+    if (mega[1][i].next < 0 && mega[1][i].prev < 0) {
 			/*check if neighbours wihtin correlation have link*/
 			for(j=0; j < 3; j++)
 				seekx[j] = mega[1][i].x[j];
@@ -735,6 +998,7 @@ void level2(void)
 							nvel++;
 						}
 					}
+
 					if(nvel > 0) {
 						/*intermediate storage of center of position in next frame */
 						for(l=0; l<3; l++)
@@ -779,7 +1043,8 @@ void level2(void)
 											acc += sqr(mega[1][liste[i]].x[ii] - 2*mega[2][n2liste[k]].x[ii]
 												   + mega[3][n3liste[l]].x[ii]);
 
-											acc = (float)sqrt(acc);
+
+	      acc=sqrt(acc);
 											if(esti > acc)
 												esti = acc;
 									} /*for(l....)*/
@@ -792,10 +1057,14 @@ void level2(void)
 								sort(inn2liste, mega[1][liste[i]].decis, mega[1][liste[i]].linkdecis);
 
 						}/*if(inn1liste > 0)*/
+
 					}/*for(i=0....)*/
+
 					/*establish links by streaming completly through the data*/
+
 		do {
 			finish = 0;
+
 			for(i=0; i<inliste; i++) {
 				if(mega[1][liste[i]].next < 0) {
 
@@ -804,6 +1073,7 @@ void level2(void)
 						flag = 1;
 						j = 0;
 						do {
+
 							if(mega[2][mega[1][liste[i]].linkdecis[j]].prev < 0) {
 								/*found possible link*/
 								mega[1][liste[i]].next = mega[1][liste[i]].linkdecis[j];
@@ -832,15 +1102,20 @@ void level2(void)
 							else {
 								j++; /* if first choice is not possible then try next */
 							}
+
 						} while((j < mega[1][liste[i]].inlist) && flag);
+
 					}/*if(mega[1]....)*/
 					else {
 						mega[1][liste[i]].next=-1; /*No link could be established*/
 					}/*else*/
 				}/*if(mega[1]  .next<0)*/
 			}/*for(i=0....)*/
+
 		} while(finish);
+
 	} /*if(inlist >0)*/
+
 	/*END OF second TRAIL*/
 }
 
@@ -859,9 +1134,10 @@ void level3(void)
 	/* Define some varibles. This is done every time tracking is called
 	   (my be not necessary but is not a big problem*/
 
-	trad[0] = (float) tpar.dvxmax;
-	trad[1] = (float) tpar.dvymax;
-	trad[2] = (float) tpar.dvzmax;
+    trad[0]= tpar.dvxmax;
+    trad[1]= tpar.dvymax;
+    trad[2]= tpar.dvzmax;
+
 
 	/* BEGIN TRACKING*/
 
@@ -908,7 +1184,9 @@ void level3(void)
 							for (acc=0.0, ii=0; ii<3; ii++)
 								acc += sqr(mega[1][liste[i]].x[ii] - 2*mega[2][n2liste[k]].x[ii]
 									   + mega[3][n3liste[l]].x[ii]);
-							acc = (float)sqrt(acc);
+
+
+	      acc=sqrt(acc);
 							if (esti > acc)
 								esti = acc;
 						} /*for(l....)*/
@@ -919,7 +1197,9 @@ void level3(void)
 				mega[1][liste[i]].inlist = inn2liste;
 				if (inn2liste > 1)
 					sort(inn2liste, mega[1][liste[i]].decis, mega[1][liste[i]].linkdecis);
+
 			} /*if(inn1liste > 0)*/
+
 		}/*for(i=0....)*/
 
 		/*establish links by streaming completly through the data*/
@@ -927,12 +1207,14 @@ void level3(void)
 		do {
 			finish = 0;
 			for(i=0; i<inliste; i++) {
+
 				if (mega[1][liste[i]].next < 0) {
 					if (mega[1][liste[i]].inlist > 0) {
 						/*in the following is a sorted list of decis assumed*/
 						flag = 1;
 						j = 0;
 						do {
+
 							if(mega[2][mega[1][liste[i]].linkdecis[j]].prev < 0) {
 								/*found possible link*/
 								mega[1][liste[i]].next = mega[1][liste[i]].linkdecis[j];
@@ -949,6 +1231,7 @@ void level3(void)
 							{
 								/*current link is better and reset other link*/
 								mega[1][mega[2][mega[1][liste[i]].linkdecis[j]].prev].next = -2;
+
 								mega[1][liste[i]].next = mega[1][liste[i]].linkdecis[j];
 								mega[2][mega[1][liste[i]].linkdecis[j]].prev = liste[i];
 								mega[2][mega[1][liste[i]].linkdecis[j]].prio = 2;
@@ -956,10 +1239,13 @@ void level3(void)
 								flag = 0;
 								finish = 1;
 							}
+
 							else {
 								j++; /* if first choice is not possible then try next */
 							}
+
 						} while((j < mega[1][liste[i]].inlist) && flag);
+
 					} /*if(mega[1]....)*/
 					else {
 						mega[1][liste[i]].next = -1; /*No link could be established*/
@@ -995,6 +1281,28 @@ void sort(int n, float a[], int b[])
 	} while(flag);
 }
 
+void sort_slice(int n, float a[], int b[], int c[])
+{
+  int flag = 0, i, itemp, htemp;
+  float ftemp;
+
+  do {
+    flag = 0;
+    for(i=0; i<(n-1); i++)
+      if(a[i] > a[i+1]) {
+	ftemp =  a[i];
+	itemp =  b[i];
+	htemp =  c[i];
+	a[i] = a[i+1];
+	b[i] = b[i+1];
+	c[i] = c[i+1];
+	a[i+1] = ftemp;
+	b[i+1] = itemp;
+	c[i+1] = htemp;
+        flag = 1;
+      }
+  }while(flag);
+}
 
 void rotate_dataset(void)
 {
@@ -1033,6 +1341,46 @@ void rotate_dataset(void)
 	}
 }
 
+
+void rotate_dataset_first(void)
+{
+  void * tmp;
+  void * tmp2;
+  int i,j;
+
+  /*rotate dataset by changeing pointer*/
+  for (j=0;j<scan_par.N_slice;j++)
+  {
+  tmp = mega_slice[0][j];
+  mega_slice[0][j] = mega_slice[1][j];
+  mega_slice[1][j] = mega_slice[2][j];
+  mega_slice[2][j] = mega_slice[3][j];
+  mega_slice[3][j] =tmp;
+
+  /*rotate counter*/
+  m_slice[0][j] = m_slice[1][j];
+  m_slice[1][j] = m_slice[2][j];
+  m_slice[2][j] = m_slice[3][j];
+
+  tmp = c4_slice[0][j];
+  c4_slice[0][j] = c4_slice[1][j];
+  c4_slice[1][j] = c4_slice[2][j];
+  c4_slice[2][j] = c4_slice[3][j];
+  c4_slice[3][j] =tmp;
+
+  for(i=0; i<4; i++) {
+  tmp2 = t4_slice[0][i][j];
+  t4_slice[0][i][j] = t4_slice[1][i][j];
+  t4_slice[1][i][j] = t4_slice[2][i][j];
+  t4_slice[2][i][j] = t4_slice[3][i][j];
+  t4_slice[3][i][j] =tmp2;
+
+  nt4_slice[0][i][j] = nt4_slice[1][i][j];
+  nt4_slice[1][i][j] = nt4_slice[2][i][j];
+  nt4_slice[2][i][j] = nt4_slice[3][i][j];
+  }
+  }
+}
 void neighbours(float seekx[], float radi[], int nliste[], int *innliste, int set)
 {
 	int i;

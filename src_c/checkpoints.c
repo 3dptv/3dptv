@@ -16,11 +16,6 @@ Description:		calibration quality control from check points
 Routines contained:
 
 ****************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
 
 #include "ptv.h"
 	
