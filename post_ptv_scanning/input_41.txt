@@ -1,0 +1,31 @@
+1	                          %make xuap.* files?                
+1	                          %make trajPoint.* files? 
+1	                          %make derivatives?
+0	                          %make p_trajPoint.* files?
+0	                          %make H_trajPoint.* files?
+G:\SPTV_processing\working_folder_41\res %     %path where ptv_is.* files are
+41000001	                      %firstFile, the code will                 
+41010134 %1003600 	                      %lastFile  
+18  	                      %num slices, if set to 1 it is like normal PTV, i.e. non-scanning               
+0.00025		                  %delta_t between slices, set to 0 if num_slices=1
+0.005                         %delta_t scan, also use this for non-scanning data
+0.000001	              %viscosity - water
+41 %was 41                    %max lenght of polynomial, can go up to half of numOfFrames MARC: 81 up to 100
+5 %was 8                      %min left/right                                             MARC: 15        
+0.23                           %max_vel 
+0.0025                       %radius for interpolation sphere 
+0.4                           %weight for rel diva-2Q error
+0.4                           %weight for rel acceleration error
+0.2                           %weight for rel divu error
+---its better if you don't touch the following-----------------------------
+3                             %minTrajLength 
+35                            %polynomial constant (to choose polynomial order, Beat's Diss eq. 2.29, 35)
+10.0                          %c1 (constant Beat's Diss eq. 2.31, 10)
+0.25                          %c2 (constant Beat's Diss eq. 2.31, 0.25)
+30                            %max num points for linear interpolation (maxRank)
+200                           %numOfFrames in memory, also= maxTrajLength  (max=166), ... dont like this..
+18                            %max_grid_X   
+18                            %max_grid_Y
+9                             %max_grid_Z  
+25                            %max_grid_C
+                      

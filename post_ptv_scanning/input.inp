@@ -1,0 +1,27 @@
+1				%make xuap.* files?                
+1				%make trajPoint.* files? 
+1				%make derivatives?
+0				%make p_trajPoint.* files?
+0				%make H_trajPoint.* files?
+F:\PTV_front_propagation_stratified\PTV\Experiments\Sep21\post_process_dec28_2012\test_2012          %path where ptv_is.* files are
+13005     			%firstFile                
+13095				%lastFile                 
+0.00625				%delta_t 
+0.000001			%viscosity - water
+21                        	%max lenght of polynomial, CAN BE CHANGED ALSO NOW!
+0                         	%min left/right  portion of beginning and end trajectory                            
+0.8		                %max_vel 
+0.007		                %radius for interpolation sphere 
+0.4                       	%weight for rel diva-2Q error
+0.4                       	%weight for rel acceleration error
+0.2                        	%weight for rel divu error
+---its better if you don't touch the following-----------------------------
+3                         	%minTrajLength 
+35                        	%polynomial constant (to choose polynomial order, Beat's Diss eq. 2.29, 35)
+10.0                      	%c1 (constant Beat's Diss eq. 2.31, 10)
+0.05                      	%c2 (constant Beat's Diss eq. 2.31, 0.25)
+30                        	%max num points for linear interpolation (maxRank)
+500                       	%numOfFrames in memory (max=500)
+
+                      
+                      
