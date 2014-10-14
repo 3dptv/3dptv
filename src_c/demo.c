@@ -1,16 +1,16 @@
 /*********************************************************************
 
-Author/Copyright:	 Jochen Willneff
+Author/Copyright:      	Jochen Willneff
 
-Address:			 Institute of Geodesy and Photogrammetry
-					 ETH - Hoenggerberg
-					 CH - 8093 Zurich
+Address:	      	Institute of Geodesy and Photogrammetry
+		       	ETH - Hoenggerberg
+		       	CH - 8093 Zurich
 
-Creation Date:		 September'97
+Creation Date:	       	September'97
 
-Description:		display of image sequences
+Description:	       	display of image sequences
 
-Routines contained: flow_demo_c
+Routines contained:    	flow_demo_c
 
 **********************************************************************/
 #include "ptv.h"
@@ -61,7 +61,7 @@ int flow_demo_c (ClientData clientData, Tcl_Interp* interp, int argc, const char
 //		}
     }
 
-	free (imgf);
-	return TCL_OK;
+  free (imgf);
+  return TCL_OK;
 }
 

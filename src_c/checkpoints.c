@@ -1,19 +1,19 @@
 /****************************************************************************
 
-Routine:			checkpoints.c
+Routine:	       	checkpoints.c
 
-Author/Copyright:	Hans-Gerd Maas
+Author/Copyright:      	Hans-Gerd Maas
 
-Address:			Institute of Geodesy and Photogrammetry
-					ETH - Hoenggerberg
-					CH - 8093 Zurich
+Address:	       	Institute of Geodesy and Photogrammetry
+		       	ETH - Hoenggerberg
+		       	CH - 8093 Zurich
 
-Creation Date:		1988
+Creation Date:	       	1988
 	
-Description:		calibration quality control from check points
-					on calibration plate
-
-Routines contained:
+Description:	       	calibration quality control from check points
+		       	on calibration plate
+	
+Routines contained:		
 
 ****************************************************************************/
 

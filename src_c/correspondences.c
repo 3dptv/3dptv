@@ -1,24 +1,18 @@
 /****************************************************************************
 
-Routine:		  correspondences.c
+Routine:	       	correspondences.c
 
-Author/Copyright: Hans-Gerd Maas
+Author/Copyright:      	Hans-Gerd Maas
 
-Address:		  Institute of Geodesy and Photogrammetry
-				  ETH - Hoenggerberg
-				  CH - 8093 Zurich
+Address:	      	Institute of Geodesy and Photogrammetry
+	      		ETH - Hoenggerberg
+	      		CH - 8093 Zurich
 
-Creation Date:	  1988/89
+Creation Date:	       	1988/89
 
-Description:	  establishment of correspondences for 2/3/4 cameras
+Description:	       	establishment of correspondences for 2/3/4 cameras
 
 ****************************************************************************/
-/*
-Copyright (c) 1990-2011 ETH Zurich
-
-See the file license.txt for copying permission.
-*/
-
 
 #include "ptv.h"
 
