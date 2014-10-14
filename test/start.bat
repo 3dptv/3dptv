@@ -1,2 +1,2 @@
-..\3DPTV.exe ..\ptv.tcl &
+..\3dptv.exe ..\ptv.tcl &
 
