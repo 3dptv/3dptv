@@ -1,3 +1,41 @@
+## This part of readme file is for the scanning PTV only:
+
+1. Credits:
+
+    @article{
+    year={2005},
+    issn={0723-4864},
+	journal={Experiments in Fluids},
+	volume={39},
+	number={5},
+	doi={10.1007/s00348-005-0031-7},
+	title={3D scanning particle tracking velocimetry},
+	url={http://dx.doi.org/10.1007/s00348-005-0031-7},
+	publisher={Springer-Verlag},
+	keywords={Scanning; Tracking; Lagrangian},
+	author={Hoyer, Klaus and Holzner, Markus and Lüthi, Beat and Guala, Michele and Liberzon, Alexander and Kinzelbach, Wolfgang},
+	pages={923-934},
+	language={English}
+	}
+
+
+	@article{0957-0233-25-6-065301,
+	  author={D Krug and M Holzner and B Lüthi and M Wolf and A Tsinober and W Kinzelbach},
+	  title={A combined scanning PTV/LIF technique to simultaneously measure the full velocity gradient tensor and the 3D density field},
+	  journal={Measurement Science and Technology},
+	  volume={25},
+	  number={6},
+	  pages={065301},
+	  url={http://stacks.iop.org/0957-0233/25/i=6/a=065301},
+	  year={2014}
+	}
+
+ 2. Additional explanations
+
+ This version of Scanning PTV is branched from the (non-scanning) regular 3D-PTV software in 2005 or so and therefore includes some bugs that were fixed in the OpenPTV version. On the other hand, this software was developed futher by the 
+ ETH Zurich group over the years, with contributions in the source code of the calibration, sequencing and tracking and post-processing. Please consult the document put forward by Dominik Krug in the ```/docs''' directory
+
+
 ## If you want to use the source code and contribute to the project:
 
 1. Fork this repository to your account, using the Fork button
